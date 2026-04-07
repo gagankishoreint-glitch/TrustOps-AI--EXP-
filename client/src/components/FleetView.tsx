@@ -1,28 +1,15 @@
 import React from 'react';
-import { Building2, Server, Shield, Activity, Power } from 'lucide-react';
-
-interface Showroom {
-  id: string;
-  name: string;
-  score: number;
-  status: string;
-  risk: string;
-  activeNodes: number;
-}
+import { Activity, Server, AlertTriangle, CheckCircle, MapPin, Building2, Shield, Power } from 'lucide-react';
+import { useShowroomStore } from '../store/useShowroomStore';
 
 interface FleetViewProps {
-  onSelectShowroom: (showroom: string) => void;
+  onSelectShowroom: (id: string, name: string) => void;
   isDemo?: boolean;
 }
 
 export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroom, isDemo = false }) => {
-
-  const showrooms: Showroom[] = [
-    { id: '1', name: 'Showroom A (Tokyo)', score: 98, status: 'Healthy', risk: 'Low', activeNodes: 24 },
-    { id: '2', name: 'Showroom B (Osaka)', score: 92, status: 'Healthy', risk: 'Low', activeNodes: 18 },
-    { id: '3', name: 'Showroom C (Kyoto) [TEST]', score: isDemo ? 58 : 95, status: isDemo ? 'At Risk' : 'Healthy', risk: isDemo ? 'Critical' : 'Low', activeNodes: 12 },
-    { id: '4', name: 'Showroom D (Sapporo)', score: 99, status: 'Healthy', risk: 'Stable', activeNodes: 8 },
-  ];
+  const { showrooms } = useShowroomStore();
+  const showroomArray = Object.values(showrooms);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-cyan-400 bg-cyan-950/20 border-cyan-500/30';
@@ -41,10 +28,10 @@ export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroo
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {showrooms.map(room => (
+        {showroomArray.map((room) => (
           <div 
             key={room.id}
-            onClick={() => onSelectShowroom(room.name)}
+            onClick={() => onSelectShowroom(room.id, room.name)}
             className="bg-gray-900 border border-gray-800 rounded-xl p-5 cursor-pointer hover:border-cyan-500/50 hover:bg-gray-800 transition-all duration-300 group"
           >
             <div className="flex justify-between items-start mb-4">

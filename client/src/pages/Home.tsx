@@ -7,6 +7,8 @@ import { PredictiveTimeline } from '@/components/PredictiveTimeline';
 import { BusinessImpactAnalysis } from '@/components/BusinessImpactAnalysis';
 import { FleetView } from '@/components/FleetView';
 import { useStochasticStream } from '@/hooks/useStochasticStream';
+import { useShowroomStore } from '@/store/useShowroomStore';
+import { useInference } from '@/hooks/useInference';
 
 interface TelemetryData {
   timestamp: number;
@@ -43,8 +45,17 @@ export default function Home() {
 
   const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({ active: false, type: '', tick: 0 });
 
-  // Hook handles organic charting data independently from the backend logic
+  // Real-time Intelligence Interceptor
   const stochasticData = useStochasticStream(anomalyEngine.current.active);
+  const { operationalScore } = useInference(stochasticData);
+  const { updateShowroomScore } = useShowroomStore();
+
+  // Pipe intelligence to global store for persistence
+  useEffect(() => {
+    if (activeLocation) {
+      updateShowroomScore(activeLocation, operationalScore);
+    }
+  }, [operationalScore, activeLocation, updateShowroomScore]);
 
   const handlePayload = useCallback((payload: StreamPayload) => {
     setTrustScore(payload.engine_analysis.final_trust_score);
@@ -157,8 +168,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-50">
+    <div className="h-screen w-full overflow-hidden bg-gray-950 text-gray-100 flex flex-col">
+      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur shrink-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-cyan-400">
@@ -179,45 +190,59 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {!activeLocation ? (
-          <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} />
-        ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="mb-6">
-               <button 
-                onClick={() => setActiveLocation(null)} 
-                className="text-xs bg-gray-900 border border-gray-800 px-3 py-1.5 rounded uppercase tracking-widest text-cyan-500 hover:bg-gray-800 hover:text-cyan-400 font-bold flex items-center gap-2 transition-colors"
-               >
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                 Exit to Fleet Architecture
-               </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1">
-                <div className="sticky top-8">
-                  <h2 className="text-lg font-semibold text-cyan-400 mb-4">Telemetry</h2>
+      {/* 3-Column Constraint 100VH Content Grid */}
+      <main className="flex-1 overflow-hidden p-6">
+        {activeLocation ? (
+          <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Column 1: Telemetry */}
+            <div className="lg:col-span-1 flex flex-col min-h-0">
+              <h2 className="text-lg font-semibold text-cyan-400 mb-4 shrink-0">Telemetry</h2>
+              <div className="flex-1 bg-gray-900/40 rounded-lg p-4 border border-gray-800 min-h-0 flex flex-col">
+                <div className="flex-1 overflow-hidden">
                   <TelemetryCharts data={stochasticData} />
                 </div>
               </div>
+            </div>
 
-              <div className="md:col-span-1 flex flex-col items-center">
-                <div className="w-full">
-                  <h2 className="text-lg font-semibold text-cyan-400 mb-6 text-center">Composite Operations Trust</h2>
-                  <TrustScoreGauge score={trustScore} />
-                  <MultiScoreDisplay scores={trustScores} />
-                  <PredictiveTimeline currentScore={trustScore} isDemo={isDemo} />
-                  <BusinessImpactAnalysis currentScore={trustScore} trustScores={trustScores} />
-                </div>
+            {/* Column 2: Trust Matrix */}
+            <div className="lg:col-span-1 flex flex-col min-h-0">
+              <div className="flex-none bg-gray-900/40 rounded-lg p-6 border border-gray-800 flex flex-col items-center justify-center mb-6">
+                <h2 className="text-sm font-bold tracking-widest uppercase text-cyan-400 mb-6 text-center">Composite Operations Trust</h2>
+                <TrustScoreGauge score={operationalScore} />
+              </div>
+              
+              <div className="flex-1 bg-gray-900/40 rounded-lg p-6 border border-gray-800 min-h-0 overflow-y-auto">
+                <MultiScoreDisplay scores={{...trustScores, operational: operationalScore}} />
+              </div>
+            </div>
+
+            {/* Column 3: Intelligence & Projection */}
+            <div className="lg:col-span-1 flex flex-col min-h-0 gap-6">
+              <div className="flex-none">
+                <SecurityCopilot 
+                  trustScore={operationalScore} 
+                  recentAnomalies={recentAnomalies} 
+                  isDemo={isDemo} 
+                />
               </div>
 
-              <div className="md:col-span-1">
-                <div className="sticky top-8">
-                  <h2 className="text-lg font-semibold text-cyan-400 mb-4">Intelligence</h2>
-                  <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
+              <div className="flex-1 bg-gray-900/40 rounded-lg border border-gray-800 min-h-0 flex flex-col">
+                <div className="flex-1 p-6 overflow-y-auto">
+                  <PredictiveTimeline currentScore={operationalScore} isDemo={isDemo} />
+                </div>
+                <div className="shrink-0 p-4 border-t border-gray-800 bg-gray-900/60 rounded-b-lg">
+                  <BusinessImpactAnalysis 
+                    currentScore={operationalScore} 
+                    trustScores={{...trustScores, operational: operationalScore}} 
+                  />
                 </div>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="h-full overflow-y-auto">
+            <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} />
           </div>
         )}
       </main>

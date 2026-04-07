@@ -52,22 +52,27 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
     const rootNodes = getRootCauseChain(scores);
     const hIndex = type === 'Behavior Risk' ? 0 : 1; // Arbitrary dynamic highlight
     
-    // Evidence
-    let evidence = `Sub-system fault detected.`;
-    if (lowest[0] === 'performance' || latency > 400) {
-      evidence = `Network latency spiked to ${latency}ms, exceeding nominal thresholds.`;
-    } else if (lowest[0] === 'operational') {
-      evidence = `Display rendering dropped to ${freq}Hz concurrently with connectivity jitter.`;
+    let cause = "Hardware Malfunction";
+    let action = "Initiate full system diagnostic.";
+    let evidence = "";
+
+    if (type === 'Behavior Risk' || type === 'Operational Risk') {
+      cause = "Abnormal login density correlated with downstream network throttling.";
+      action = "Isolate physical interface and force remote session invalidation.";
+    } else if (type === 'Performance Risk') {
+      cause = "Regional edge node degrading under unoptimized payload.";
+      action = "Reroute display assets to secondary CDN pipeline.";
     }
 
-    let cause = "Hardware Malfunction";
-    if (latency > 600) cause = "Severe Network Bandwidth Saturation";
-    else if (freq < 150) cause = "Display Controller Desync / Memory Leak";
+    let currentAnomaly = type;
+    if (finalScore < 60) {
+      currentAnomaly = 'Critical';
+      cause = 'Gateway Timeout';
+      evidence = `Detection: Gateway Timeout. Confidence: 87%`;
+    } else {
+      evidence = `Detection: ${currentAnomaly}. Confidence: ${Math.round(80 + Math.random() * 15)}%`;
+    } 
     
-    let action = "Initiate full system diagnostic.";
-    if (cause.includes("Network")) action = "Reroute display traffic via secondary network CDN.";
-    if (cause.includes("Controller")) action = "Restart Display Controller #04";
-
     let impact = "Critical systemic failure.";
     if (lowest[0] === 'operational') impact = "Complete content outage across all local showrooms.";
     else if (lowest[0] === 'performance') impact = "Network gateway timeout causing multi-device desync.";
@@ -77,7 +82,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
     const baseRiskLevel = finalScore < 60 ? 'Critical' : 'Caution';
 
     // The Contextual Engine Interceptor
-    const { scaledType, scaledRiskLevel, evidenceOverride } = contextualScaleRisk(type, latency, freq, baseRiskLevel);
+    const { scaledType, scaledRiskLevel, evidenceOverride } = contextualScaleRisk(currentAnomaly, latency, freq, baseRiskLevel);
 
     return { 
       type: scaledType, 

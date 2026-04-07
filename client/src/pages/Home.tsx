@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { TrustScoreGauge } from '@/components/TrustScoreGauge';
 import { TelemetryCharts } from '@/components/TelemetryCharts';
 import { SecurityCopilot } from '@/components/SecurityCopilot';
@@ -25,18 +25,12 @@ interface StreamPayload {
     anomaly_severity: number;
     trust_scores: TrustScores;
     final_trust_score: number;
-    correlation_engine?: {
-      confidence_score: number;
-      correlated_signals: string[];
-      root_cause_chain: string;
-    };
     status: string;
   };
 }
 
 export default function Home() {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
-  
   const [trustScore, setTrustScore] = useState(100);
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
@@ -44,12 +38,10 @@ export default function Home() {
   const [telemetryData, setTelemetryData] = useState<TelemetryData[]>([]);
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  
-  // Demo Mode State
   const [isDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true');
-  const [isUnderAttack, setIsUnderAttack] = useState(false);
 
-  // Payload handler
+  const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({ active: false, type: '', tick: 0 });
+
   const handlePayload = useCallback((payload: StreamPayload) => {
     setTrustScore(payload.engine_analysis.final_trust_score);
     setTrustScores(payload.engine_analysis.trust_scores);
@@ -71,67 +63,72 @@ export default function Home() {
     }
   }, []);
 
-  // Demo Mode: Keyboard trigger
-  useEffect(() => {
-    if (!isDemo) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Shift + D triggers the simulated operational breakdown
-      if (e.shiftKey && e.key.toLowerCase() === 'd') {
-        setIsUnderAttack(prev => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDemo, isUnderAttack]);
-
   // Main Data Stream Connection
   useEffect(() => {
     if (isDemo) {
       setIsConnected(true);
       
       const interval = setInterval(() => {
-        // Multi-dimensional decay simulation
-        const ops = isUnderAttack ? Math.round(35 + Math.random() * 15) : Math.round(98 + Math.random() * 2);
-        const sec = isUnderAttack ? Math.round(85 + Math.random() * 10) : Math.round(97 + Math.random() * 3);
-        const perf = isUnderAttack ? Math.round(40 + Math.random() * 20) : Math.round(96 + Math.random() * 4);
-        const behav = isUnderAttack ? Math.round(65 + Math.random() * 15) : Math.round(99 + Math.random() * 1);
+        // Autonomous Synthetic Intelligence Generator
+        if (anomalyEngine.current.active) {
+          anomalyEngine.current.tick -= 1;
+          if (anomalyEngine.current.tick <= 0) anomalyEngine.current.active = false;
+        } else {
+          // 4% chance per second to generate organic anomalies
+          if (Math.random() < 0.04) {
+             anomalyEngine.current.active = true;
+             anomalyEngine.current.tick = Math.round(15 + Math.random() * 10);
+             // Weight heavily toward Operational Risk per user request
+             const anomalyTypes = ['operational', 'operational', 'operational', 'performance', 'security', 'behavior'];
+             anomalyEngine.current.type = anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
+          }
+        }
+
+        const isAttack = anomalyEngine.current.active;
+        const type = anomalyEngine.current.type;
+
+        // Base metrics
+        let ops = Math.round(98 + Math.random() * 2);
+        let sec = Math.round(97 + Math.random() * 3);
+        let perf = Math.round(96 + Math.random() * 4);
+        let behav = Math.round(99 + Math.random() * 1);
         
-        // Weighted Average calculation (Ops 30%, Sec 30%, Perf 20%, Behav 20%)
+        let latency = Math.round(20 + Math.random() * 15);
+        let freq = Math.round(500 + Math.random() * 50);
+
+        // Apply Synthetic Anomaly Degradation
+        if (isAttack) {
+          if (type === 'operational') {
+            ops = Math.round(35 + Math.random() * 20);
+            perf = Math.round(70 + Math.random() * 10);
+            freq = Math.round(Math.random() * 40);
+          } else if (type === 'performance') {
+            perf = Math.round(30 + Math.random() * 15);
+            ops = Math.round(80 + Math.random() * 5);
+            latency = Math.round(1200 + Math.random() * 800);
+          } else if (type === 'security') {
+            sec = Math.round(40 + Math.random() * 15);
+          } else {
+            behav = Math.round(45 + Math.random() * 10);
+            sec = Math.round(80 + Math.random() * 10);
+          }
+        }
+
         const finalWeighted = Math.round((ops * 0.3) + (sec * 0.3) + (perf * 0.2) + (behav * 0.2));
 
         const payload: StreamPayload = {
           raw_telemetry: {
-            display_logs: { 
-              content_id: 'display-01', 
-              play_time: 120, 
-              frequency: isUnderAttack ? Math.round(Math.random() * 50) : Math.round(500 + Math.random() * 50)
-            },
+            display_logs: { content_id: 'display-01', play_time: 120, frequency: freq },
             admin_actions: { login_time: new Date().toISOString(), content_change: false, device_access: 'normal' },
-            network_logs: { 
-              packets: isUnderAttack ? 15000 : 800, 
-              latency: isUnderAttack ? Math.round(800 + Math.random() * 400) : Math.round(20 + Math.random() * 15), 
-              bandwidth: 100 
-            },
+            network_logs: { packets: isAttack ? 15000 : 800, latency: latency, bandwidth: 100 },
             behavior_logs: { session_duration: 300, interaction_count: 5 },
           },
           engine_analysis: {
-            is_anomalous: isUnderAttack,
-            anomaly_severity: isUnderAttack ? 7 : 0,
-            trust_scores: {
-              operational: ops,
-              security: sec,
-              performance: perf,
-              behavior: behav
-            },
+            is_anomalous: isAttack,
+            anomaly_severity: isAttack ? 8 : 0,
+            trust_scores: { operational: ops, security: sec, performance: perf, behavior: behav },
             final_trust_score: finalWeighted,
-            correlation_engine: isUnderAttack ? {
-              confidence_score: 97,
-              correlated_signals: ['Latency Spike', 'Device Frequency Drop', 'Failed Admin Override'],
-              root_cause_chain: 'Network Latency Volatility → Display Desync → Admin Override Attempt'
-            } : undefined,
-            status: isUnderAttack ? 'Operational Friction Detected' : 'Healthy',
+            status: isAttack ? 'Autonomous Anomaly Correlated' : 'Healthy',
           }
         };
 
@@ -140,15 +137,13 @@ export default function Home() {
 
       return () => clearInterval(interval);
     } else {
-      // Real SSE Connection
       const eventSource = new EventSource('http://127.0.0.1:8000/api/v1/stream');
-
       eventSource.onopen = () => { setIsConnected(true); };
       eventSource.onmessage = (event) => {
         try {
           const payload: StreamPayload = JSON.parse(event.data);
           handlePayload(payload);
-        } catch (error) { console.error(error); }
+        } catch (error) {}
       };
       eventSource.onerror = () => {
         setIsConnected(false);
@@ -156,7 +151,7 @@ export default function Home() {
       };
       return () => { eventSource.close(); };
     }
-  }, [isDemo, isUnderAttack, handlePayload]);
+  }, [isDemo, handlePayload]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -170,10 +165,10 @@ export default function Home() {
               {activeLocation ? 'Operational Diagnostics' : 'Intelligence Dashboard'} {isDemo && <span className="text-yellow-500 font-bold ml-2">(Demo Mode Active)</span>}
             </p>
           </div>
-          <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? (isUnderAttack ? 'border-red-500 bg-red-950/20' : 'border-green-500 bg-green-950/20') : 'border-red-500 bg-red-950/20'}`}>
-            <div className={`w-2 h-2 rounded-full ${isConnected ? (isUnderAttack ? 'bg-red-500' : 'bg-green-500') : 'bg-red-500'} animate-pulse`}></div>
-            <span className={`text-xs font-semibold ${isConnected ? (isUnderAttack ? 'text-red-400' : 'text-green-400') : 'text-red-400'}`}>
-              {isConnected ? (isUnderAttack ? 'Critical' : 'Live') : 'Offline'}
+          <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? (anomalyEngine.current.active ? 'border-red-500 bg-red-950/20' : 'border-green-500 bg-green-950/20') : 'border-red-500 bg-red-950/20'}`}>
+            <div className={`w-2 h-2 rounded-full ${isConnected ? (anomalyEngine.current.active ? 'bg-red-500' : 'bg-green-500') : 'bg-red-500'} animate-pulse`}></div>
+            <span className={`text-xs font-semibold ${isConnected ? (anomalyEngine.current.active ? 'text-red-400' : 'text-green-400') : 'text-red-400'}`}>
+              {isConnected ? (anomalyEngine.current.active ? 'Critical' : 'Live') : 'Offline'}
             </span>
           </div>
         </div>
@@ -194,40 +189,31 @@ export default function Home() {
                </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left Column: Telemetry */}
-          <div className="md:col-span-1">
-            <div className="sticky top-8">
-              <h2 className="text-lg font-semibold text-cyan-400 mb-4">Telemetry</h2>
-              <TelemetryCharts data={telemetryData} />
+              <div className="md:col-span-1">
+                <div className="sticky top-8">
+                  <h2 className="text-lg font-semibold text-cyan-400 mb-4">Telemetry</h2>
+                  <TelemetryCharts data={telemetryData} />
+                </div>
+              </div>
+
+              <div className="md:col-span-1 flex flex-col items-center">
+                <div className="w-full">
+                  <h2 className="text-lg font-semibold text-cyan-400 mb-6 text-center">Composite Operations Trust</h2>
+                  <TrustScoreGauge score={trustScore} />
+                  <MultiScoreDisplay scores={trustScores} />
+                  <PredictiveTimeline currentScore={trustScore} isDemo={isDemo} />
+                  <BusinessImpactAnalysis currentScore={trustScore} trustScores={trustScores} />
+                </div>
+              </div>
+
+              <div className="md:col-span-1">
+                <div className="sticky top-8">
+                  <h2 className="text-lg font-semibold text-cyan-400 mb-4">Intelligence</h2>
+                  <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Center Column: Scored Components */}
-          <div className="md:col-span-1 flex flex-col items-center">
-            <div className="w-full">
-              <h2 className="text-lg font-semibold text-cyan-400 mb-6 text-center">Composite Operations Trust</h2>
-              <TrustScoreGauge score={trustScore} />
-              
-              {/* New Multi-Score Component Below */}
-              <MultiScoreDisplay scores={trustScores} />
-
-              {/* Predictive Timeline Component Below */}
-              <PredictiveTimeline currentScore={trustScore} isDemo={isDemo} />
-
-              {/* Business Impact Analysis Component Below */}
-              <BusinessImpactAnalysis currentScore={trustScore} trustScores={trustScores} />
-            </div>
-          </div>
-
-          {/* Right Column: Security Copilot */}
-          <div className="md:col-span-1">
-            <div className="sticky top-8">
-              <h2 className="text-lg font-semibold text-cyan-400 mb-4">Intelligence</h2>
-              <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
-            </div>
-          </div>
-        </div>
-        </div>
         )}
       </main>
     </div>

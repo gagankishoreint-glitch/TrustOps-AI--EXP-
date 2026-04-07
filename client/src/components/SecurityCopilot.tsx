@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Target } from 'lucide-react';
+import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Target, GitMerge } from 'lucide-react';
 
 interface SecurityCopilotProps {
   trustScore: number;
@@ -13,9 +13,10 @@ interface ExplainableInsight {
   likelyCause: string;
   riskLevel: 'Stable' | 'Caution' | 'Critical';
   suggestedAction: string;
-  confidence: number;
   impactIfIgnored: string;
   timeToFailure: number;
+  rootCauseNodes: string[];
+  highlightIndex: number;
 }
 
 export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, recentAnomalies, isDemo = false }) => {
@@ -32,17 +33,36 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     const entries = Object.entries(scores) as [string, number][];
     const lowest = entries.reduce((prev, curr) => curr[1] < prev[1] ? curr : prev);
     
+    // Explicit Risk Classification System
     const typeMap: Record<string, string> = {
-      operational: 'Operational Friction',
-      security: 'Security Violation',
-      performance: 'Performance Bottleneck',
-      behavior: 'Anomalous User Behavior'
+      operational: 'Operational Risk',
+      security: 'Security Risk',
+      performance: 'Performance Risk',
+      behavior: 'Behavior Risk'
     };
     
-    const type = typeMap[lowest[0]] || 'Unknown Anomaly';
+    const type = typeMap[lowest[0]] || 'Operational Risk';
     const latency = tel.network_logs?.latency || 0;
     const freq = tel.display_logs?.frequency || 0;
     const finalScore = anomaly.engine_analysis.final_trust_score || 100;
+    
+    // Root Cause Chain Nodes
+    let rootNodes: string[] = [];
+    let hIndex = 1;
+
+    if (type === 'Operational Risk') {
+      rootNodes = ["Latency spike", "Display reload retries", "Admin overrides", "Trust score drop"];
+      hIndex = 1;
+    } else if (type === 'Performance Risk') {
+      rootNodes = ["Regional Server Degradation", "Network Bandwidth Limits", "Gateway Timeout", "Trust score drop"];
+      hIndex = 1;
+    } else if (type === 'Security Risk') {
+      rootNodes = ["Unrecognized Gateway ping", "Admin console exploit", "Database Lockdown", "Trust score drop"];
+      hIndex = 1;
+    } else {
+      rootNodes = ["Session Interaction Freeze", "Input Rate Drop", "Timeout Logged", "Trust score drop"];
+      hIndex = 0;
+    }
     
     // Evidence
     let evidence = `Sub-system fault detected.`;
@@ -52,47 +72,35 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
       evidence = `Display rendering dropped to ${freq}Hz concurrently with connectivity jitter.`;
     }
 
-    // Likely Cause
     let cause = "Hardware Malfunction";
     if (latency > 600) cause = "Severe Network Bandwidth Saturation";
     else if (freq < 150) cause = "Display Controller Desync / Memory Leak";
     
-    // Action
     let action = "Initiate full system diagnostic.";
     if (cause.includes("Network")) action = "Reroute display traffic via secondary network CDN.";
     if (cause.includes("Controller")) action = "Restart Display Controller #04";
 
-    // Impact & Time To Failure
     let impact = "Critical systemic failure.";
     if (lowest[0] === 'operational') impact = "Complete content outage across all local showrooms.";
     else if (lowest[0] === 'performance') impact = "Network gateway timeout causing multi-device desync.";
     else if (lowest[0] === 'security') impact = "Unauthorized hardware manipulation across sector.";
 
-    const timeToFailure = Math.max(1, Math.round(finalScore * 0.35)); // Math generating e.g. 20 minutes
-
-    // Confidence
+    const timeToFailure = Math.max(1, Math.round(finalScore * 0.35)); 
     const riskLevel = finalScore < 60 ? 'Critical' : 'Caution';
 
-    return { type, evidence, likelyCause: cause, suggestedAction: action, confidence: baseConfidence, riskLevel, impactIfIgnored: impact, timeToFailure };
+    return { type, evidence, likelyCause: cause, suggestedAction: action, riskLevel, impactIfIgnored: impact, timeToFailure, rootCauseNodes: rootNodes, highlightIndex: hIndex };
   };
 
   useEffect(() => {
-    if (recentAnomalies.length > 0 && trustScore < 80 && !insight && !loading) {
+    // Relying on real or simulated backend changes flowing down
+    if (recentAnomalies.length > 0 && trustScore < 85 && !insight && !loading) {
       setLoading(true);
-      if (isDemo) {
-        setTimeout(() => {
-          setInsight(deriveInsight(recentAnomalies[0]));
-          setDecisionState('pending');
-          setLoading(false);
-        }, 1100);
-      } else {
-        setTimeout(() => {
-          setInsight(deriveInsight(recentAnomalies[0]));
-          setDecisionState('pending');
-          setLoading(false);
-        }, 1100);
-      }
-    } else if (trustScore >= 80) {
+      setTimeout(() => {
+        setInsight(deriveInsight(recentAnomalies[0]));
+        setDecisionState('pending');
+        setLoading(false);
+      }, 900);
+    } else if (trustScore >= 85) {
       setInsight(null);
       setDecisionState('idle');
     }
@@ -128,7 +136,6 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
 
   return (
     <div className="space-y-4">
-      
       {/* Explainable AI Grid Panel */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
@@ -138,30 +145,55 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
         
         {loading ? (
           <div className="flex items-center justify-center p-8">
-            <p className="text-cyan-500 text-sm animate-pulse tracking-widest uppercase font-bold">Diagnosing Telemetry...</p>
+            <p className="text-cyan-500 text-sm animate-pulse tracking-widest uppercase font-bold">Diagnosing Organic Telemetry...</p>
           </div>
         ) : insight ? (
-          <div className="grid grid-cols-2 gap-3">
-            <InsightCard icon={<AlertTriangle className="w-4 h-4" />} color="text-purple-400" label="Anomaly Type" value={insight.type} />
-            <InsightCard icon={<ShieldAlert className="w-4 h-4" />} color={insight.riskLevel === 'Critical' ? 'text-red-500' : 'text-yellow-400'} label="Risk Level" value={insight.riskLevel} />
-            <div className="col-span-2">
-              <InsightCard icon={<Activity className="w-4 h-4" />} color="text-blue-400" label="Direct Evidence" value={insight.evidence} />
-            </div>
-            <InsightCard icon={<Search className="w-4 h-4" />} color="text-orange-400" label="Likely Cause" value={insight.likelyCause} />
-             <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between items-center text-center transition-all duration-300">
-              <div className="flex justify-center mb-1 text-green-400">
-                <Target className={`w-5 h-5 ${feedbackStatus === 'improving' ? 'animate-ping' : ''}`} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <InsightCard icon={<AlertTriangle className="w-4 h-4" />} color="text-purple-400" label="Risk Classification" value={insight.type} />
+              <InsightCard icon={<ShieldAlert className="w-4 h-4" />} color={insight.riskLevel === 'Critical' ? 'text-red-500' : 'text-yellow-400'} label="Severity" value={insight.riskLevel} />
+              <div className="col-span-2">
+                <InsightCard icon={<Activity className="w-4 h-4" />} color="text-blue-400" label="Direct Evidence" value={insight.evidence} />
               </div>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-green-400 mb-1">Confidence</p>
-              <p className="text-xl text-green-400 font-extrabold">{baseConfidence}%</p>
+            </div>
+
+            {/* Vertical Root Cause Chain */}
+            <div className="bg-black/60 border border-purple-900/30 rounded p-4 relative">
+               <h4 className="flex items-center gap-2 text-[10px] text-purple-400 uppercase font-bold tracking-widest mb-4">
+                 <GitMerge className="w-4 h-4" /> Root Cause Chain
+               </h4>
+               <div className="flex flex-col items-center">
+                 {insight.rootCauseNodes.map((node, i) => (
+                    <React.Fragment key={i}>
+                       <div className={`px-4 py-2 border rounded-full text-xs transition-colors ${i === insight.highlightIndex ? 'bg-red-950/50 border-red-500 text-red-400 font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'bg-gray-900 border-gray-800 text-gray-400'}`}>
+                         {node}
+                       </div>
+                       {i < insight.rootCauseNodes.length - 1 && (
+                         <div className="h-4 w-px bg-gray-700 my-1 relative">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] text-gray-600">↓</div>
+                         </div>
+                       )}
+                    </React.Fragment>
+                 ))}
+               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <InsightCard icon={<Search className="w-4 h-4" />} color="text-orange-400" label="Likely Cause" value={insight.likelyCause} />
+               <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between items-center text-center transition-all duration-300">
+                <div className="flex justify-center mb-1 text-green-400">
+                  <Target className={`w-5 h-5 ${feedbackStatus === 'improving' ? 'animate-ping' : ''}`} />
+                </div>
+                <p className="text-[10px] uppercase font-bold tracking-widest text-green-400 mb-1">Confidence</p>
+                <p className="text-xl text-green-400 font-extrabold">{baseConfidence}%</p>
+              </div>
             </div>
           </div>
         ) : (
-          <p className="text-gray-500 text-sm text-center py-6">Telemetry stabilized. No active anomalies.</p>
+          <p className="text-gray-500 text-sm py-6">Telemetry bounds are optimal. Autonomous tracking enabled.</p>
         )}
       </div>
 
-      {/* Feedback Learning Loop */}
       {insight && (
         <div className="bg-gray-900 rounded-lg p-3 border border-gray-800 flex items-center justify-between">
           <div>
@@ -193,7 +225,6 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
         </div>
       )}
 
-      {/* Decision Intelligence Panel / Human-in-Loop Execution */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
           <Zap className="w-5 h-5 text-yellow-400" />
@@ -201,7 +232,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
         </div>
         
         {decisionState === 'idle' || !insight ? (
-          <p className="text-gray-500 text-xs italic text-center py-4">Awaiting diagnostic resolution.</p>
+          <p className="text-gray-500 text-xs italic py-4">Awaiting diagnostic resolution.</p>
         ) : (
           <div className="space-y-4">
              <div className="bg-black/40 border border-gray-800 rounded p-3">
@@ -210,7 +241,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
              </div>
              
              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-black/40 border border-red-900/30 rounded p-3">
+                <div className="bg-black/40 border border-red-900/30 rounded p-3 flex flex-col justify-center">
                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Impact If Ignored</p>
                    <p className="text-gray-300 text-xs font-medium">{insight.impactIfIgnored}</p>
                 </div>

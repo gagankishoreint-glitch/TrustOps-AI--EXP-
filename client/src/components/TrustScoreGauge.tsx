@@ -44,24 +44,22 @@ export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
             transition={springConfig}
           />
 
-          {/* Needle with Micro-Vibration */}
+          {/* Needle with physical spring mounting */}
           <motion.g
-            animate={{ 
-              rotate: [angle - 0.2, angle + 0.2, angle] 
-            }}
-            transition={{
-              rotate: {
-                repeat: Infinity,
-                duration: 0.1,
-                repeatType: 'reverse'
-              },
-              ...springConfig // Still honors the overarching physical spring move
-            }}
-            style={{ transformOrigin: '50% 50%' }}
+            animate={{ rotate: angle }}
+            transition={springConfig}
+            style={{ transformOrigin: '50px 50px' }}
           >
-            {/* The physical dial shape */}
-            <path d="M 49 50 L 51 50 L 50 15 Z" fill="#9ca3af" />
-            <circle cx="50" cy="50" r="3" fill="#111827" stroke="#9ca3af" strokeWidth="1" />
+            {/* Nested wrapper for infinite sensor micro-vibration */}
+            <motion.g
+              animate={{ rotate: [-0.5, 0.5, -0.5] }}
+              transition={{ repeat: Infinity, duration: 0.08, ease: "linear" }}
+              style={{ transformOrigin: '50px 50px' }}
+            >
+              {/* The physical dial shape */}
+              <path d="M 49 50 L 51 50 L 50 15 Z" fill="#e5e7eb" />
+              <circle cx="50" cy="50" r="3" fill="#111827" stroke="#9ca3af" strokeWidth="1" />
+            </motion.g>
           </motion.g>
         </svg>
 

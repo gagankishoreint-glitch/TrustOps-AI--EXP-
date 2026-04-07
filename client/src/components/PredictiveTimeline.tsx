@@ -1,111 +1,84 @@
-import React, { useEffect, useState } from 'react';
-import { TrendingUp } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { TrendingDown, Clock, Activity } from 'lucide-react';
+import { TrustScores } from './MultiScoreDisplay';
 
 interface PredictiveTimelineProps {
   currentScore: number;
+  trustScores: TrustScores;
   isDemo?: boolean;
 }
 
-export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(({ currentScore, isDemo = false }) => {
-  const [projections, setProjections] = useState({
-    min10: 100,
-    min30: 100,
-    hour1: 100
-  });
+function project(score: number, deltaMinutes: number): number {
+  if (score >= 80) return score; // stable
+  const slope = score < 60 ? -2.5 : -1.8;
+  return Math.max(0, Math.round(score + slope * deltaMinutes));
+}
 
-  const [timeToFailure, setTimeToFailure] = useState<number | null>(null);
-  const [prevScore, setPrevScore] = useState(currentScore);
-  const [isRecovering, setIsRecovering] = useState(false);
+function nodeStyle(score: number) {
+  if (score >= 80) return { ring: '#00d4ff', text: 'text-cyan-400',  label: 'Stable',   bg: 'bg-cyan-950/40' };
+  if (score >= 60) return { ring: '#f59e0b', text: 'text-amber-400', label: 'Caution',  bg: 'bg-amber-950/40' };
+  return               { ring: '#ef4444', text: 'text-red-400',   label: 'Critical', bg: 'bg-red-950/40' };
+}
 
-  // Simplified forecasting simulation
-  useEffect(() => {
-    // Dynamic Scaler Velocity Logic
-    if (currentScore > prevScore + 3) setIsRecovering(true);
-    else if (currentScore < prevScore - 3) setIsRecovering(false);
-    setPrevScore(currentScore);
+export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(({ currentScore }) => {
+  const p10  = project(currentScore, 10);
+  const p30  = project(currentScore, 30);
+  const p60  = project(currentScore, 60);
+  const degrading = currentScore < 80;
 
-    // If we are under attack / friction (score dropped significantly)
-    if (currentScore < 80) {
-      if (isDemo) {
-        // Controlled decay for presentation purposes 
-        setProjections({
-          min10: Math.max(0, currentScore - 18),
-          min30: Math.max(0, currentScore - 45),
-          hour1: 0
-        });
-        setTimeToFailure(14); // Projected failure in 14 minutes
-      } else {
-        // Naive trend detection algorithm (Assuming ~ -1.5 slope)
-        const slope = -1.5; 
-        setProjections({
-          min10: Math.max(0, Math.round(currentScore + slope * 10)),
-          min30: Math.max(0, Math.round(currentScore + slope * 30)),
-          hour1: Math.max(0, Math.round(currentScore + slope * 60))
-        });
-        setTimeToFailure(Math.round((currentScore - 30) / Math.abs(slope)));
-      }
-    } else {
-      // Healthy state
-      setProjections({
-        min10: currentScore,
-        min30: currentScore,
-        hour1: currentScore
-      });
-      setTimeToFailure(null);
-    }
-  }, [currentScore, isDemo]);
+  const nodes = [
+    { label: 'Now',     score: currentScore },
+    { label: '+10 min', score: p10 },
+    { label: '+30 min', score: p30 },
+    { label: '+1 hr',   score: p60 },
+  ];
 
-  const getStatusColor = (score: number) => {
-    if (score >= 80) return 'text-cyan-400 border-cyan-400 bg-cyan-950/30';
-    if (score >= 50) return 'text-yellow-400 border-yellow-400 bg-yellow-950/30';
-    return 'text-red-500 border-red-500 bg-red-950/30';
-  };
-
-  const getStatusText = (score: number) => {
-    if (score >= 80) return 'Stable';
-    if (score >= 50) return 'Caution';
-    return 'Critical';
-  };
-
-  const TimelineNode = ({ time, score }: { time: string, score: number }) => (
-    <div className="flex flex-col items-center relative z-10">
-      <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold text-sm ${getStatusColor(score)}`}>
-        {score}
-      </div>
-      <p className="text-gray-400 text-xs mt-2">{time}</p>
-      <p className={`text-[10px] font-semibold uppercase mt-1 ${getStatusColor(score).split(' ')[0]}`}>
-        {getStatusText(score)}
-      </p>
-    </div>
-  );
+  const ttf = degrading ? Math.round((currentScore - 30) / 1.8) : null;
 
   return (
-    <div className="bg-gray-900 rounded-lg p-5 border border-gray-800 mt-6 w-full animate-in fade-in slide-in-from-bottom-3 duration-500">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 mb-6 border-b border-gray-800 pb-3">
+    <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-cyan-500" />
-          <h3 className="text-cyan-400 text-sm font-bold tracking-wide">Projected Risk Escalation</h3>
+          <TrendingDown className={`w-4 h-4 ${degrading ? 'text-amber-400' : 'text-cyan-400'}`} />
+          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Risk Trajectory</h3>
         </div>
-        {timeToFailure !== null && (
-          <div className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap text-center xl:text-right ${isRecovering ? 'bg-cyan-950/40 border border-cyan-500/50 text-cyan-500 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.2)]' : 'bg-red-950/40 border border-red-500/50 text-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]'}`}>
-            {isRecovering ? 'Status: Recovering (Stabilizing)' : `Projected failure in ${timeToFailure} minutes`}
+        {ttf !== null && (
+          <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/30 rounded-full px-3 py-1 animate-pulse">
+            <Clock className="w-3 h-3" />
+            Breach in ~{ttf} min
           </div>
         )}
       </div>
 
-      {/* Timeline Visual */}
-      <div className="relative flex justify-between items-start mt-8 px-4">
-        {/* Connecting Line */}
-        <div className="absolute top-6 left-10 right-10 h-0.5 bg-gray-800 z-0"></div>
-        {/* Dynamic Warning Line */}
-        {timeToFailure !== null && (
-          <div className="absolute top-6 left-10 right-10 h-0.5 bg-gradient-to-r from-yellow-500/50 to-red-500/80 z-0"></div>
+      {/* Timeline bar */}
+      <div className="relative flex items-center justify-between px-2">
+        {/* Track */}
+        <div className="absolute left-4 right-4 top-6 h-0.5 bg-white/[0.06]" />
+        {degrading && (
+          <motion.div
+            className="absolute left-4 right-4 top-6 h-0.5 bg-gradient-to-r from-amber-500/40 to-red-600/80"
+            initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1 }}
+            style={{ transformOrigin: 'left' }}
+          />
         )}
 
-        <TimelineNode time="Now" score={currentScore} />
-        <TimelineNode time="+10 min" score={projections.min10} />
-        <TimelineNode time="+30 min" score={projections.min30} />
-        <TimelineNode time="+1 hour" score={projections.hour1} />
+        {nodes.map(({ label, score }) => {
+          const s = nodeStyle(score);
+          return (
+            <div key={label} className="flex flex-col items-center z-10 gap-1.5">
+              <motion.div
+                animate={{ boxShadow: `0 0 10px ${s.ring}44` }}
+                className={`w-12 h-12 rounded-full border-2 flex items-center justify-center font-black text-sm tabular-nums ${s.bg} ${s.text}`}
+                style={{ borderColor: s.ring }}
+              >
+                {score}
+              </motion.div>
+              <p className="text-[10px] text-gray-500">{label}</p>
+              <p className={`text-[9px] font-bold uppercase ${s.text}`}>{s.label}</p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

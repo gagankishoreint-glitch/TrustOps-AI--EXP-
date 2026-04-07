@@ -1,83 +1,146 @@
-import React from 'react';
-import { Activity, Server, AlertTriangle, CheckCircle, MapPin, Building2, Shield, Power } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useShowroomStore } from '../store/useShowroomStore';
+import { Activity, Server, ShieldAlert, Zap, MapPin, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 
 interface FleetViewProps {
-  onSelectShowroom: (id: string, name: string) => void;
+  onSelectShowroom: (id: string) => void;
   isDemo?: boolean;
 }
 
-export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroom, isDemo = false }) => {
-  const { showrooms } = useShowroomStore();
-  const showroomArray = Object.values(showrooms);
+function MiniRing({ score, size = 56 }: { score: number; size?: number }) {
+  const r = (size / 2) - 6;
+  const circ = 2 * Math.PI * r;
+  const filled = (score / 100) * circ;
+  const color = score >= 90 ? '#00d4ff' : score >= 75 ? '#f59e0b' : score >= 60 ? '#f97316' : '#ef4444';
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-cyan-400 bg-cyan-950/20 border-cyan-500/30';
-    if (score >= 60) return 'text-yellow-400 bg-yellow-950/20 border-yellow-500/30';
-    return 'text-red-500 bg-red-950/20 border-red-500/30';
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e293b" strokeWidth="5" />
+      <motion.circle
+        cx={size / 2} cy={size / 2} r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        animate={{ strokeDashoffset: circ - filled, stroke: color }}
+        transition={{ type: 'spring', stiffness: 50, damping: 14 }}
+        style={{ filter: `drop-shadow(0 0 4px ${color}88)` }}
+      />
+    </svg>
+  );
+}
+
+export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroom }) => {
+  const { showrooms } = useShowroomStore();
+  const arr = Object.values(showrooms);
+
+  const summary = useMemo(() => ({
+    totalNodes: arr.reduce((s, r) => s + r.activeNodes, 0),
+    avgScore: Math.round(arr.reduce((s, r) => s + r.score, 0) / arr.length),
+    critical: arr.filter(r => r.status === 'Critical').length,
+    caution: arr.filter(r => r.status === 'Caution').length,
+  }), [arr]);
+
+  const statusCfg = {
+    Healthy:  { color: 'text-cyan-400',   border: 'border-cyan-500/30',   bg: 'bg-cyan-500/10',   dot: '#00d4ff', Icon: CheckCircle2 },
+    Stable:   { color: 'text-blue-400',   border: 'border-blue-500/30',   bg: 'bg-blue-500/10',   dot: '#60a5fa', Icon: CheckCircle2 },
+    Caution:  { color: 'text-amber-400',  border: 'border-amber-500/30',  bg: 'bg-amber-500/10',  dot: '#f59e0b', Icon: AlertTriangle },
+    Critical: { color: 'text-red-400',    border: 'border-red-500/30',    bg: 'bg-red-500/10',    dot: '#ef4444', Icon: XCircle },
   };
 
   return (
-    <div className="w-full flex-1">
-      <div className="mb-8 border-b border-gray-800 pb-4">
-        <h2 className="text-xl font-bold text-gray-100 flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-cyan-500" />
-          Enterprise Fleet Architecture
-        </h2>
-        <p className="text-gray-400 text-sm mt-1">Select a deployment node to view real-time contextual intelligence.</p>
-      </div>
+    <div className="h-full flex flex-col gap-6 p-6">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {showroomArray.map((room) => (
-          <div 
-            key={room.id}
-            onClick={() => onSelectShowroom(room.id, room.name)}
-            className="bg-gray-900 border border-gray-800 rounded-xl p-5 cursor-pointer hover:border-cyan-500/50 hover:bg-gray-800 transition-all duration-300 group"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">{room.name}</h3>
-              <div className={`w-2 h-2 rounded-full ${
-                room.status === 'Healthy' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' :
-                room.status === 'Stable' ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' :
-                room.status === 'Caution' ? 'bg-yellow-400 animate-pulse shadow-[0_0_8px_#facc15]' :
-                'bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]'
-              }`} />
+      {/* ── Top: Summary Bar ── */}
+      <div className="grid grid-cols-4 gap-4 shrink-0">
+        {[
+          { label: 'Total Nodes', value: summary.totalNodes, icon: Server, color: 'text-cyan-400' },
+          { label: 'Avg Trust Score', value: `${summary.avgScore}%`, icon: Activity, color: 'text-blue-400' },
+          { label: 'Caution Nodes', value: summary.caution, icon: AlertTriangle, color: 'text-amber-400' },
+          { label: 'Critical Nodes', value: summary.critical, icon: ShieldAlert, color: 'text-red-400' },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-4 flex items-center gap-4">
+            <div className={`p-2 rounded-lg bg-white/5 ${color}`}>
+              <Icon className="w-5 h-5" />
             </div>
-
-            <div className="flex items-end gap-3 mb-6">
-              <div className={`text-4xl font-black ${getScoreColor(room.score).split(' ')[0]}`}>
-                {room.score}
-              </div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest pb-1">Trust Score</p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500 flex items-center gap-1"><Server className="w-3 h-3" /> Active Nodes</span>
-                <span className="text-gray-300 font-semibold">{room.activeNodes}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500 flex items-center gap-1"><Activity className="w-3 h-3" /> Status</span>
-                <span className={
-                  room.status === 'Healthy' ? 'text-green-400' :
-                  room.status === 'Stable' ? 'text-cyan-400' :
-                  room.status === 'Caution' ? 'text-yellow-400 font-bold' :
-                  'text-red-400 font-bold'
-                }>{room.status}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Risk Level</span>
-                <span className={`px-2 py-0.5 rounded border ${getScoreColor(room.score)}`}>{room.risk}</span>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-800">
-               <button className="w-full py-2 bg-black/40 border border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-widest rounded group-hover:text-cyan-400 group-hover:border-cyan-900/50 transition-colors flex justify-center items-center gap-2">
-                 <Power className="w-3 h-3" /> Drill Down Diagnostics
-               </button>
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">{label}</p>
+              <p className={`text-2xl font-black tabular-nums ${color}`}>{value}</p>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* ── Showroom Cards ── */}
+      <div className="flex-1 min-h-0">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-5 h-full">
+          {arr.map((room) => {
+            const cfg = statusCfg[room.status];
+            return (
+              <motion.div
+                key={room.id}
+                whileHover={{ scale: 1.01, borderColor: 'rgba(0,212,255,0.3)' }}
+                onClick={() => onSelectShowroom(room.id)}
+                className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 cursor-pointer flex flex-col justify-between group transition-colors duration-200"
+                style={{ backdropFilter: 'blur(8px)' }}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <MapPin className="w-3 h-3 text-gray-500" />
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{room.region}</p>
+                    </div>
+                    <h3 className="text-gray-100 font-bold text-base leading-tight group-hover:text-cyan-400 transition-colors">{room.name}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{room.city}</p>
+                  </div>
+                  <motion.div
+                    className="w-2.5 h-2.5 rounded-full mt-1"
+                    style={{ backgroundColor: cfg.dot, boxShadow: `0 0 8px ${cfg.dot}88` }}
+                    animate={{ opacity: room.status === 'Critical' || room.status === 'Caution' ? [1, 0.3, 1] : 1 }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  />
+                </div>
+
+                {/* Score Ring + Score */}
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="relative flex-shrink-0">
+                    <MiniRing score={room.score} size={64} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className={`text-sm font-black tabular-nums ${cfg.color}`}>{room.score}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Trust Score</p>
+                    <div className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${cfg.border} ${cfg.bg} ${cfg.color}`}>
+                      <cfg.Icon className="w-2.5 h-2.5" />
+                      {room.status}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metrics */}
+                <div className="space-y-2 border-t border-white/[0.06] pt-4">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500 flex items-center gap-1"><Server className="w-3 h-3" /> Active Nodes</span>
+                    <span className="text-gray-300 font-mono font-bold">{room.activeNodes}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500 flex items-center gap-1"><Zap className="w-3 h-3" /> Risk Level</span>
+                    <span className={`font-bold ${cfg.color}`}>{room.risk}</span>
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <button className="mt-4 w-full py-2 rounded-lg border border-white/[0.07] bg-white/[0.03] text-gray-500 text-[10px] font-bold uppercase tracking-widest group-hover:border-cyan-500/40 group-hover:text-cyan-400 group-hover:bg-cyan-500/5 transition-all duration-200">
+                  Open Intelligence View →
+                </button>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

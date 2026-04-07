@@ -254,116 +254,110 @@ export default function Home() {
   const isWarning = reactiveTrustScore < 80;
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-gray-950 text-gray-100 flex flex-col">
-      {/* Header — shrink-0 so it never compresses */}
-      <header className="shrink-0 border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm z-50 px-6 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {activeLocation && (
-              <button
-                onClick={() => {
-                setActiveLocation(null);
-                setManualOverride(false); // Clear override badge when exiting showroom
-              }}
-                className="text-[10px] bg-gray-800 border border-gray-700 px-3 py-1.5 rounded uppercase tracking-widest text-cyan-500 hover:bg-gray-700 font-bold flex items-center gap-2 transition-colors"
-              >
-                ← Fleet
-              </button>
-            )}
-            <div>
-              <h1 className="text-xl font-bold text-cyan-400 leading-none">
-                TrustOps AI
-                {activeLocation && <span className="text-gray-300 font-normal text-base ml-2">/ {activeLocation}</span>}
-              </h1>
-              <p className="text-gray-500 text-[10px] font-bold tracking-widest uppercase mt-0.5">
-                Intelligence Layer ABOVE Existing Systems
-                {isDemo && <span className="text-yellow-500 ml-2">· Demo</span>}
-                {manualOverride && activeLocation && <span className="text-red-500 animate-pulse ml-2">· Manual Override</span>}
-              </p>
-            </div>
-          </div>
+    <div className="h-screen w-full overflow-hidden flex flex-col" style={{ background: '#080c14', color: '#e2e8f0' }}>
 
-          <div className="flex items-center gap-3">
-            {/* Live latency badge */}
-            {activeLocation && avgLatency > 0 && (
-              <div className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${
-                avgLatency > 1200 ? 'text-red-400 border-red-500/50 bg-red-950/30 animate-pulse' : 'text-gray-400 border-gray-700'
-              }`}>
-                Avg Latency: {Math.round(avgLatency)}ms
-              </div>
-            )}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-semibold ${
-              isCritical ? 'border-red-500 bg-red-950/20 text-red-400' :
-              isWarning ? 'border-yellow-500 bg-yellow-950/20 text-yellow-400' :
-              'border-green-500 bg-green-950/20 text-green-400'
-            }`}>
-              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isCritical ? 'bg-red-500' : isWarning ? 'bg-yellow-500' : 'bg-green-500'}`} />
-              {isCritical ? 'Critical' : isWarning ? 'Degraded' : 'Live'}
+      {/* ── HEADER ── */}
+      <header className="shrink-0 z-50 px-6 py-3 flex items-center justify-between"
+        style={{ background: 'rgba(8,12,20,0.9)', borderBottom: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
+
+        <div className="flex items-center gap-4">
+          {activeLocation && (
+            <button
+              onClick={() => { setActiveLocation(null); setManualOverride(false); }}
+              className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all duration-150"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#00d4ff' }}
+            >
+              ← Fleet
+            </button>
+          )}
+          <div>
+            <h1 className="text-lg font-black tracking-tight" style={{ color: '#00d4ff', lineHeight: 1 }}>
+              TrustOps AI
+              {activeLocation && (
+                <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.9rem' }}>
+                  &nbsp;/&nbsp;{activeLocation}
+                </span>
+              )}
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: '#334155' }}>
+              Decision Intelligence Layer
+              {isDemo && <span style={{ color: '#f59e0b', marginLeft: '0.5rem' }}>· DEMO</span>}
+              {manualOverride && activeLocation && (
+                <span style={{ color: '#ef4444', marginLeft: '0.5rem' }} className="animate-pulse">· MANUAL OVERRIDE</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {activeLocation && avgLatency > 0 && (
+            <div className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg"
+              style={{
+                background: avgLatency > 1200 ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${avgLatency > 1200 ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                color: avgLatency > 1200 ? '#ef4444' : '#64748b'
+              }}>
+              {Math.round(avgLatency)} ms
             </div>
+          )}
+          <div className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2"
+            style={{
+              background: isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(245,158,11,0.08)' : 'rgba(0,212,255,0.06)',
+              border: `1px solid ${isCritical ? 'rgba(239,68,68,0.4)' : isWarning ? 'rgba(245,158,11,0.35)' : 'rgba(0,212,255,0.3)'}`,
+              color: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#00d4ff',
+            }}>
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#00d4ff' }} />
+            {isCritical ? 'Critical' : isWarning ? 'Degraded' : 'Live'}
           </div>
         </div>
       </header>
 
-      {/* Main content — flex-1 takes all remaining height */}
+      {/* ── MAIN ── */}
       <main className="flex-1 min-h-0 overflow-hidden">
         {!activeLocation ? (
-          // Fleet View — scrollable inside the constrained height
-          <div className="h-full overflow-y-auto p-6">
+          <div className="h-full overflow-y-auto">
             <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} />
           </div>
         ) : (
-          // 3-Column Detail View — strictly h-full, no overflow
-          <div className="h-full grid grid-cols-3 gap-0 divide-x divide-gray-800/60">
+          <div className="h-full grid grid-cols-3" style={{ gap: 0, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
 
-            {/* ── Column 1: TELEMETRY ── */}
-            <div className="flex flex-col min-h-0 p-4 gap-3">
-              <div className="shrink-0">
-                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Live Telemetry</p>
+            {/* ── Col 1: TELEMETRY ── */}
+            <div className="flex flex-col min-h-0" style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="shrink-0 px-4 pt-4 pb-2">
+                <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#334155' }}>Live Telemetry</p>
               </div>
-              {/* Charts take all remaining space */}
-              <div className="flex-1 min-h-0 bg-gray-900/50 rounded-lg border border-gray-800 overflow-hidden">
+              <div className="flex-1 min-h-0">
                 <TelemetryCharts data={telemetryWindow} />
               </div>
             </div>
 
-            {/* ── Column 2: TRUST MATRIX ── */}
-            <div className="flex flex-col min-h-0 p-4 gap-3">
-              {/* Gauge */}
-              <div className="shrink-0 bg-gray-900/50 rounded-lg border border-gray-800 p-4 flex flex-col items-center">
-                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-3">Composite Operations Trust</p>
+            {/* ── Col 2: TRUST ENGINE ── */}
+            <div className="flex flex-col min-h-0 p-4 gap-3 overflow-y-auto" style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="shrink-0 rounded-2xl p-4 flex flex-col items-center"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <p className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color: '#334155' }}>Composite Trust Score</p>
                 <TrustScoreGauge score={reactiveTrustScore} />
               </div>
-
-              {/* Sub-score bars */}
-              <div className="flex-1 min-h-0 bg-gray-900/50 rounded-lg border border-gray-800 p-4 overflow-y-auto">
+              <div className="shrink-0 rounded-2xl p-4"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <MultiScoreDisplay scores={reactiveTrustScores} />
               </div>
-
-              {/* Projected Risk — always visible */}
-              <div className="shrink-0 bg-gray-900/50 rounded-lg border border-gray-800 overflow-hidden">
-                <PredictiveTimeline currentScore={reactiveTrustScore} isDemo={isDemo} />
+              <div className="shrink-0">
+                <PredictiveTimeline currentScore={reactiveTrustScore} trustScores={reactiveTrustScores} isDemo={isDemo} />
               </div>
             </div>
 
-            {/* ── Column 3: INTELLIGENCE ── */}
+            {/* ── Col 3: INTELLIGENCE ── */}
             <div className="flex flex-col min-h-0 p-4 gap-3 overflow-y-auto">
-              {/* XAI Engine */}
-              <div className="shrink-0">
-                <SecurityCopilot
-                  trustScore={reactiveTrustScore}
-                  recentAnomalies={recentAnomalies}
-                  isDemo={isDemo}
-                />
-              </div>
-
-              {/* Business Impact — anchored at bottom, only visible when failing */}
-              <div className="shrink-0">
-                <BusinessImpactAnalysis
-                  currentScore={reactiveTrustScore}
-                  trustScores={reactiveTrustScores}
-                />
-              </div>
+              <SecurityCopilot
+                trustScore={reactiveTrustScore}
+                recentAnomalies={recentAnomalies}
+                isDemo={isDemo}
+              />
+              <BusinessImpactAnalysis trustScore={reactiveTrustScore} />
             </div>
+
           </div>
         )}
       </main>

@@ -1,119 +1,67 @@
-import React, { useMemo } from 'react';
-import { AlertCircle, Clock, Users, Activity, TrendingDown, Shield } from 'lucide-react';
-import { calculateJointProbability } from '../utils/predictiveEngine';
-import { TrustScores } from './MultiScoreDisplay';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { TrendingDown, Banknote, Timer, BarChart3 } from 'lucide-react';
 
 interface BusinessImpactAnalysisProps {
-  currentScore: number;
-  trustScores: TrustScores;
+  trustScore: number;
+  latencySpikeDuration?: number;
 }
 
-export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = React.memo(({ currentScore, trustScores }) => {
-  // Only show when there is a real impact to report
-  if (currentScore >= 80) return null;
+function downtime(score: number): string {
+  if (score >= 90) return '< 1 min';
+  if (score >= 75) return `${Math.round((90 - score) * 0.5)} min`;
+  if (score >= 60) return `${Math.round((90 - score) * 1.2)} min`;
+  return `${Math.round((90 - score) * 2.1)} min`;
+}
 
-  const impactMetrics = useMemo(() => {
-    // 1. Customer Experience Risk
-    const opsDrop = 100 - trustScores.operational;
-    const engagementLoss = Math.max(0, Math.round(opsDrop * 0.35)); // 35% projection coefficient
-    let cxRisk = "Omnichannel engagement nominal.";
-    if (engagementLoss > 0) {
-      if (trustScores.operational <= trustScores.performance) {
-        cxRisk = `Display instability may reduce showroom engagement by ${engagementLoss}%`;
-      } else {
-        cxRisk = `Network latency likely to reduce interactive engagement by ${engagementLoss}%`;
-      }
-    }
+function revenue(score: number): string {
+  if (score >= 90) return '₹ 0';
+  const val = (100 - score) * 12400;
+  return `₹ ${val.toLocaleString('en-IN')}`;
+}
 
-    // 2. Operational Efficiency Impact
-    const perfDrop = 100 - trustScores.performance;
-    const efficiencyLoss = Math.max(0, Math.round(perfDrop * 0.45));
-    const efficiencyImpact = efficiencyLoss > 0 ? `Routine baseline efficiency dropping by ${efficiencyLoss}%` : "Staff efficiency nominal.";
+function severity(score: number) {
+  if (score >= 90) return { label: 'All Systems Nominal', color: 'text-cyan-400', border: 'border-cyan-500/30', bg: 'bg-cyan-500/5' };
+  if (score >= 75) return { label: 'Marginal Impact',     color: 'text-blue-400',  border: 'border-blue-500/30',  bg: 'bg-blue-500/5' };
+  if (score >= 60) return { label: 'Moderate Disruption', color: 'text-amber-400', border: 'border-amber-500/30', bg: 'bg-amber-500/5' };
+  return               { label: 'Severe Operational Risk', color: 'text-red-400',   border: 'border-red-500/30',   bg: 'bg-red-500/5' };
+}
 
-    // 3. Estimated Downtime & Prevented
-    let downtime = "0 Minutes";
-    let downtimePrevented = "0 Minutes";
-    if (currentScore < 80) {
-      downtime = `${Math.max(1, Math.round((80 - currentScore) * 0.5))} Minutes`;
-      downtimePrevented = `${Math.max(45, Math.round((100 - currentScore) * 2.5))} Minutes`;
-    }
-
-    // 4. Severity Level
-    let severity = 'Low';
-    if (currentScore < 50) severity = 'Critical';
-    else if (currentScore < 70) severity = 'Severe';
-    else if (currentScore < 85) severity = 'Moderate';
-
-    const getSeverityColor = (sev: string) => {
-       if (sev === 'Critical') return 'text-red-500';
-       if (sev === 'Severe') return 'text-orange-500';
-       if (sev === 'Moderate') return 'text-yellow-400';
-       return 'text-green-500';
-    }
-
-    return { cxRisk, efficiencyImpact, downtime, downtimePrevented, severity, severityColor: getSeverityColor(severity) };
-  }, [currentScore, trustScores]);
-
-  // Hide or minimize when system is perfectly healthy
-  if (currentScore >= 95) {
-    return (
-      <div className="bg-gray-900 rounded-lg p-3 border border-gray-800 mt-6 w-full opacity-60">
-        <p className="text-gray-500 text-xs text-center">Business Impact: Nominal / Systems Stable</p>
-      </div>
-    );
-  }
+export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ trustScore }) => {
+  const sev = severity(trustScore);
+  const isNominal = trustScore >= 90;
 
   return (
-    <div className="bg-gray-900 rounded-lg p-5 border border-red-900/30 mt-6 w-full animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
-        <TrendingDown className="w-5 h-5 text-orange-400" />
-        <h3 className="text-orange-400 text-sm font-bold tracking-wide">Business Impact Analysis</h3>
-        <span className={`ml-auto px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border bg-black/40 ${impactMetrics.severityColor.replace('text-', 'border-').replace('500', '500/50')} ${impactMetrics.severityColor}`}>
-          {impactMetrics.severity} Risk
+    <motion.div
+      className={`bg-white/[0.02] border ${sev.border} rounded-2xl p-4`}
+      animate={{ borderColor: isNominal ? 'rgba(6,182,212,0.3)' : 'rgba(239,68,68,0.3)' }}
+      transition={{ duration: 1 }}
+    >
+      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
+        <BarChart3 className={`w-4 h-4 ${sev.color}`} />
+        <h3 className={`text-xs font-bold uppercase tracking-widest ${sev.color}`}>Business Impact</h3>
+        <span className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${sev.border} ${sev.bg} ${sev.color}`}>
+          {sev.label}
         </span>
       </div>
 
-      <div className="space-y-4">
-        {/* Customer Experience block */}
-        <div className="bg-black/40 border border-gray-800 rounded p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="w-4 h-4 text-purple-400" />
-            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Customer Experience Risk</p>
-          </div>
-          <p className="text-gray-200 text-sm font-medium">{impactMetrics.cxRisk}</p>
-        </div>
-
-        {/* Operational Efficiency */}
-        <div className="bg-black/40 border border-gray-800 rounded p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Activity className="w-4 h-4 text-blue-400" />
-            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Operational Efficiency Impact</p>
-          </div>
-          <p className="text-gray-200 text-sm font-medium">{impactMetrics.efficiencyImpact}</p>
-        </div>
-
-        {/* Estimated Downtime */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-black/40 border border-red-900/20 rounded p-3 text-center">
-            <div className="flex justify-center items-center gap-2 mb-1">
-              <Clock className="w-4 h-4 text-red-500" />
-              <p className="text-[10px] text-red-500 uppercase font-bold tracking-widest">Estimated Downtime</p>
+      {isNominal ? (
+        <p className="text-gray-600 text-xs text-center py-2">No disruption detected. Uptime maintained.</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { icon: Timer,      label: 'Est. Downtime',     value: downtime(trustScore),  color: 'text-amber-400' },
+            { icon: Banknote,   label: 'Revenue Risk',      value: revenue(trustScore),   color: 'text-red-400'   },
+            { icon: TrendingDown, label: 'Recovery Time',   value: `${Math.round((100 - trustScore) * 0.6)} min`, color: 'text-violet-400' },
+          ].map(({ icon: Icon, label, value, color }) => (
+            <div key={label} className="bg-black/30 border border-white/[0.04] rounded-xl p-2.5 text-center">
+              <Icon className={`w-4 h-4 ${color} mx-auto mb-1`} />
+              <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">{label}</p>
+              <p className={`text-sm font-black tabular-nums ${color}`}>{value}</p>
             </div>
-            <p className="text-red-400 font-extrabold text-2xl">{impactMetrics.downtime}</p>
-            <p className="text-[10px] text-red-500/70 mt-1 uppercase font-bold">Projected blackout</p>
-          </div>
-
-          <div className="bg-green-950/20 border border-green-900/40 rounded p-3 text-center shadow-[0_0_15px_rgba(34,197,94,0.15)] relative overflow-hidden">
-             <div className="absolute inset-0 bg-green-500/5 animate-pulse"></div>
-             <div className="flex justify-center items-center gap-2 mb-1 relative">
-               <Shield className="w-4 h-4 text-green-500" />
-               <p className="text-[10px] text-green-500 uppercase font-bold tracking-widest">Downtime Prevented</p>
-             </div>
-             <p className="text-green-400 font-extrabold text-2xl relative">{impactMetrics.downtimePrevented}</p>
-             <p className="text-[10px] text-green-500/70 mt-1 uppercase font-bold relative">Resolved by AI Insight</p>
-          </div>
+          ))}
         </div>
-      </div>
-    </div>
+      )}
+    </motion.div>
   );
-});
+};

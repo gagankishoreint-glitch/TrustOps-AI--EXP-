@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Target, GitMerge } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { AlertCircle, Zap, GitMerge, ShieldAlert, Search, Target, CheckCircle } from 'lucide-react';
 import { getRootCauseChain } from '../utils/rootCauseEngine';
 import { contextualScaleRisk } from '../utils/predictiveEngine';
 
@@ -9,7 +9,7 @@ interface SecurityCopilotProps {
   isDemo?: boolean;
 }
 
-interface ExplainableInsight {
+interface Insight {
   type: string;
   evidence: string;
   likelyCause: string;
@@ -18,284 +18,255 @@ interface ExplainableInsight {
   impactIfIgnored: string;
   timeToFailure: number;
   rootCauseNodes: string[];
-  highlightIndex: number;
+  confidence: number;
 }
 
-export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ trustScore, recentAnomalies, isDemo = false }) => {
-  const [insight, setInsight] = useState<ExplainableInsight | null>(null);
-  const [decisionState, setDecisionState] = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
-  const [loading, setLoading] = useState(false);
-  const [baseConfidence, setBaseConfidence] = useState(75);
-  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'improving' | 'recalibrating'>('idle');
-  const hasTriggeredRef = React.useRef(false); // prevents re-triggering on every tick
+function deriveInsight(anomaly: any): Insight {
+  const scores = anomaly.engine_analysis?.trust_scores ?? { operational: 100, performance: 100, security: 100, behavior: 100 };
+  const tel    = anomaly.raw_telemetry;
+  const latency  = tel?.network_logs?.latency   ?? 0;
+  const freq     = tel?.display_logs?.frequency  ?? 0;
+  const finalScore = anomaly.engine_analysis?.final_trust_score ?? 100;
 
-  const deriveInsight = (anomaly: any): ExplainableInsight => {
-    const scores = anomaly.engine_analysis.trust_scores || { operational: 100, performance: 100, security: 100, behavior: 100 };
-    const tel = anomaly.raw_telemetry;
-    
-    const entries = Object.entries(scores) as [string, number][];
-    const lowest = entries.reduce((prev, curr) => curr[1] < prev[1] ? curr : prev);
-    
-    // Explicit Risk Classification System
-    const typeMap: Record<string, string> = {
-      operational: 'Operational Risk',
-      security: 'Security Risk',
-      performance: 'Performance Risk',
-      behavior: 'Behavior Risk'
-    };
-    
-    const type = typeMap[lowest[0]] || 'Operational Risk';
-    const latency = tel.network_logs?.latency || 0;
-    const freq = tel.display_logs?.frequency || 0;
-    const finalScore = anomaly.engine_analysis.final_trust_score || 100;
-    
-    // Root Cause Chain Nodes (Dynamic Mentor Request)
-    const rootNodes = getRootCauseChain(scores);
-    const hIndex = type === 'Behavior Risk' ? 0 : 1; // Arbitrary dynamic highlight
-    
-    let cause = "Hardware Malfunction";
-    let action = "Initiate full system diagnostic.";
-    let evidence = "";
+  const entries = Object.entries(scores) as [string, number][];
+  const lowest  = entries.reduce((p, c) => c[1] < p[1] ? c : p);
 
-    if (type === 'Behavior Risk' || type === 'Operational Risk') {
-      cause = "Abnormal login density correlated with downstream network throttling.";
-      action = "Isolate physical interface and force remote session invalidation.";
-    } else if (type === 'Performance Risk') {
-      cause = "Regional edge node degrading under unoptimized payload.";
-      action = "Reroute display assets to secondary CDN pipeline.";
-    }
-
-    let currentAnomaly = type;
-    if (finalScore < 60) {
-      currentAnomaly = 'Critical';
-      cause = 'Gateway Timeout';
-      evidence = `Detection: Gateway Timeout. Confidence: 87%`;
-    } else {
-      evidence = `Detection: ${currentAnomaly}. Confidence: ${Math.round(80 + Math.random() * 15)}%`;
-    } 
-    
-    let impact = "Critical systemic failure.";
-    if (lowest[0] === 'operational') impact = "Complete content outage across all local showrooms.";
-    else if (lowest[0] === 'performance') impact = "Network gateway timeout causing multi-device desync.";
-    else if (lowest[0] === 'security') impact = "Unauthorized hardware manipulation across sector.";
-
-    const timeToFailure = Math.max(1, Math.round(finalScore * 0.35)); 
-    const baseRiskLevel = finalScore < 60 ? 'Critical' : 'Caution';
-
-    // The Contextual Engine Interceptor
-    const { scaledType, scaledRiskLevel, evidenceOverride } = contextualScaleRisk(currentAnomaly, latency, freq, baseRiskLevel);
-
-    return { 
-      type: scaledType, 
-      evidence: evidenceOverride || evidence, 
-      likelyCause: cause, 
-      suggestedAction: action, 
-      riskLevel: scaledRiskLevel, 
-      impactIfIgnored: impact, 
-      timeToFailure, 
-      rootCauseNodes: rootNodes, 
-      highlightIndex: hIndex 
-    };
+  const typeMap: Record<string, string> = {
+    operational: 'Operational Risk',
+    security:    'Security Breach Risk',
+    performance: 'Performance Degradation',
+    behavior:    'Anomalous User Behaviour',
   };
 
+  let type   = typeMap[lowest[0]] ?? 'Operational Risk';
+  let cause  = 'Hardware malfunction or misconfiguration.';
+  let action = 'Initiate full system diagnostic.';
+  let impact = 'Critical systemic failure.';
+
+  if (lowest[0] === 'behavior') {
+    cause  = 'Abnormal admin login density correlated with downstream network throttling.';
+    action = 'Isolate physical interface and force remote session invalidation.';
+    impact = 'Unauthorized content modification across all display endpoints.';
+  } else if (lowest[0] === 'performance') {
+    cause  = 'Regional edge node degrading under unoptimised payload routing.';
+    action = 'Reroute display assets to secondary CDN pipeline.';
+    impact = 'Network gateway timeout causing multi-device desync.';
+  } else if (lowest[0] === 'security') {
+    cause  = 'Unrecognised device fingerprint accessing restricted display management API.';
+    action = 'Revoke API tokens and enforce 2FA re-auth on all active admin sessions.';
+    impact = 'Unauthorised hardware manipulation across sector.';
+  }
+
+  const riskLevel: Insight['riskLevel'] = finalScore < 60 ? 'Critical' : 'Caution';
+  const evidence = finalScore < 60
+    ? `Detection: Gateway Timeout + Session Anomaly. Confidence: ${87 + Math.round(Math.random() * 8)}%`
+    : `Detection: ${type}. Confidence: ${78 + Math.round(Math.random() * 15)}%`;
+
+  const rootNodes = getRootCauseChain(scores);
+  const { scaledType, scaledRiskLevel, evidenceOverride } = contextualScaleRisk(type, latency, freq, riskLevel);
+  const confidence = Math.min(99, 70 + Math.round((100 - finalScore) * 0.4));
+
+  return {
+    type: scaledType,
+    evidence: evidenceOverride ?? evidence,
+    likelyCause: cause,
+    riskLevel: scaledRiskLevel,
+    suggestedAction: action,
+    impactIfIgnored: impact,
+    timeToFailure: Math.max(1, Math.round(finalScore * 0.35)),
+    rootCauseNodes: rootNodes,
+    confidence,
+  };
+}
+
+const SEVERITY_CFG = {
+  Stable:   { border: 'border-cyan-500/40',   bg: 'bg-cyan-500/10',   text: 'text-cyan-400',   label: 'INFO'     },
+  Caution:  { border: 'border-amber-500/40',  bg: 'bg-amber-500/10',  text: 'text-amber-400',  label: 'WARNING'  },
+  Critical: { border: 'border-red-500/40',    bg: 'bg-red-500/10',    text: 'text-red-400',    label: 'CRITICAL' },
+};
+
+export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ trustScore, recentAnomalies }) => {
+  const [insight,       setInsight]       = useState<Insight | null>(null);
+  const [decision,      setDecision]      = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
+  const [loading,       setLoading]       = useState(false);
+  const [feedback,      setFeedback]      = useState<'idle' | 'improving' | 'recalibrating'>('idle');
+  const triggered = useRef(false);
+
   useEffect(() => {
-    // Fire XAI when score drops below 80 (caution threshold)
     if (trustScore < 80 && recentAnomalies.length > 0) {
-      if (!hasTriggeredRef.current && !loading) {
-        hasTriggeredRef.current = true; // Lock — prevent re-trigger each second
+      if (!triggered.current && !loading) {
+        triggered.current = true;
         setLoading(true);
         setTimeout(() => {
           setInsight(deriveInsight(recentAnomalies[0]));
-          setDecisionState('pending');
+          setDecision('pending');
           setLoading(false);
-        }, 600);
+        }, 700);
       }
     }
-
-    // System recovered — reset and clear
     if (trustScore >= 88) {
-      hasTriggeredRef.current = false;
+      triggered.current = false;
       setInsight(null);
-      setDecisionState('idle');
+      setDecision('idle');
     }
   }, [trustScore, recentAnomalies]);
 
-  const handleExecuteAction = () => {
-    setDecisionState('executing');
-    setTimeout(() => {
-      setDecisionState('executed');
-    }, 1800);
-  };
+  const sev = insight ? SEVERITY_CFG[insight.riskLevel] : null;
 
-  const handleFeedback = (isHelpful: boolean) => {
-    if (isHelpful) {
-      setBaseConfidence(prev => Math.min(99, prev + 6));
-      setFeedbackStatus('improving');
-    } else {
-      setBaseConfidence(prev => Math.max(50, prev - 4));
-      setFeedbackStatus('recalibrating');
-    }
-    setTimeout(() => setFeedbackStatus('idle'), 3000);
-  };
-
-  const InsightCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) => (
-    <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between">
-      <div className={`flex items-center gap-2 mb-2 ${color}`}>
-        {icon}
-        <span className="text-[10px] uppercase font-bold tracking-widest">{label}</span>
+  const Card = ({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) => (
+    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3">
+      <div className={`flex items-center gap-1.5 mb-2 ${color}`}>
+        <Icon className="w-3.5 h-3.5" />
+        <span className="text-[9px] uppercase font-bold tracking-widest">{label}</span>
       </div>
-      <p className="text-xs text-gray-300 font-medium leading-relaxed">{value}</p>
+      <p className="text-xs text-gray-300 leading-relaxed">{value}</p>
     </div>
   );
 
   return (
-    <div className="space-y-4">
-      {/* Explainable AI Grid Panel */}
-      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800 relative shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
-          <AlertCircle className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-cyan-400 text-sm font-bold tracking-wide">Explainable AI (XAI) Engine</h3>
-          {/* Badge UI Confidence Layer */}
+    <div className="flex flex-col gap-3">
+      {/* ── XAI Engine Panel ── */}
+      <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
+          <AlertCircle className="w-4 h-4 text-cyan-400" />
+          <h3 className="text-cyan-400 text-xs font-bold uppercase tracking-widest">Explainable AI Engine</h3>
+          {sev && (
+            <span className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${sev.border} ${sev.bg} ${sev.text}`}>
+              {sev.label}
+            </span>
+          )}
           {insight && (
-             <div className="ml-auto inline-flex items-center justify-center bg-cyan-950/60 border border-cyan-500/50 rounded-full px-3 py-1 animate-pulse">
-                <span className="text-cyan-400 font-black text-[10px] uppercase tracking-widest">Confidence: {baseConfidence}%</span>
-             </div>
+            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 ml-1">
+              Confidence: {insight.confidence}%
+            </span>
           )}
         </div>
-        
-        {loading ? (
-          <div className="flex items-center justify-center p-8">
-            <p className="text-cyan-500 text-sm animate-pulse tracking-widest uppercase font-bold">Diagnosing Organic Telemetry...</p>
+
+        {loading && (
+          <div className="flex items-center gap-3 py-6 justify-center">
+            <div className="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-cyan-500 text-xs font-bold uppercase tracking-widest animate-pulse">Diagnosing Telemetry…</p>
           </div>
-        ) : insight ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <InsightCard icon={<AlertTriangle className="w-4 h-4" />} color="text-purple-400" label="Risk Classification" value={insight.type} />
-              <InsightCard icon={<ShieldAlert className="w-4 h-4" />} color={insight.riskLevel === 'Critical' ? 'text-red-500' : 'text-yellow-400'} label="Severity" value={insight.riskLevel} />
+        )}
+
+        {!loading && !insight && (
+          <p className="text-gray-600 text-xs py-4 text-center">Telemetry bounds are optimal. Autonomous tracking enabled.</p>
+        )}
+
+        {!loading && insight && (
+          <div className="space-y-3">
+            {/* 2-col insight cards */}
+            <div className="grid grid-cols-2 gap-2">
+              <Card icon={ShieldAlert} label="Risk Type"  value={insight.type}      color="text-violet-400" />
+              <Card icon={AlertCircle} label="Severity"   value={insight.riskLevel} color={sev?.text ?? 'text-red-400'} />
               <div className="col-span-2">
-                <InsightCard icon={<Activity className="w-4 h-4" />} color="text-blue-400" label="Direct Evidence" value={insight.evidence} />
+                <Card icon={Search} label="Direct Evidence" value={insight.evidence} color="text-blue-400" />
               </div>
             </div>
 
-            {/* Vertical Root Cause Chain */}
-            <div className="bg-black/60 border border-purple-900/30 rounded p-4 relative">
-               <h4 className="flex items-center gap-2 text-[10px] text-purple-400 uppercase font-bold tracking-widest mb-4">
-                 <GitMerge className="w-4 h-4" /> Root Cause Chain
-               </h4>
-               <div className="flex flex-col items-center">
-                 {insight.rootCauseNodes.map((node, i) => (
-                    <React.Fragment key={i}>
-                       <div className={`px-4 py-2 border rounded-full text-xs transition-colors ${i === insight.highlightIndex ? 'bg-red-950/50 border-red-500 text-red-400 font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'bg-gray-900 border-gray-800 text-gray-400'}`}>
-                         {node}
-                       </div>
-                       {i < insight.rootCauseNodes.length - 1 && (
-                         <div className="h-4 w-px bg-gray-700 my-1 relative">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] text-gray-600">↓</div>
-                         </div>
-                       )}
-                    </React.Fragment>
-                 ))}
-               </div>
+            {/* Root Cause Chain — horizontal */}
+            <div className="bg-black/30 border border-purple-900/20 rounded-xl p-3">
+              <div className="flex items-center gap-1.5 mb-3">
+                <GitMerge className="w-3.5 h-3.5 text-purple-400" />
+                <span className="text-[9px] text-purple-400 uppercase font-bold tracking-widest">Root Cause Chain</span>
+              </div>
+              <div className="flex items-center gap-1 flex-wrap">
+                {insight.rootCauseNodes.map((node, i) => (
+                  <React.Fragment key={i}>
+                    <div className={`px-3 py-1.5 rounded-full text-[10px] font-semibold border transition-colors ${
+                      i === 0 ? 'bg-red-950/50 border-red-500/50 text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.2)]' : 'bg-white/[0.03] border-white/[0.08] text-gray-400'
+                    }`}>{node}</div>
+                    {i < insight.rootCauseNodes.length - 1 && (
+                      <span className="text-gray-700 text-xs">→</span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <InsightCard icon={<Search className="w-4 h-4" />} color="text-orange-400" label="Likely Cause" value={insight.likelyCause} />
-               <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between items-center text-center transition-all duration-300">
-                <div className="flex justify-center mb-1 text-green-400">
-                  <Target className={`w-5 h-5 ${feedbackStatus === 'improving' ? 'animate-ping' : ''}`} />
-                </div>
-                <p className="text-[10px] uppercase font-bold tracking-widest text-green-400 mb-1">Confidence</p>
-                <p className="text-xl text-green-400 font-extrabold">{baseConfidence}%</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Card icon={Search} label="Likely Cause" value={insight.likelyCause} color="text-orange-400" />
+              <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex flex-col items-center justify-center">
+                <Target className={`w-5 h-5 mb-1 ${feedback === 'improving' ? 'text-emerald-400 animate-ping' : 'text-emerald-400'}`} />
+                <p className="text-[9px] uppercase font-bold tracking-widest text-emerald-400 mb-0.5">Confidence</p>
+                <p className="text-2xl font-black text-emerald-400 tabular-nums">{insight.confidence}%</p>
               </div>
             </div>
           </div>
-        ) : (
-          <p className="text-gray-500 text-sm py-6">Telemetry bounds are optimal. Autonomous tracking enabled.</p>
         )}
       </div>
 
+      {/* ── RLHF Feedback ── */}
       {insight && (
-        <div className="bg-gray-900 rounded-lg p-3 border border-gray-800 flex items-center justify-between">
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between">
           <div>
-            <h4 className="text-gray-400 text-[10px] font-bold tracking-widest uppercase mb-0.5">RLHF Target Loop</h4>
-            {feedbackStatus === 'idle' ? (
-              <p className="text-gray-500 text-[10px]">Was this anomaly correlation accurate?</p>
-            ) : feedbackStatus === 'improving' ? (
-              <p className="text-green-400 text-[10px] font-medium animate-pulse">Model confidence improving from feedback...</p>
-            ) : (
-              <p className="text-yellow-400 text-[10px] font-medium animate-pulse">Recalibrating inference weighting...</p>
-            )}
+            <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">RLHF Feedback Loop</p>
+            {feedback === 'idle'         && <p className="text-gray-600 text-[10px]">Was this anomaly correlation accurate?</p>}
+            {feedback === 'improving'    && <p className="text-emerald-400 text-[10px] font-medium animate-pulse">Model confidence improving…</p>}
+            {feedback === 'recalibrating'&& <p className="text-amber-400 text-[10px] font-medium animate-pulse">Recalibrating inference weights…</p>}
           </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => handleFeedback(true)}
-              disabled={feedbackStatus !== 'idle'}
-              className="px-3 py-1 bg-green-950/30 text-green-400 border border-green-900/50 hover:bg-green-900/50 rounded text-xs font-bold transition-colors disabled:opacity-50"
-            >
-              YES
-            </button>
-            <button 
-              onClick={() => handleFeedback(false)}
-              disabled={feedbackStatus !== 'idle'}
-              className="px-3 py-1 bg-red-950/30 text-red-500 border border-red-900/50 hover:bg-red-900/50 rounded text-xs font-bold transition-colors disabled:opacity-50"
-            >
-              NO
-            </button>
+          <div className="flex gap-2">
+            {(['YES', 'NO'] as const).map(v => (
+              <button key={v}
+                onClick={() => { setFeedback(v === 'YES' ? 'improving' : 'recalibrating'); setTimeout(() => setFeedback('idle'), 3000); }}
+                disabled={feedback !== 'idle'}
+                className={`px-3 py-1 text-xs font-bold border rounded disabled:opacity-40 transition-colors ${
+                  v === 'YES'
+                    ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/40'
+                    : 'bg-red-950/30 text-red-400 border-red-900/50 hover:bg-red-900/40'
+                }`}>{v}</button>
+            ))}
           </div>
         </div>
       )}
 
-      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-        <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
-          <Zap className="w-5 h-5 text-yellow-400" />
-          <h3 className="text-yellow-400 text-sm font-bold tracking-wide">Decision Intelligence</h3>
+      {/* ── Decision Intelligence ── */}
+      <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
+          <Zap className="w-4 h-4 text-amber-400" />
+          <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest">Decision Intelligence</h3>
         </div>
-        
-        {decisionState === 'idle' || !insight ? (
-          <p className="text-gray-500 text-xs italic py-4">Awaiting diagnostic resolution.</p>
+
+        {!insight ? (
+          <p className="text-gray-600 text-xs text-center py-3">Awaiting diagnostic resolution.</p>
         ) : (
-          <div className="space-y-4">
-             <div className="bg-black/40 border border-gray-800 rounded p-3">
-                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Recommended Action</p>
-                <p className="text-cyan-400 font-semibold text-sm">{insight.suggestedAction}</p>
-             </div>
-             
-             <div className="grid grid-cols-2 gap-3">
-                <div className="bg-black/40 border border-red-900/30 rounded p-3 flex flex-col justify-center">
-                   <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Impact If Ignored</p>
-                   <p className="text-gray-300 text-xs font-medium">{insight.impactIfIgnored}</p>
-                </div>
-                <div className="bg-red-950/20 border border-red-900/40 rounded p-3 text-center flex flex-col justify-center">
-                   <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Time To Failure</p>
-                   <p className="text-red-400 font-black text-xl">{insight.timeToFailure} Mins</p>
-                </div>
-             </div>
-             
-             <div className="pt-2">
-               {decisionState === 'pending' && (
-                 <button 
-                  onClick={handleExecuteAction}
-                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded uppercase tracking-wide transition-colors text-xs"
-                 >
-                   Execute Action
-                 </button>
-               )}
-               {decisionState === 'executing' && (
-                 <button disabled className="w-full bg-gray-800 text-gray-400 font-bold py-3 rounded uppercase tracking-wide text-xs flex justify-center items-center gap-3 cursor-not-allowed">
-                   <span className="w-4 h-4 border-2 border-gray-500 border-t-white rounded-full animate-spin"></span>
-                   Executing Sequence...
-                 </button>
-               )}
-               {decisionState === 'executed' && (
-                 <button disabled className="w-full bg-green-900/40 border border-green-500/50 text-green-400 font-bold py-3 rounded uppercase tracking-wide text-xs cursor-not-allowed">
-                   ✓ Action Deployed Successfully
-                 </button>
-               )}
-             </div>
+          <div className="space-y-3">
+            <div className="bg-black/30 border border-cyan-900/20 rounded-xl p-3">
+              <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Recommended Action</p>
+              <p className="text-cyan-400 font-semibold text-xs leading-relaxed">{insight.suggestedAction}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-black/30 border border-white/[0.05] rounded-xl p-3">
+                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Impact If Ignored</p>
+                <p className="text-gray-300 text-xs leading-relaxed">{insight.impactIfIgnored}</p>
+              </div>
+              <div className="bg-red-950/20 border border-red-900/30 rounded-xl p-3 text-center flex flex-col justify-center">
+                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Time to Failure</p>
+                <p className="text-red-400 font-black text-2xl tabular-nums">{insight.timeToFailure}</p>
+                <p className="text-red-500/60 text-[9px] font-bold uppercase">Minutes</p>
+              </div>
+            </div>
+
+            {decision === 'pending' && (
+              <button onClick={() => { setDecision('executing'); setTimeout(() => setDecision('executed'), 1800); }}
+                className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-colors">
+                Execute Remediation Action
+              </button>
+            )}
+            {decision === 'executing' && (
+              <button disabled className="w-full py-2.5 bg-white/[0.03] border border-white/[0.08] text-gray-400 text-xs font-bold uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
+                <span className="w-3.5 h-3.5 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
+                Executing Sequence…
+              </button>
+            )}
+            {decision === 'executed' && (
+              <button disabled className="w-full py-2.5 bg-emerald-900/30 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
+                <CheckCircle className="w-4 h-4" /> Action Deployed Successfully
+              </button>
+            )}
           </div>
         )}
       </div>
-
     </div>
   );
 });

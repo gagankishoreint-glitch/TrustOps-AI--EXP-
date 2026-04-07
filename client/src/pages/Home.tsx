@@ -4,6 +4,7 @@ import { TelemetryCharts } from '@/components/TelemetryCharts';
 import { SecurityCopilot } from '@/components/SecurityCopilot';
 import { MultiScoreDisplay, TrustScores } from '@/components/MultiScoreDisplay';
 import { PredictiveTimeline } from '@/components/PredictiveTimeline';
+import { BusinessImpactAnalysis } from '@/components/BusinessImpactAnalysis';
 
 interface TelemetryData {
   timestamp: number;
@@ -194,6 +195,9 @@ export default function Home() {
 
               {/* Predictive Timeline Component Below */}
               <PredictiveTimeline currentScore={trustScore} isDemo={isDemo} />
+
+              {/* Business Impact Analysis Component Below */}
+              <BusinessImpactAnalysis currentScore={trustScore} trustScores={trustScores} />
             </div>
           </div>
 

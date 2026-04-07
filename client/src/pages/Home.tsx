@@ -259,7 +259,10 @@ export default function Home() {
           <div className="flex items-center gap-4">
             {activeLocation && (
               <button
-                onClick={() => setActiveLocation(null)}
+                onClick={() => {
+                setActiveLocation(null);
+                setManualOverride(false); // Clear override badge when exiting showroom
+              }}
                 className="text-[10px] bg-gray-800 border border-gray-700 px-3 py-1.5 rounded uppercase tracking-widest text-cyan-500 hover:bg-gray-700 font-bold flex items-center gap-2 transition-colors"
               >
                 ← Fleet
@@ -273,7 +276,7 @@ export default function Home() {
               <p className="text-gray-500 text-[10px] font-bold tracking-widest uppercase mt-0.5">
                 Intelligence Layer ABOVE Existing Systems
                 {isDemo && <span className="text-yellow-500 ml-2">· Demo</span>}
-                {manualOverride && <span className="text-red-500 animate-pulse ml-2">· Manual Override</span>}
+                {manualOverride && activeLocation && <span className="text-red-500 animate-pulse ml-2">· Manual Override</span>}
               </p>
             </div>
           </div>

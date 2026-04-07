@@ -35,9 +35,9 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     try {
       setLoading(true);
       if (isDemo) {
-        // Mock GenAI response for presentation
+        // Mock GenAI response for presentation using multi-scores
         setTimeout(() => {
-          setExplanation("GenAI Insight: Frequent content reloads and irregular admin activity suggest operational inconsistency rather than a security breach. Display system instability is leading to inefficient workflows.");
+          setExplanation("GenAI Insight: Final Trust dropped to 58. Operational Trust severely degraded (down to 40) due to display system instability. Performance Trust fell (down to 50) due to correlated spikes in network latency. System is experiencing major operational friction, not a security breach.");
           setLoading(false);
         }, 1200);
         return;

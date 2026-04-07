@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { TrustScoreGauge } from '@/components/TrustScoreGauge';
 import { TelemetryCharts } from '@/components/TelemetryCharts';
 import { SecurityCopilot } from '@/components/SecurityCopilot';
+import { MultiScoreDisplay, TrustScores } from '@/components/MultiScoreDisplay';
 
 interface TelemetryData {
   timestamp: number;
@@ -19,13 +20,17 @@ interface StreamPayload {
   engine_analysis: {
     is_anomalous: boolean;
     anomaly_severity: number;
-    trust_score: number;
+    trust_scores: TrustScores;
+    final_trust_score: number;
     status: string;
   };
 }
 
 export default function Home() {
   const [trustScore, setTrustScore] = useState(100);
+  const [trustScores, setTrustScores] = useState<TrustScores>({
+    operational: 100, security: 100, behavior: 100, performance: 100
+  });
   const [telemetryData, setTelemetryData] = useState<TelemetryData[]>([]);
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -34,9 +39,10 @@ export default function Home() {
   const [isDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true');
   const [isUnderAttack, setIsUnderAttack] = useState(false);
 
-  // Payload handler (Shared between real SSE and Demo Simulation)
+  // Payload handler
   const handlePayload = useCallback((payload: StreamPayload) => {
-    setTrustScore(payload.engine_analysis.trust_score);
+    setTrustScore(payload.engine_analysis.final_trust_score);
+    setTrustScores(payload.engine_analysis.trust_scores);
 
     setTelemetryData(prev => {
       const newData = [
@@ -55,15 +61,14 @@ export default function Home() {
     }
   }, []);
 
-  // Demo Mode: Keyboard attack trigger
+  // Demo Mode: Keyboard trigger
   useEffect(() => {
     if (!isDemo) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Shift + D triggers the simulated attack
+      // Shift + D triggers the simulated operational breakdown
       if (e.shiftKey && e.key.toLowerCase() === 'd') {
         setIsUnderAttack(prev => !prev);
-        console.log("Demo Attack Toggled:", !isUnderAttack);
       }
     };
 
@@ -75,10 +80,17 @@ export default function Home() {
   useEffect(() => {
     if (isDemo) {
       setIsConnected(true);
-      console.log('Running Demo Simulation Mode. Press Shift+D to trigger attack.');
       
       const interval = setInterval(() => {
-        // Create mock payload based on attack state
+        // Multi-dimensional decay simulation
+        const ops = isUnderAttack ? Math.round(35 + Math.random() * 15) : Math.round(98 + Math.random() * 2);
+        const sec = isUnderAttack ? Math.round(85 + Math.random() * 10) : Math.round(97 + Math.random() * 3);
+        const perf = isUnderAttack ? Math.round(40 + Math.random() * 20) : Math.round(96 + Math.random() * 4);
+        const behav = isUnderAttack ? Math.round(65 + Math.random() * 15) : Math.round(99 + Math.random() * 1);
+        
+        // Weighted Average calculation (Ops 30%, Sec 30%, Perf 20%, Behav 20%)
+        const finalWeighted = Math.round((ops * 0.3) + (sec * 0.3) + (perf * 0.2) + (behav * 0.2));
+
         const payload: StreamPayload = {
           raw_telemetry: {
             display_logs: { 
@@ -97,48 +109,42 @@ export default function Home() {
           engine_analysis: {
             is_anomalous: isUnderAttack,
             anomaly_severity: isUnderAttack ? 7 : 0,
-            trust_score: isUnderAttack ? Math.round(55 + Math.random() * 15) : Math.round(98 + Math.random() * 2),
+            trust_scores: {
+              operational: ops,
+              security: sec,
+              performance: perf,
+              behavior: behav
+            },
+            final_trust_score: finalWeighted,
             status: isUnderAttack ? 'Operational Friction Detected' : 'Healthy',
           }
         };
 
         handlePayload(payload);
-      }, 1000); // Pulse every 1 second
+      }, 1000); 
 
       return () => clearInterval(interval);
     } else {
       // Real SSE Connection
       const eventSource = new EventSource('http://127.0.0.1:8000/api/v1/stream');
 
-      eventSource.onopen = () => {
-        setIsConnected(true);
-        console.log('Connected to telemetry stream');
-      };
-
+      eventSource.onopen = () => { setIsConnected(true); };
       eventSource.onmessage = (event) => {
         try {
           const payload: StreamPayload = JSON.parse(event.data);
           handlePayload(payload);
-        } catch (error) {
-          console.error('Failed to parse stream data:', error);
-        }
+        } catch (error) { console.error(error); }
       };
-
       eventSource.onerror = () => {
         setIsConnected(false);
-        console.error('Stream connection error');
         eventSource.close();
       };
-
-      return () => {
-        eventSource.close();
-      };
+      return () => { eventSource.close(); };
     }
   }, [isDemo, isUnderAttack, handlePayload]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* Header */}
       <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
@@ -156,9 +162,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* 3-Column Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column: Telemetry */}
           <div className="md:col-span-1">
@@ -168,11 +172,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Center Column: Trust Score Hero */}
-          <div className="md:col-span-1 flex items-center justify-center">
+          {/* Center Column: Scored Components */}
+          <div className="md:col-span-1 flex flex-col items-center">
             <div className="w-full">
-              <h2 className="text-lg font-semibold text-cyan-400 mb-8 text-center">Operational Health</h2>
+              <h2 className="text-lg font-semibold text-cyan-400 mb-6 text-center">Composite Operations Trust</h2>
               <TrustScoreGauge score={trustScore} />
+              
+              {/* New Multi-Score Component Below */}
+              <MultiScoreDisplay scores={trustScores} />
             </div>
           </div>
 

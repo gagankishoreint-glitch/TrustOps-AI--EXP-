@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { TrendingUp } from 'lucide-react';
 
 interface PredictiveTimelineProps {
   currentScore: number;
@@ -72,18 +73,18 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = ({ currentS
   );
 
   return (
-    <div className="bg-gray-900 rounded-lg p-5 border border-gray-800 mt-6 w-full relative overflow-hidden">
-      <h3 className="text-sm font-semibold text-cyan-400 mb-6 flex items-center gap-2">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-        Projected Risk Escalation
-      </h3>
-
-      {/* Warning Banner */}
-      {timeToFailure !== null && (
-        <div className="absolute top-4 right-4 bg-red-950/50 border border-red-500/50 text-red-500 text-xs font-bold px-3 py-1.5 rounded animate-pulse">
-          Projected failure in {timeToFailure} minutes
+    <div className="bg-gray-900 rounded-lg p-5 border border-gray-800 mt-6 w-full animate-in fade-in slide-in-from-bottom-3 duration-500">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 mb-6 border-b border-gray-800 pb-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-cyan-500" />
+          <h3 className="text-cyan-400 text-sm font-bold tracking-wide">Projected Risk Escalation</h3>
         </div>
-      )}
+        {timeToFailure !== null && (
+          <div className="bg-red-950/40 border border-red-500/50 px-3 py-1 rounded text-red-500 text-[10px] font-bold uppercase tracking-widest animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)] whitespace-nowrap text-center xl:text-right">
+            Projected failure in {timeToFailure} minutes
+          </div>
+        )}
+      </div>
 
       {/* Timeline Visual */}
       <div className="relative flex justify-between items-start mt-8 px-4">

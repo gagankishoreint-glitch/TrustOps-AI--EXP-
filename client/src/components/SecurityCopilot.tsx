@@ -27,6 +27,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
   const [loading, setLoading] = useState(false);
   const [baseConfidence, setBaseConfidence] = useState(75);
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'improving' | 'recalibrating'>('idle');
+  const hasTriggeredRef = React.useRef(false); // prevents re-triggering on every tick
 
   const deriveInsight = (anomaly: any): ExplainableInsight => {
     const scores = anomaly.engine_analysis.trust_scores || { operational: 100, performance: 100, security: 100, behavior: 100 };
@@ -98,8 +99,10 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
   };
 
   useEffect(() => {
-    if (trustScore < 70 && recentAnomalies.length > 0 && !loading) {
-      if (!insight || trustScore < 60) {
+    // Fire XAI when score drops below 80 (caution threshold)
+    if (trustScore < 80 && recentAnomalies.length > 0) {
+      if (!hasTriggeredRef.current && !loading) {
+        hasTriggeredRef.current = true; // Lock — prevent re-trigger each second
         setLoading(true);
         setTimeout(() => {
           setInsight(deriveInsight(recentAnomalies[0]));
@@ -107,7 +110,11 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
           setLoading(false);
         }, 600);
       }
-    } else if (trustScore >= 85) {
+    }
+
+    // System recovered — reset and clear
+    if (trustScore >= 88) {
+      hasTriggeredRef.current = false;
       setInsight(null);
       setDecisionState('idle');
     }

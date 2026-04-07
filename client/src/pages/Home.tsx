@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { TrustScoreGauge } from '@/components/TrustScoreGauge';
 import { TelemetryCharts } from '@/components/TelemetryCharts';
 import { SecurityCopilot } from '@/components/SecurityCopilot';
@@ -29,55 +29,112 @@ export default function Home() {
   const [telemetryData, setTelemetryData] = useState<TelemetryData[]>([]);
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  
+  // Demo Mode State
+  const [isDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true');
+  const [isUnderAttack, setIsUnderAttack] = useState(false);
 
-  useEffect(() => {
-    // Connect to SSE stream
-    const eventSource = new EventSource('http://127.0.0.1:8000/api/v1/stream');
+  // Payload handler (Shared between real SSE and Demo Simulation)
+  const handlePayload = useCallback((payload: StreamPayload) => {
+    setTrustScore(payload.engine_analysis.trust_score);
 
-    eventSource.onopen = () => {
-      setIsConnected(true);
-      console.log('Connected to telemetry stream');
-    };
-
-    eventSource.onmessage = (event) => {
-      try {
-        const payload: StreamPayload = JSON.parse(event.data);
-        
-        // Update trust score
-        setTrustScore(payload.engine_analysis.trust_score);
-
-        // Update telemetry data (keep last 60 points)
-        setTelemetryData(prev => {
-          const newData = [
-            ...prev,
-            {
-              timestamp: Date.now(),
-              latency: payload.raw_telemetry.network_logs.latency,
-              frequency: payload.raw_telemetry.display_logs.frequency
-            }
-          ];
-          return newData.slice(-60);
-        });
-
-        // Track anomalies
-        if (payload.engine_analysis.is_anomalous) {
-          setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
+    setTelemetryData(prev => {
+      const newData = [
+        ...prev,
+        {
+          timestamp: Date.now(),
+          latency: payload.raw_telemetry.network_logs.latency,
+          frequency: payload.raw_telemetry.display_logs.frequency
         }
-      } catch (error) {
-        console.error('Failed to parse stream data:', error);
+      ];
+      return newData.slice(-60);
+    });
+
+    if (payload.engine_analysis.is_anomalous) {
+      setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
+    }
+  }, []);
+
+  // Demo Mode: Keyboard attack trigger
+  useEffect(() => {
+    if (!isDemo) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Shift + D triggers the simulated attack
+      if (e.shiftKey && e.key.toLowerCase() === 'd') {
+        setIsUnderAttack(prev => !prev);
+        console.log("Demo Attack Toggled:", !isUnderAttack);
       }
     };
 
-    eventSource.onerror = () => {
-      setIsConnected(false);
-      console.error('Stream connection error');
-      eventSource.close();
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDemo, isUnderAttack]);
 
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  // Main Data Stream Connection
+  useEffect(() => {
+    if (isDemo) {
+      setIsConnected(true);
+      console.log('Running Demo Simulation Mode. Press Shift+D to trigger attack.');
+      
+      const interval = setInterval(() => {
+        // Create mock payload based on attack state
+        const payload: StreamPayload = {
+          raw_telemetry: {
+            display_logs: { 
+              content_id: 'display-01', 
+              play_time: 120, 
+              frequency: isUnderAttack ? Math.random() * 50 : 500 + Math.random() * 50 
+            },
+            admin_actions: { login_time: new Date().toISOString(), content_change: false, device_access: 'normal' },
+            network_logs: { 
+              packets: isUnderAttack ? 15000 : 800, 
+              latency: isUnderAttack ? 800 + Math.random() * 400 : 20 + Math.random() * 15, 
+              bandwidth: 100 
+            },
+            behavior_logs: { session_duration: 300, interaction_count: 5 },
+          },
+          engine_analysis: {
+            is_anomalous: isUnderAttack,
+            anomaly_severity: isUnderAttack ? 9 : 0,
+            trust_score: isUnderAttack ? 25 + Math.random() * 15 : 98 + Math.random() * 2,
+            status: isUnderAttack ? 'Critical DDoS Detected' : 'Healthy',
+          }
+        };
+
+        handlePayload(payload);
+      }, 1000); // Pulse every 1 second
+
+      return () => clearInterval(interval);
+    } else {
+      // Real SSE Connection
+      const eventSource = new EventSource('http://127.0.0.1:8000/api/v1/stream');
+
+      eventSource.onopen = () => {
+        setIsConnected(true);
+        console.log('Connected to telemetry stream');
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const payload: StreamPayload = JSON.parse(event.data);
+          handlePayload(payload);
+        } catch (error) {
+          console.error('Failed to parse stream data:', error);
+        }
+      };
+
+      eventSource.onerror = () => {
+        setIsConnected(false);
+        console.error('Stream connection error');
+        eventSource.close();
+      };
+
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [isDemo, isUnderAttack, handlePayload]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -86,12 +143,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-cyan-400">TrustOps AI</h1>
-            <p className="text-gray-400 text-sm">Operational Intelligence Dashboard</p>
+            <p className="text-gray-400 text-sm">
+              Operational Intelligence Dashboard {isDemo && <span className="text-yellow-500 ml-2">(Demo Mode Active)</span>}
+            </p>
           </div>
-          <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? 'border-green-500 bg-green-950/20' : 'border-red-500 bg-red-950/20'}`}>
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-            <span className={`text-xs font-semibold ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-              {isConnected ? 'Live' : 'Offline'}
+          <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? (isUnderAttack ? 'border-red-500 bg-red-950/20' : 'border-green-500 bg-green-950/20') : 'border-red-500 bg-red-950/20'}`}>
+            <div className={`w-2 h-2 rounded-full ${isConnected ? (isUnderAttack ? 'bg-red-500' : 'bg-green-500') : 'bg-red-500'} animate-pulse`}></div>
+            <span className={`text-xs font-semibold ${isConnected ? (isUnderAttack ? 'text-red-400' : 'text-green-400') : 'text-red-400'}`}>
+              {isConnected ? (isUnderAttack ? 'Critical' : 'Live') : 'Offline'}
             </span>
           </div>
         </div>

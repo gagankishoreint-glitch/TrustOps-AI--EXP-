@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertCircle, Clock, Users, Activity, TrendingDown } from 'lucide-react';
+import { AlertCircle, Clock, Users, Activity, TrendingDown, Shield } from 'lucide-react';
 import { TrustScores } from './MultiScoreDisplay';
 
 interface BusinessImpactAnalysisProps {
@@ -27,10 +27,12 @@ export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ 
     const efficiencyLoss = Math.max(0, Math.round(perfDrop * 0.45));
     const efficiencyImpact = efficiencyLoss > 0 ? `Routine baseline efficiency dropping by ${efficiencyLoss}%` : "Staff efficiency nominal.";
 
-    // 3. Estimated Downtime
+    // 3. Estimated Downtime & Prevented
     let downtime = "0 Minutes";
+    let downtimePrevented = "0 Minutes";
     if (currentScore < 80) {
       downtime = `${Math.max(1, Math.round((80 - currentScore) * 0.5))} Minutes`;
+      downtimePrevented = `${Math.max(45, Math.round((100 - currentScore) * 2.5))} Minutes`;
     }
 
     // 4. Severity Level
@@ -46,7 +48,7 @@ export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ 
        return 'text-green-500';
     }
 
-    return { cxRisk, efficiencyImpact, downtime, severity, severityColor: getSeverityColor(severity) };
+    return { cxRisk, efficiencyImpact, downtime, downtimePrevented, severity, severityColor: getSeverityColor(severity) };
   }, [currentScore, trustScores]);
 
   // Hide or minimize when system is perfectly healthy
@@ -88,13 +90,25 @@ export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ 
         </div>
 
         {/* Estimated Downtime */}
-        <div className="bg-black/40 border border-red-900/20 rounded p-3 text-center">
-          <div className="flex justify-center items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-red-500" />
-            <p className="text-[10px] text-red-500 uppercase font-bold tracking-widest">Estimated Downtime</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-black/40 border border-red-900/20 rounded p-3 text-center">
+            <div className="flex justify-center items-center gap-2 mb-1">
+              <Clock className="w-4 h-4 text-red-500" />
+              <p className="text-[10px] text-red-500 uppercase font-bold tracking-widest">Estimated Downtime</p>
+            </div>
+            <p className="text-red-400 font-extrabold text-2xl">{impactMetrics.downtime}</p>
+            <p className="text-[10px] text-red-500/70 mt-1 uppercase font-bold">Projected blackout</p>
           </div>
-          <p className="text-red-400 font-extrabold text-2xl">{impactMetrics.downtime}</p>
-          <p className="text-xs text-red-500/70 mt-1">Projected blackout duration</p>
+
+          <div className="bg-green-950/20 border border-green-900/40 rounded p-3 text-center shadow-[0_0_15px_rgba(34,197,94,0.15)] relative overflow-hidden">
+             <div className="absolute inset-0 bg-green-500/5 animate-pulse"></div>
+             <div className="flex justify-center items-center gap-2 mb-1 relative">
+               <Shield className="w-4 h-4 text-green-500" />
+               <p className="text-[10px] text-green-500 uppercase font-bold tracking-widest">Downtime Prevented</p>
+             </div>
+             <p className="text-green-400 font-extrabold text-2xl relative">{impactMetrics.downtimePrevented}</p>
+             <p className="text-[10px] text-green-500/70 mt-1 uppercase font-bold relative">Resolved by AI Insight</p>
+          </div>
         </div>
       </div>
     </div>

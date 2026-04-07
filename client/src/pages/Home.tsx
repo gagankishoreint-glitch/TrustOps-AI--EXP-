@@ -77,15 +77,16 @@ export default function Home() {
           // 4% chance per second to generate organic anomalies
           if (Math.random() < 0.04) {
              anomalyEngine.current.active = true;
-             anomalyEngine.current.tick = Math.round(15 + Math.random() * 10);
-             // Weight heavily toward Operational Risk per user request
-             const anomalyTypes = ['operational', 'operational', 'operational', 'performance', 'security', 'behavior'];
+             anomalyEngine.current.tick = 25; // Extend tick to show the cascade
+             // Force behavior logic to simulate Human+System narrative
+             const anomalyTypes = ['behavior', 'behavior', 'operational'];
              anomalyEngine.current.type = anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
           }
         }
 
         const isAttack = anomalyEngine.current.active;
         const type = anomalyEngine.current.type;
+        const currentTick = anomalyEngine.current.tick;
 
         // Base metrics
         let ops = Math.round(98 + Math.random() * 2);
@@ -96,21 +97,17 @@ export default function Home() {
         let latency = Math.round(20 + Math.random() * 15);
         let freq = Math.round(500 + Math.random() * 50);
 
-        // Apply Synthetic Anomaly Degradation
+        // Apply Synthetic Anomaly Degradation (Human + System Scripted Cascade)
         if (isAttack) {
-          if (type === 'operational') {
-            ops = Math.round(35 + Math.random() * 20);
-            perf = Math.round(70 + Math.random() * 10);
-            freq = Math.round(Math.random() * 40);
-          } else if (type === 'performance') {
-            perf = Math.round(30 + Math.random() * 15);
-            ops = Math.round(80 + Math.random() * 5);
-            latency = Math.round(1200 + Math.random() * 800);
-          } else if (type === 'security') {
-            sec = Math.round(40 + Math.random() * 15);
-          } else {
-            behav = Math.round(45 + Math.random() * 10);
-            sec = Math.round(80 + Math.random() * 10);
+          if (type === 'behavior' || type === 'operational') {
+            behav = Math.round(35 + Math.random() * 15); // Drop immediately
+            
+            // At tick 16, cascade the failure into the network performance
+            if (currentTick < 16) {
+              perf = Math.round(25 + Math.random() * 10);
+              latency = Math.round(1800 + Math.random() * 800);
+              ops = Math.round(50 + Math.random() * 10);
+            }
           }
         }
 
@@ -161,8 +158,8 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-cyan-400">
               TrustOps AI {activeLocation && <span className="text-gray-100 font-medium text-xl ml-2 border-l border-gray-700 pl-2">{activeLocation}</span>}
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
-              {activeLocation ? 'Operational Diagnostics' : 'Intelligence Dashboard'} {isDemo && <span className="text-yellow-500 font-bold ml-2">(Demo Mode Active)</span>}
+            <p className="text-gray-400 text-[11px] font-bold tracking-widest uppercase mt-1">
+              Intelligence Layer ABOVE Existing Systems {isDemo && <span className="text-yellow-500 font-bold ml-2">(Demo Mode Active)</span>}
             </p>
           </div>
           <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? (anomalyEngine.current.active ? 'border-red-500 bg-red-950/20' : 'border-green-500 bg-green-950/20') : 'border-red-500 bg-red-950/20'}`}>

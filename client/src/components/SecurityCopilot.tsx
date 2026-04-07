@@ -46,13 +46,13 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     const freq = tel.display_logs?.frequency || 0;
     const finalScore = anomaly.engine_analysis.final_trust_score || 100;
     
-    // Root Cause Chain Nodes
+    // Root Cause Chain Nodes (Human+System Script)
     let rootNodes: string[] = [];
-    let hIndex = 1;
+    let hIndex = 0;
 
-    if (type === 'Operational Risk') {
-      rootNodes = ["Latency spike", "Display reload retries", "Admin overrides", "Trust score drop"];
-      hIndex = 1;
+    if (type === 'Behavior Risk' || type === 'Operational Risk') {
+      rootNodes = ["Unusual Admin Login Time", "Behavior Drop Registered", "Heavy Unknown Query Sent", "Performance Bandwidth Cascading Failure", "Composite Trust Crash"];
+      hIndex = 0; // Highlight the unusual human admin login
     } else if (type === 'Performance Risk') {
       rootNodes = ["Regional Server Degradation", "Network Bandwidth Limits", "Gateway Timeout", "Trust score drop"];
       hIndex = 1;
@@ -137,10 +137,16 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
   return (
     <div className="space-y-4">
       {/* Explainable AI Grid Panel */}
-      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+      <div className="bg-gray-900 rounded-lg p-4 border border-gray-800 relative shadow-[0_0_15px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
           <AlertCircle className="w-5 h-5 text-cyan-400" />
           <h3 className="text-cyan-400 text-sm font-bold tracking-wide">Explainable AI (XAI) Engine</h3>
+          {/* Badge UI Confidence Layer */}
+          {insight && (
+             <div className="ml-auto inline-flex items-center justify-center bg-cyan-950/60 border border-cyan-500/50 rounded-full px-3 py-1 animate-pulse">
+                <span className="text-cyan-400 font-black text-[10px] uppercase tracking-widest">Confidence: {baseConfidence}%</span>
+             </div>
+          )}
         </div>
         
         {loading ? (

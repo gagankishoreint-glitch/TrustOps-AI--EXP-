@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { AlertCircle, Clock, Users, Activity, TrendingDown, Shield } from 'lucide-react';
+import { calculateJointProbability } from '../utils/predictiveEngine';
 import { TrustScores } from './MultiScoreDisplay';
 
 interface BusinessImpactAnalysisProps {
@@ -8,6 +9,12 @@ interface BusinessImpactAnalysisProps {
 }
 
 export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = React.memo(({ currentScore, trustScores }) => {
+  
+  // Independent Probability Engine
+  const jointProb = calculateJointProbability(trustScores);
+
+  // Hide or minimize when system maintains <= 0.75 Probability matching mentor constraints
+  if (jointProb <= 0.75) return null;
 
   const impactMetrics = useMemo(() => {
     // 1. Customer Experience Risk

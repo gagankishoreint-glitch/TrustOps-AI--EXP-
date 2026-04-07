@@ -6,7 +6,7 @@ interface PredictiveTimelineProps {
   isDemo?: boolean;
 }
 
-export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = ({ currentScore, isDemo = false }) => {
+export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(({ currentScore, isDemo = false }) => {
   const [projections, setProjections] = useState({
     min10: 100,
     min30: 100,
@@ -14,9 +14,16 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = ({ currentS
   });
 
   const [timeToFailure, setTimeToFailure] = useState<number | null>(null);
+  const [prevScore, setPrevScore] = useState(currentScore);
+  const [isRecovering, setIsRecovering] = useState(false);
 
   // Simplified forecasting simulation
   useEffect(() => {
+    // Dynamic Scaler Velocity Logic
+    if (currentScore > prevScore + 3) setIsRecovering(true);
+    else if (currentScore < prevScore - 3) setIsRecovering(false);
+    setPrevScore(currentScore);
+
     // If we are under attack / friction (score dropped significantly)
     if (currentScore < 80) {
       if (isDemo) {
@@ -80,8 +87,8 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = ({ currentS
           <h3 className="text-cyan-400 text-sm font-bold tracking-wide">Projected Risk Escalation</h3>
         </div>
         {timeToFailure !== null && (
-          <div className="bg-red-950/40 border border-red-500/50 px-3 py-1 rounded text-red-500 text-[10px] font-bold uppercase tracking-widest animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)] whitespace-nowrap text-center xl:text-right">
-            Projected failure in {timeToFailure} minutes
+          <div className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap text-center xl:text-right ${isRecovering ? 'bg-cyan-950/40 border border-cyan-500/50 text-cyan-500 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.2)]' : 'bg-red-950/40 border border-red-500/50 text-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]'}`}>
+            {isRecovering ? 'Status: Recovering (Stabilizing)' : `Projected failure in ${timeToFailure} minutes`}
           </div>
         )}
       </div>
@@ -102,4 +109,4 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = ({ currentS
       </div>
     </div>
   );
-};
+});

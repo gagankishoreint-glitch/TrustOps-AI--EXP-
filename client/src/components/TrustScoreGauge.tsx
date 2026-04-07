@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-export const TrustScoreGauge = ({ score }: { score: number }) => {
+export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
   const normalizedScore = Math.min(100, Math.max(0, score));
-  const angle = useMemo(() => (normalizedScore / 100) * 180 - 180, [normalizedScore]);
+  const angle = useMemo(() => (normalizedScore / 100) * 180 - 90, [normalizedScore]);
   
   const statusColor = useMemo(() => {
     if (normalizedScore >= 80) return '#22c55e'; // green-500
@@ -78,4 +78,4 @@ export const TrustScoreGauge = ({ score }: { score: number }) => {
       </div>
     </div>
   );
-};
+});

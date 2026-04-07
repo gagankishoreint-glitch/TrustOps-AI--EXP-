@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Target, GitMerge } from 'lucide-react';
 import { getRootCauseChain } from '../utils/rootCauseEngine';
+import { contextualScaleRisk } from '../utils/predictiveEngine';
 
 interface SecurityCopilotProps {
   trustScore: number;
@@ -73,9 +74,22 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
     else if (lowest[0] === 'security') impact = "Unauthorized hardware manipulation across sector.";
 
     const timeToFailure = Math.max(1, Math.round(finalScore * 0.35)); 
-    const riskLevel = finalScore < 60 ? 'Critical' : 'Caution';
+    const baseRiskLevel = finalScore < 60 ? 'Critical' : 'Caution';
 
-    return { type, evidence, likelyCause: cause, suggestedAction: action, riskLevel, impactIfIgnored: impact, timeToFailure, rootCauseNodes: rootNodes, highlightIndex: hIndex };
+    // The Contextual Engine Interceptor
+    const { scaledType, scaledRiskLevel, evidenceOverride } = contextualScaleRisk(type, latency, freq, baseRiskLevel);
+
+    return { 
+      type: scaledType, 
+      evidence: evidenceOverride || evidence, 
+      likelyCause: cause, 
+      suggestedAction: action, 
+      riskLevel: scaledRiskLevel, 
+      impactIfIgnored: impact, 
+      timeToFailure, 
+      rootCauseNodes: rootNodes, 
+      highlightIndex: hIndex 
+    };
   };
 
   useEffect(() => {

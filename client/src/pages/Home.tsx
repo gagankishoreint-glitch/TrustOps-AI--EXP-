@@ -3,6 +3,7 @@ import { TrustScoreGauge } from '@/components/TrustScoreGauge';
 import { TelemetryCharts } from '@/components/TelemetryCharts';
 import { SecurityCopilot } from '@/components/SecurityCopilot';
 import { MultiScoreDisplay, TrustScores } from '@/components/MultiScoreDisplay';
+import { PredictiveTimeline } from '@/components/PredictiveTimeline';
 
 interface TelemetryData {
   timestamp: number;
@@ -180,6 +181,9 @@ export default function Home() {
               
               {/* New Multi-Score Component Below */}
               <MultiScoreDisplay scores={trustScores} />
+
+              {/* Predictive Timeline Component Below */}
+              <PredictiveTimeline currentScore={trustScore} isDemo={isDemo} />
             </div>
           </div>
 

@@ -5,6 +5,7 @@ import { SecurityCopilot } from '@/components/SecurityCopilot';
 import { MultiScoreDisplay, TrustScores } from '@/components/MultiScoreDisplay';
 import { PredictiveTimeline } from '@/components/PredictiveTimeline';
 import { BusinessImpactAnalysis } from '@/components/BusinessImpactAnalysis';
+import { FleetView } from '@/components/FleetView';
 
 interface TelemetryData {
   timestamp: number;
@@ -34,6 +35,8 @@ interface StreamPayload {
 }
 
 export default function Home() {
+  const [activeLocation, setActiveLocation] = useState<string | null>(null);
+  
   const [trustScore, setTrustScore] = useState(100);
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
@@ -157,12 +160,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
-      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur">
+      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-cyan-400">TrustOps AI</h1>
-            <p className="text-gray-400 text-sm">
-              Operational Intelligence Dashboard {isDemo && <span className="text-yellow-500 ml-2">(Demo Mode Active)</span>}
+            <h1 className="text-2xl font-bold text-cyan-400">
+              TrustOps AI {activeLocation && <span className="text-gray-100 font-medium text-xl ml-2 border-l border-gray-700 pl-2">{activeLocation}</span>}
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">
+              {activeLocation ? 'Operational Diagnostics' : 'Intelligence Dashboard'} {isDemo && <span className="text-yellow-500 font-bold ml-2">(Demo Mode Active)</span>}
             </p>
           </div>
           <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? (isUnderAttack ? 'border-red-500 bg-red-950/20' : 'border-green-500 bg-green-950/20') : 'border-red-500 bg-red-950/20'}`}>
@@ -175,7 +180,20 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {!activeLocation ? (
+          <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} />
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mb-6">
+               <button 
+                onClick={() => setActiveLocation(null)} 
+                className="text-xs bg-gray-900 border border-gray-800 px-3 py-1.5 rounded uppercase tracking-widest text-cyan-500 hover:bg-gray-800 hover:text-cyan-400 font-bold flex items-center gap-2 transition-colors"
+               >
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                 Exit to Fleet Architecture
+               </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column: Telemetry */}
           <div className="md:col-span-1">
             <div className="sticky top-8">
@@ -209,6 +227,8 @@ export default function Home() {
             </div>
           </div>
         </div>
+        </div>
+        )}
       </main>
     </div>
   );

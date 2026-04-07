@@ -1,0 +1,1001 @@
+Timestamp_Offset,Network_Latency_ms,CPU_Load_Pct,Admin_Interaction_Count,Degradation_Pattern,Anomaly_Context,Time_to_Failure_mins,Recommended_Action
+0,765,91,6,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+60,44,8,2,Nominal,System Healthy,9999,None
+120,163,74,3,Slow Decay,Network Saturation,68,Throttle Non-Critical CDN Bandwidth
+180,972,90,11,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+240,188,75,1,Slow Decay,Network Saturation,49,Throttle Non-Critical CDN Bandwidth
+300,29,24,2,Nominal,System Healthy,9999,None
+360,212,51,2,Slow Decay,Network Saturation,86,Throttle Non-Critical CDN Bandwidth
+420,1138,81,4,Rapid Fail,Severe Hardware Fault,2,Restart Display Controller & Isolate Node
+480,44,32,0,Nominal,System Healthy,9999,None
+540,725,92,14,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+600,48,30,2,Nominal,System Healthy,9999,None
+660,119,80,2,Slow Decay,Network Saturation,100,Throttle Non-Critical CDN Bandwidth
+720,60,31,2,Nominal,System Healthy,9999,None
+780,32,36,2,Nominal,System Healthy,9999,None
+840,223,47,4,Slow Decay,Operational Friction,91,Schedule Display Controller Diagnostic
+900,83,59,2,Slow Decay,Operational Friction,63,Schedule Display Controller Diagnostic
+960,20,21,1,Nominal,System Healthy,9999,None
+1020,45,33,1,Nominal,System Healthy,9999,None
+1080,168,69,4,Slow Decay,Operational Friction,63,Schedule Display Controller Diagnostic
+1140,35,33,1,Nominal,System Healthy,9999,None
+1200,56,18,1,Nominal,System Healthy,9999,None
+1260,191,75,1,Slow Decay,Operational Friction,79,Schedule Display Controller Diagnostic
+1320,44,20,1,Nominal,System Healthy,9999,None
+1380,21,7,2,Nominal,System Healthy,9999,None
+1440,35,23,1,Nominal,System Healthy,9999,None
+1500,180,83,4,Slow Decay,Network Saturation,62,Throttle Non-Critical CDN Bandwidth
+1560,79,73,2,Slow Decay,Network Saturation,119,Throttle Non-Critical CDN Bandwidth
+1620,195,48,1,Slow Decay,Network Saturation,66,Throttle Non-Critical CDN Bandwidth
+1680,57,39,0,Nominal,System Healthy,9999,None
+1740,996,94,11,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+1800,48,15,0,Nominal,System Healthy,9999,None
+1860,182,73,2,Slow Decay,Operational Friction,48,Schedule Display Controller Diagnostic
+1920,51,34,1,Nominal,System Healthy,9999,None
+1980,31,28,0,Nominal,System Healthy,9999,None
+2040,950,100,15,Rapid Fail,Severe Hardware Fault,5,Restart Display Controller & Isolate Node
+2100,29,8,2,Nominal,System Healthy,9999,None
+2160,24,31,2,Nominal,System Healthy,9999,None
+2220,744,100,7,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+2280,35,37,0,Nominal,System Healthy,9999,None
+2340,59,14,0,Nominal,System Healthy,9999,None
+2400,38,11,2,Nominal,System Healthy,9999,None
+2460,41,30,1,Nominal,System Healthy,9999,None
+2520,230,82,2,Slow Decay,Network Saturation,86,Throttle Non-Critical CDN Bandwidth
+2580,580,82,11,Rapid Fail,Severe Hardware Fault,10,Restart Display Controller & Isolate Node
+2640,27,21,0,Nominal,System Healthy,9999,None
+2700,940,88,7,Rapid Fail,Unauthorized Access,11,Lock Admin Console & Revert Overrides
+2760,137,79,3,Slow Decay,Network Saturation,80,Throttle Non-Critical CDN Bandwidth
+2820,32,34,2,Nominal,System Healthy,9999,None
+2880,504,79,11,Rapid Fail,Unauthorized Access,11,Lock Admin Console & Revert Overrides
+2940,1184,87,10,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+3000,24,30,2,Nominal,System Healthy,9999,None
+3060,167,51,2,Slow Decay,Network Saturation,99,Throttle Non-Critical CDN Bandwidth
+3120,36,33,2,Nominal,System Healthy,9999,None
+3180,55,27,1,Nominal,System Healthy,9999,None
+3240,38,27,1,Nominal,System Healthy,9999,None
+3300,45,33,0,Nominal,System Healthy,9999,None
+3360,39,48,2,Nominal,System Healthy,9999,None
+3420,851,89,11,Rapid Fail,Severe Hardware Fault,8,Restart Display Controller & Isolate Node
+3480,184,44,4,Slow Decay,Operational Friction,107,Schedule Display Controller Diagnostic
+3540,35,50,2,Nominal,System Healthy,9999,None
+3600,43,28,2,Nominal,System Healthy,9999,None
+3660,31,10,0,Nominal,System Healthy,9999,None
+3720,37,37,2,Nominal,System Healthy,9999,None
+3780,162,43,3,Slow Decay,Network Saturation,59,Throttle Non-Critical CDN Bandwidth
+3840,180,76,2,Slow Decay,Network Saturation,100,Throttle Non-Critical CDN Bandwidth
+3900,54,35,0,Nominal,System Healthy,9999,None
+3960,501,73,7,Rapid Fail,Severe Hardware Fault,9,Restart Display Controller & Isolate Node
+4020,149,44,1,Slow Decay,Operational Friction,94,Schedule Display Controller Diagnostic
+4080,214,60,1,Slow Decay,Operational Friction,57,Schedule Display Controller Diagnostic
+4140,41,42,1,Nominal,System Healthy,9999,None
+4200,123,47,2,Slow Decay,Network Saturation,57,Throttle Non-Critical CDN Bandwidth
+4260,35,38,2,Nominal,System Healthy,9999,None
+4320,147,50,2,Slow Decay,Network Saturation,68,Throttle Non-Critical CDN Bandwidth
+4380,60,19,1,Nominal,System Healthy,9999,None
+4440,21,18,2,Nominal,System Healthy,9999,None
+4500,37,35,0,Nominal,System Healthy,9999,None
+4560,144,38,2,Slow Decay,Network Saturation,61,Throttle Non-Critical CDN Bandwidth
+4620,722,73,7,Rapid Fail,Severe Hardware Fault,4,Restart Display Controller & Isolate Node
+4680,126,47,3,Slow Decay,Network Saturation,109,Throttle Non-Critical CDN Bandwidth
+4740,29,28,1,Nominal,System Healthy,9999,None
+4800,169,56,4,Slow Decay,Operational Friction,75,Schedule Display Controller Diagnostic
+4860,38,15,1,Nominal,System Healthy,9999,None
+4920,12,40,1,Nominal,System Healthy,9999,None
+4980,134,51,1,Slow Decay,Network Saturation,102,Throttle Non-Critical CDN Bandwidth
+5040,556,95,12,Rapid Fail,Severe Hardware Fault,2,Restart Display Controller & Isolate Node
+5100,229,57,1,Slow Decay,Network Saturation,59,Throttle Non-Critical CDN Bandwidth
+5160,22,25,0,Nominal,System Healthy,9999,None
+5220,34,20,1,Nominal,System Healthy,9999,None
+5280,386,91,12,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+5340,50,32,2,Nominal,System Healthy,9999,None
+5400,177,90,1,Slow Decay,Operational Friction,105,Schedule Display Controller Diagnostic
+5460,170,61,1,Slow Decay,Operational Friction,111,Schedule Display Controller Diagnostic
+5520,198,56,4,Slow Decay,Network Saturation,72,Throttle Non-Critical CDN Bandwidth
+5580,832,83,12,Rapid Fail,Severe Hardware Fault,15,Restart Display Controller & Isolate Node
+5640,40,16,2,Nominal,System Healthy,9999,None
+5700,34,33,1,Nominal,System Healthy,9999,None
+5760,19,31,0,Nominal,System Healthy,9999,None
+5820,45,15,2,Nominal,System Healthy,9999,None
+5880,46,39,2,Nominal,System Healthy,9999,None
+5940,61,28,1,Nominal,System Healthy,9999,None
+6000,32,45,2,Nominal,System Healthy,9999,None
+6060,82,85,1,Slow Decay,Operational Friction,49,Schedule Display Controller Diagnostic
+6120,5,28,1,Nominal,System Healthy,9999,None
+6180,46,16,2,Nominal,System Healthy,9999,None
+6240,93,60,2,Slow Decay,Operational Friction,71,Schedule Display Controller Diagnostic
+6300,40,32,2,Nominal,System Healthy,9999,None
+6360,465,93,7,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+6420,165,65,4,Slow Decay,Operational Friction,92,Schedule Display Controller Diagnostic
+6480,56,42,2,Nominal,System Healthy,9999,None
+6540,427,76,4,Rapid Fail,Severe Hardware Fault,2,Restart Display Controller & Isolate Node
+6600,64,48,1,Nominal,System Healthy,9999,None
+6660,32,28,2,Nominal,System Healthy,9999,None
+6720,38,25,0,Nominal,System Healthy,9999,None
+6780,57,22,2,Nominal,System Healthy,9999,None
+6840,31,32,2,Nominal,System Healthy,9999,None
+6900,859,83,11,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+6960,48,32,1,Nominal,System Healthy,9999,None
+7020,37,25,2,Nominal,System Healthy,9999,None
+7080,35,36,1,Nominal,System Healthy,9999,None
+7140,762,98,11,Rapid Fail,Unauthorized Access,9,Lock Admin Console & Revert Overrides
+7200,37,15,1,Nominal,System Healthy,9999,None
+7260,54,37,4,Slow Decay,Network Saturation,100,Throttle Non-Critical CDN Bandwidth
+7320,58,36,2,Nominal,System Healthy,9999,None
+7380,25,29,0,Nominal,System Healthy,9999,None
+7440,164,64,1,Slow Decay,Network Saturation,73,Throttle Non-Critical CDN Bandwidth
+7500,38,27,0,Nominal,System Healthy,9999,None
+7560,31,27,1,Nominal,System Healthy,9999,None
+7620,110,70,4,Slow Decay,Operational Friction,100,Schedule Display Controller Diagnostic
+7680,158,58,1,Slow Decay,Operational Friction,96,Schedule Display Controller Diagnostic
+7740,14,25,2,Nominal,System Healthy,9999,None
+7800,55,29,0,Nominal,System Healthy,9999,None
+7860,45,17,1,Nominal,System Healthy,9999,None
+7920,994,91,14,Rapid Fail,Severe Hardware Fault,9,Restart Display Controller & Isolate Node
+7980,27,31,0,Nominal,System Healthy,9999,None
+8040,38,10,2,Nominal,System Healthy,9999,None
+8100,42,34,0,Nominal,System Healthy,9999,None
+8160,32,34,1,Nominal,System Healthy,9999,None
+8220,32,18,0,Nominal,System Healthy,9999,None
+8280,160,41,4,Slow Decay,Network Saturation,120,Throttle Non-Critical CDN Bandwidth
+8340,168,70,4,Slow Decay,Operational Friction,76,Schedule Display Controller Diagnostic
+8400,38,29,0,Nominal,System Healthy,9999,None
+8460,1113,98,15,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+8520,55,34,0,Nominal,System Healthy,9999,None
+8580,205,23,3,Slow Decay,Operational Friction,104,Schedule Display Controller Diagnostic
+8640,591,90,15,Rapid Fail,Severe Hardware Fault,6,Restart Display Controller & Isolate Node
+8700,121,53,4,Slow Decay,Operational Friction,100,Schedule Display Controller Diagnostic
+8760,49,20,2,Nominal,System Healthy,9999,None
+8820,30,16,2,Nominal,System Healthy,9999,None
+8880,134,22,2,Slow Decay,Network Saturation,88,Throttle Non-Critical CDN Bandwidth
+8940,236,78,3,Slow Decay,Network Saturation,94,Throttle Non-Critical CDN Bandwidth
+9000,51,44,2,Nominal,System Healthy,9999,None
+9060,779,80,11,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+9120,7,41,1,Slow Decay,Operational Friction,91,Schedule Display Controller Diagnostic
+9180,31,30,0,Nominal,System Healthy,9999,None
+9240,53,22,2,Nominal,System Healthy,9999,None
+9300,49,35,1,Nominal,System Healthy,9999,None
+9360,32,14,0,Nominal,System Healthy,9999,None
+9420,64,31,0,Nominal,System Healthy,9999,None
+9480,42,5,1,Nominal,System Healthy,9999,None
+9540,811,99,5,Rapid Fail,Severe Hardware Fault,14,Restart Display Controller & Isolate Node
+9600,44,43,0,Nominal,System Healthy,9999,None
+9660,170,71,1,Slow Decay,Network Saturation,89,Throttle Non-Critical CDN Bandwidth
+9720,59,23,1,Nominal,System Healthy,9999,None
+9780,141,54,3,Slow Decay,Operational Friction,92,Schedule Display Controller Diagnostic
+9840,47,44,0,Nominal,System Healthy,9999,None
+9900,29,20,1,Nominal,System Healthy,9999,None
+9960,987,73,14,Rapid Fail,Severe Hardware Fault,13,Restart Display Controller & Isolate Node
+10020,54,32,1,Nominal,System Healthy,9999,None
+10080,180,52,2,Slow Decay,Network Saturation,98,Throttle Non-Critical CDN Bandwidth
+10140,23,38,2,Nominal,System Healthy,9999,None
+10200,1088,90,13,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+10260,50,13,2,Nominal,System Healthy,9999,None
+10320,127,56,4,Slow Decay,Operational Friction,63,Schedule Display Controller Diagnostic
+10380,35,45,1,Nominal,System Healthy,9999,None
+10440,478,92,13,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+10500,190,77,2,Slow Decay,Network Saturation,113,Throttle Non-Critical CDN Bandwidth
+10560,44,13,2,Nominal,System Healthy,9999,None
+10620,112,44,1,Slow Decay,Network Saturation,58,Throttle Non-Critical CDN Bandwidth
+10680,1078,83,12,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+10740,28,24,0,Nominal,System Healthy,9999,None
+10800,42,43,1,Nominal,System Healthy,9999,None
+10860,9,37,1,Nominal,System Healthy,9999,None
+10920,38,23,2,Nominal,System Healthy,9999,None
+10980,52,32,1,Nominal,System Healthy,9999,None
+11040,49,32,1,Nominal,System Healthy,9999,None
+11100,51,22,2,Nominal,System Healthy,9999,None
+11160,11,30,1,Nominal,System Healthy,9999,None
+11220,39,9,0,Nominal,System Healthy,9999,None
+11280,998,88,11,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+11340,202,47,1,Slow Decay,Operational Friction,85,Schedule Display Controller Diagnostic
+11400,174,76,3,Slow Decay,Network Saturation,75,Throttle Non-Critical CDN Bandwidth
+11460,134,62,1,Slow Decay,Operational Friction,86,Schedule Display Controller Diagnostic
+11520,36,7,0,Nominal,System Healthy,9999,None
+11580,152,57,2,Slow Decay,Operational Friction,75,Schedule Display Controller Diagnostic
+11640,179,27,3,Slow Decay,Operational Friction,49,Schedule Display Controller Diagnostic
+11700,38,39,1,Nominal,System Healthy,9999,None
+11760,31,23,1,Nominal,System Healthy,9999,None
+11820,28,36,1,Nominal,System Healthy,9999,None
+11880,83,30,2,Nominal,System Healthy,9999,None
+11940,44,22,2,Nominal,System Healthy,9999,None
+12000,34,30,0,Nominal,System Healthy,9999,None
+12060,220,71,4,Slow Decay,Network Saturation,52,Throttle Non-Critical CDN Bandwidth
+12120,44,37,1,Nominal,System Healthy,9999,None
+12180,35,23,0,Nominal,System Healthy,9999,None
+12240,142,78,4,Slow Decay,Operational Friction,105,Schedule Display Controller Diagnostic
+12300,33,12,1,Nominal,System Healthy,9999,None
+12360,199,50,4,Slow Decay,Operational Friction,89,Schedule Display Controller Diagnostic
+12420,50,49,1,Nominal,System Healthy,9999,None
+12480,31,20,0,Nominal,System Healthy,9999,None
+12540,47,31,2,Nominal,System Healthy,9999,None
+12600,37,31,0,Nominal,System Healthy,9999,None
+12660,15,10,0,Nominal,System Healthy,9999,None
+12720,753,79,12,Rapid Fail,Severe Hardware Fault,8,Restart Display Controller & Isolate Node
+12780,49,19,0,Nominal,System Healthy,9999,None
+12840,142,73,1,Slow Decay,Network Saturation,115,Throttle Non-Critical CDN Bandwidth
+12900,34,32,0,Nominal,System Healthy,9999,None
+12960,52,18,1,Nominal,System Healthy,9999,None
+13020,62,34,2,Nominal,System Healthy,9999,None
+13080,22,34,0,Nominal,System Healthy,9999,None
+13140,99,57,2,Slow Decay,Operational Friction,86,Schedule Display Controller Diagnostic
+13200,69,44,0,Nominal,System Healthy,9999,None
+13260,49,24,2,Nominal,System Healthy,9999,None
+13320,59,43,1,Nominal,System Healthy,9999,None
+13380,82,49,2,Nominal,System Healthy,9999,None
+13440,27,33,2,Nominal,System Healthy,9999,None
+13500,897,95,9,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+13560,51,34,2,Nominal,System Healthy,9999,None
+13620,54,14,2,Nominal,System Healthy,9999,None
+13680,27,23,2,Nominal,System Healthy,9999,None
+13740,29,49,2,Nominal,System Healthy,9999,None
+13800,45,35,0,Nominal,System Healthy,9999,None
+13860,18,33,1,Nominal,System Healthy,9999,None
+13920,43,7,2,Nominal,System Healthy,9999,None
+13980,912,77,8,Rapid Fail,Unauthorized Access,5,Lock Admin Console & Revert Overrides
+14040,5,8,0,Nominal,System Healthy,9999,None
+14100,59,23,2,Nominal,System Healthy,9999,None
+14160,49,39,0,Nominal,System Healthy,9999,None
+14220,53,27,1,Nominal,System Healthy,9999,None
+14280,831,74,11,Rapid Fail,Unauthorized Access,5,Lock Admin Console & Revert Overrides
+14340,31,31,0,Nominal,System Healthy,9999,None
+14400,35,9,1,Nominal,System Healthy,9999,None
+14460,61,27,0,Nominal,System Healthy,9999,None
+14520,52,12,1,Nominal,System Healthy,9999,None
+14580,498,81,14,Rapid Fail,Unauthorized Access,5,Lock Admin Console & Revert Overrides
+14640,31,24,2,Nominal,System Healthy,9999,None
+14700,18,41,1,Nominal,System Healthy,9999,None
+14760,130,59,1,Slow Decay,Network Saturation,48,Throttle Non-Critical CDN Bandwidth
+14820,57,31,1,Nominal,System Healthy,9999,None
+14880,22,34,1,Nominal,System Healthy,9999,None
+14940,43,31,1,Nominal,System Healthy,9999,None
+15000,48,7,2,Nominal,System Healthy,9999,None
+15060,55,33,0,Nominal,System Healthy,9999,None
+15120,546,84,14,Rapid Fail,Unauthorized Access,12,Lock Admin Console & Revert Overrides
+15180,47,32,0,Nominal,System Healthy,9999,None
+15240,24,39,1,Nominal,System Healthy,9999,None
+15300,138,65,4,Slow Decay,Operational Friction,109,Schedule Display Controller Diagnostic
+15360,324,82,5,Rapid Fail,Unauthorized Access,11,Lock Admin Console & Revert Overrides
+15420,13,27,0,Nominal,System Healthy,9999,None
+15480,48,20,2,Nominal,System Healthy,9999,None
+15540,61,28,2,Nominal,System Healthy,9999,None
+15600,53,27,2,Nominal,System Healthy,9999,None
+15660,51,23,1,Nominal,System Healthy,9999,None
+15720,12,34,1,Nominal,System Healthy,9999,None
+15780,106,92,1,Slow Decay,Operational Friction,50,Schedule Display Controller Diagnostic
+15840,34,8,0,Nominal,System Healthy,9999,None
+15900,40,33,2,Nominal,System Healthy,9999,None
+15960,58,42,0,Nominal,System Healthy,9999,None
+16020,506,94,15,Rapid Fail,Severe Hardware Fault,13,Restart Display Controller & Isolate Node
+16080,134,62,3,Slow Decay,Network Saturation,109,Throttle Non-Critical CDN Bandwidth
+16140,719,98,14,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+16200,41,31,2,Nominal,System Healthy,9999,None
+16260,54,37,1,Nominal,System Healthy,9999,None
+16320,18,39,1,Nominal,System Healthy,9999,None
+16380,29,32,2,Nominal,System Healthy,9999,None
+16440,204,58,3,Slow Decay,Network Saturation,105,Throttle Non-Critical CDN Bandwidth
+16500,46,38,0,Nominal,System Healthy,9999,None
+16560,154,58,2,Slow Decay,Network Saturation,61,Throttle Non-Critical CDN Bandwidth
+16620,164,84,3,Slow Decay,Network Saturation,47,Throttle Non-Critical CDN Bandwidth
+16680,41,41,2,Nominal,System Healthy,9999,None
+16740,1059,98,11,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+16800,199,52,3,Slow Decay,Network Saturation,58,Throttle Non-Critical CDN Bandwidth
+16860,154,50,3,Slow Decay,Operational Friction,108,Schedule Display Controller Diagnostic
+16920,27,35,1,Nominal,System Healthy,9999,None
+16980,148,78,1,Slow Decay,Network Saturation,46,Throttle Non-Critical CDN Bandwidth
+17040,29,28,1,Nominal,System Healthy,9999,None
+17100,33,40,2,Nominal,System Healthy,9999,None
+17160,50,22,2,Nominal,System Healthy,9999,None
+17220,102,74,3,Slow Decay,Network Saturation,85,Throttle Non-Critical CDN Bandwidth
+17280,14,23,2,Nominal,System Healthy,9999,None
+17340,190,85,1,Slow Decay,Network Saturation,60,Throttle Non-Critical CDN Bandwidth
+17400,33,42,1,Nominal,System Healthy,9999,None
+17460,35,47,2,Nominal,System Healthy,9999,None
+17520,59,21,2,Nominal,System Healthy,9999,None
+17580,6,35,1,Nominal,System Healthy,9999,None
+17640,172,76,3,Slow Decay,Operational Friction,92,Schedule Display Controller Diagnostic
+17700,149,55,2,Slow Decay,Network Saturation,56,Throttle Non-Critical CDN Bandwidth
+17760,77,32,0,Nominal,System Healthy,9999,None
+17820,49,51,0,Nominal,System Healthy,9999,None
+17880,85,35,4,Slow Decay,Network Saturation,54,Throttle Non-Critical CDN Bandwidth
+17940,53,18,0,Nominal,System Healthy,9999,None
+18000,12,32,1,Nominal,System Healthy,9999,None
+18060,52,34,2,Nominal,System Healthy,9999,None
+18120,45,38,0,Nominal,System Healthy,9999,None
+18180,75,30,1,Nominal,System Healthy,9999,None
+18240,124,75,3,Slow Decay,Operational Friction,54,Schedule Display Controller Diagnostic
+18300,46,30,0,Nominal,System Healthy,9999,None
+18360,447,70,11,Rapid Fail,Severe Hardware Fault,3,Restart Display Controller & Isolate Node
+18420,22,34,0,Nominal,System Healthy,9999,None
+18480,831,70,7,Rapid Fail,Unauthorized Access,5,Lock Admin Console & Revert Overrides
+18540,812,100,4,Rapid Fail,Severe Hardware Fault,9,Restart Display Controller & Isolate Node
+18600,30,29,2,Nominal,System Healthy,9999,None
+18660,41,32,0,Nominal,System Healthy,9999,None
+18720,58,44,0,Nominal,System Healthy,9999,None
+18780,38,48,2,Nominal,System Healthy,9999,None
+18840,38,32,2,Nominal,System Healthy,9999,None
+18900,163,63,3,Slow Decay,Operational Friction,106,Schedule Display Controller Diagnostic
+18960,43,17,0,Nominal,System Healthy,9999,None
+19020,35,44,2,Nominal,System Healthy,9999,None
+19080,51,25,0,Nominal,System Healthy,9999,None
+19140,58,24,1,Nominal,System Healthy,9999,None
+19200,57,35,2,Nominal,System Healthy,9999,None
+19260,54,20,0,Nominal,System Healthy,9999,None
+19320,23,49,1,Nominal,System Healthy,9999,None
+19380,29,26,2,Nominal,System Healthy,9999,None
+19440,50,17,1,Nominal,System Healthy,9999,None
+19500,25,30,2,Nominal,System Healthy,9999,None
+19560,51,33,1,Nominal,System Healthy,9999,None
+19620,728,86,13,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+19680,40,33,0,Nominal,System Healthy,9999,None
+19740,43,18,0,Nominal,System Healthy,9999,None
+19800,95,68,3,Slow Decay,Network Saturation,80,Throttle Non-Critical CDN Bandwidth
+19860,59,39,0,Nominal,System Healthy,9999,None
+19920,28,40,0,Nominal,System Healthy,9999,None
+19980,35,31,0,Nominal,System Healthy,9999,None
+20040,21,26,2,Nominal,System Healthy,9999,None
+20100,499,91,5,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+20160,28,38,2,Nominal,System Healthy,9999,None
+20220,170,84,4,Slow Decay,Network Saturation,57,Throttle Non-Critical CDN Bandwidth
+20280,101,27,4,Slow Decay,Network Saturation,50,Throttle Non-Critical CDN Bandwidth
+20340,27,35,0,Nominal,System Healthy,9999,None
+20400,38,33,0,Nominal,System Healthy,9999,None
+20460,23,30,2,Nominal,System Healthy,9999,None
+20520,734,93,13,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+20580,20,44,0,Nominal,System Healthy,9999,None
+20640,208,39,2,Slow Decay,Network Saturation,111,Throttle Non-Critical CDN Bandwidth
+20700,40,30,0,Nominal,System Healthy,9999,None
+20760,614,94,15,Rapid Fail,Severe Hardware Fault,14,Restart Display Controller & Isolate Node
+20820,935,100,14,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+20880,43,33,2,Nominal,System Healthy,9999,None
+20940,106,61,4,Slow Decay,Operational Friction,52,Schedule Display Controller Diagnostic
+21000,68,28,1,Nominal,System Healthy,9999,None
+21060,41,28,1,Nominal,System Healthy,9999,None
+21120,196,95,4,Slow Decay,Operational Friction,118,Schedule Display Controller Diagnostic
+21180,77,6,1,Nominal,System Healthy,9999,None
+21240,21,27,0,Nominal,System Healthy,9999,None
+21300,121,51,2,Slow Decay,Network Saturation,97,Throttle Non-Critical CDN Bandwidth
+21360,5,20,2,Nominal,System Healthy,9999,None
+21420,38,50,1,Nominal,System Healthy,9999,None
+21480,84,34,0,Nominal,System Healthy,9999,None
+21540,150,59,2,Slow Decay,Operational Friction,84,Schedule Display Controller Diagnostic
+21600,52,27,2,Nominal,System Healthy,9999,None
+21660,152,57,3,Slow Decay,Operational Friction,74,Schedule Display Controller Diagnostic
+21720,79,29,1,Nominal,System Healthy,9999,None
+21780,42,32,1,Nominal,System Healthy,9999,None
+21840,46,31,0,Nominal,System Healthy,9999,None
+21900,34,30,1,Nominal,System Healthy,9999,None
+21960,594,91,9,Rapid Fail,Severe Hardware Fault,5,Restart Display Controller & Isolate Node
+22020,47,30,0,Nominal,System Healthy,9999,None
+22080,63,23,0,Nominal,System Healthy,9999,None
+22140,48,14,2,Nominal,System Healthy,9999,None
+22200,35,10,1,Nominal,System Healthy,9999,None
+22260,32,38,1,Nominal,System Healthy,9999,None
+22320,175,48,2,Slow Decay,Network Saturation,110,Throttle Non-Critical CDN Bandwidth
+22380,154,78,1,Slow Decay,Operational Friction,90,Schedule Display Controller Diagnostic
+22440,149,51,1,Slow Decay,Network Saturation,98,Throttle Non-Critical CDN Bandwidth
+22500,135,67,2,Slow Decay,Network Saturation,81,Throttle Non-Critical CDN Bandwidth
+22560,400,96,8,Rapid Fail,Unauthorized Access,5,Lock Admin Console & Revert Overrides
+22620,18,46,0,Nominal,System Healthy,9999,None
+22680,62,29,2,Nominal,System Healthy,9999,None
+22740,991,100,12,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+22800,40,36,0,Nominal,System Healthy,9999,None
+22860,640,91,9,Rapid Fail,Severe Hardware Fault,4,Restart Display Controller & Isolate Node
+22920,211,42,3,Slow Decay,Operational Friction,84,Schedule Display Controller Diagnostic
+22980,38,27,2,Nominal,System Healthy,9999,None
+23040,37,32,2,Nominal,System Healthy,9999,None
+23100,47,17,0,Nominal,System Healthy,9999,None
+23160,48,30,0,Nominal,System Healthy,9999,None
+23220,124,51,3,Slow Decay,Network Saturation,58,Throttle Non-Critical CDN Bandwidth
+23280,42,32,2,Nominal,System Healthy,9999,None
+23340,126,66,1,Slow Decay,Network Saturation,82,Throttle Non-Critical CDN Bandwidth
+23400,58,40,1,Nominal,System Healthy,9999,None
+23460,19,20,2,Nominal,System Healthy,9999,None
+23520,1323,98,10,Rapid Fail,Severe Hardware Fault,13,Restart Display Controller & Isolate Node
+23580,19,31,2,Nominal,System Healthy,9999,None
+23640,32,26,0,Nominal,System Healthy,9999,None
+23700,653,86,12,Rapid Fail,Unauthorized Access,8,Lock Admin Console & Revert Overrides
+23760,17,37,1,Nominal,System Healthy,9999,None
+23820,16,25,0,Nominal,System Healthy,9999,None
+23880,154,77,3,Slow Decay,Operational Friction,64,Schedule Display Controller Diagnostic
+23940,50,41,1,Nominal,System Healthy,9999,None
+24000,44,41,2,Nominal,System Healthy,9999,None
+24060,117,86,4,Slow Decay,Operational Friction,118,Schedule Display Controller Diagnostic
+24120,136,57,1,Slow Decay,Network Saturation,64,Throttle Non-Critical CDN Bandwidth
+24180,30,30,1,Nominal,System Healthy,9999,None
+24240,175,33,4,Slow Decay,Network Saturation,56,Throttle Non-Critical CDN Bandwidth
+24300,732,83,13,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+24360,977,90,10,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+24420,37,36,2,Nominal,System Healthy,9999,None
+24480,212,64,3,Slow Decay,Operational Friction,89,Schedule Display Controller Diagnostic
+24540,742,76,12,Rapid Fail,Unauthorized Access,13,Lock Admin Console & Revert Overrides
+24600,1006,78,4,Rapid Fail,Unauthorized Access,13,Lock Admin Console & Revert Overrides
+24660,113,87,2,Slow Decay,Network Saturation,107,Throttle Non-Critical CDN Bandwidth
+24720,47,35,2,Nominal,System Healthy,9999,None
+24780,1006,95,6,Rapid Fail,Unauthorized Access,7,Lock Admin Console & Revert Overrides
+24840,40,15,2,Nominal,System Healthy,9999,None
+24900,49,27,0,Nominal,System Healthy,9999,None
+24960,19,33,1,Nominal,System Healthy,9999,None
+25020,898,97,8,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+25080,136,72,1,Slow Decay,Network Saturation,84,Throttle Non-Critical CDN Bandwidth
+25140,32,12,1,Nominal,System Healthy,9999,None
+25200,10,29,2,Nominal,System Healthy,9999,None
+25260,40,21,0,Nominal,System Healthy,9999,None
+25320,22,25,1,Nominal,System Healthy,9999,None
+25380,49,25,1,Nominal,System Healthy,9999,None
+25440,64,14,1,Nominal,System Healthy,9999,None
+25500,1058,85,5,Rapid Fail,Severe Hardware Fault,6,Restart Display Controller & Isolate Node
+25560,39,36,1,Nominal,System Healthy,9999,None
+25620,46,42,2,Nominal,System Healthy,9999,None
+25680,752,84,4,Rapid Fail,Severe Hardware Fault,2,Restart Display Controller & Isolate Node
+25740,59,29,1,Nominal,System Healthy,9999,None
+25800,31,35,2,Nominal,System Healthy,9999,None
+25860,55,29,1,Nominal,System Healthy,9999,None
+25920,52,21,0,Nominal,System Healthy,9999,None
+25980,1169,78,15,Rapid Fail,Severe Hardware Fault,3,Restart Display Controller & Isolate Node
+26040,44,37,2,Nominal,System Healthy,9999,None
+26100,37,53,2,Nominal,System Healthy,9999,None
+26160,445,93,4,Rapid Fail,Severe Hardware Fault,15,Restart Display Controller & Isolate Node
+26220,8,9,0,Nominal,System Healthy,9999,None
+26280,20,6,0,Nominal,System Healthy,9999,None
+26340,123,62,3,Slow Decay,Operational Friction,120,Schedule Display Controller Diagnostic
+26400,32,21,1,Nominal,System Healthy,9999,None
+26460,117,69,2,Slow Decay,Operational Friction,72,Schedule Display Controller Diagnostic
+26520,56,23,0,Nominal,System Healthy,9999,None
+26580,30,29,2,Nominal,System Healthy,9999,None
+26640,61,84,4,Slow Decay,Network Saturation,113,Throttle Non-Critical CDN Bandwidth
+26700,47,28,1,Nominal,System Healthy,9999,None
+26760,919,92,7,Rapid Fail,Severe Hardware Fault,10,Restart Display Controller & Isolate Node
+26820,184,62,4,Slow Decay,Operational Friction,59,Schedule Display Controller Diagnostic
+26880,106,57,4,Slow Decay,Operational Friction,96,Schedule Display Controller Diagnostic
+26940,40,28,2,Nominal,System Healthy,9999,None
+27000,18,24,2,Nominal,System Healthy,9999,None
+27060,69,35,2,Nominal,System Healthy,9999,None
+27120,819,93,4,Rapid Fail,Unauthorized Access,9,Lock Admin Console & Revert Overrides
+27180,29,20,0,Nominal,System Healthy,9999,None
+27240,13,28,2,Nominal,System Healthy,9999,None
+27300,5,26,0,Nominal,System Healthy,9999,None
+27360,39,29,0,Nominal,System Healthy,9999,None
+27420,49,30,1,Nominal,System Healthy,9999,None
+27480,681,93,11,Rapid Fail,Unauthorized Access,11,Lock Admin Console & Revert Overrides
+27540,54,38,1,Nominal,System Healthy,9999,None
+27600,44,20,0,Nominal,System Healthy,9999,None
+27660,42,38,0,Nominal,System Healthy,9999,None
+27720,882,80,4,Rapid Fail,Severe Hardware Fault,6,Restart Display Controller & Isolate Node
+27780,47,49,2,Nominal,System Healthy,9999,None
+27840,41,37,0,Nominal,System Healthy,9999,None
+27900,179,41,2,Slow Decay,Network Saturation,52,Throttle Non-Critical CDN Bandwidth
+27960,1091,84,7,Rapid Fail,Severe Hardware Fault,14,Restart Display Controller & Isolate Node
+28020,26,36,2,Nominal,System Healthy,9999,None
+28080,39,26,2,Nominal,System Healthy,9999,None
+28140,191,64,3,Slow Decay,Network Saturation,71,Throttle Non-Critical CDN Bandwidth
+28200,1278,91,4,Rapid Fail,Severe Hardware Fault,9,Restart Display Controller & Isolate Node
+28260,37,32,0,Nominal,System Healthy,9999,None
+28320,21,35,0,Nominal,System Healthy,9999,None
+28380,178,66,1,Slow Decay,Operational Friction,75,Schedule Display Controller Diagnostic
+28440,43,32,0,Nominal,System Healthy,9999,None
+28500,6,21,0,Nominal,System Healthy,9999,None
+28560,17,22,1,Nominal,System Healthy,9999,None
+28620,49,29,0,Nominal,System Healthy,9999,None
+28680,31,34,1,Nominal,System Healthy,9999,None
+28740,130,52,1,Slow Decay,Operational Friction,89,Schedule Display Controller Diagnostic
+28800,31,40,2,Nominal,System Healthy,9999,None
+28860,40,58,2,Nominal,System Healthy,9999,None
+28920,116,57,1,Slow Decay,Operational Friction,101,Schedule Display Controller Diagnostic
+28980,496,79,7,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+29040,41,35,0,Nominal,System Healthy,9999,None
+29100,1171,88,14,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+29160,24,26,2,Nominal,System Healthy,9999,None
+29220,40,34,1,Nominal,System Healthy,9999,None
+29280,58,22,2,Nominal,System Healthy,9999,None
+29340,145,95,3,Slow Decay,Network Saturation,50,Throttle Non-Critical CDN Bandwidth
+29400,63,38,2,Nominal,System Healthy,9999,None
+29460,154,95,2,Slow Decay,Operational Friction,87,Schedule Display Controller Diagnostic
+29520,11,13,0,Nominal,System Healthy,9999,None
+29580,50,44,0,Nominal,System Healthy,9999,None
+29640,34,29,2,Nominal,System Healthy,9999,None
+29700,5,37,0,Nominal,System Healthy,9999,None
+29760,54,15,1,Nominal,System Healthy,9999,None
+29820,29,28,1,Nominal,System Healthy,9999,None
+29880,118,74,2,Slow Decay,Operational Friction,103,Schedule Display Controller Diagnostic
+29940,60,41,0,Nominal,System Healthy,9999,None
+30000,818,77,8,Rapid Fail,Severe Hardware Fault,14,Restart Display Controller & Isolate Node
+30060,991,94,10,Rapid Fail,Unauthorized Access,9,Lock Admin Console & Revert Overrides
+30120,203,29,4,Slow Decay,Network Saturation,85,Throttle Non-Critical CDN Bandwidth
+30180,155,48,3,Slow Decay,Network Saturation,62,Throttle Non-Critical CDN Bandwidth
+30240,691,85,13,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+30300,61,31,2,Nominal,System Healthy,9999,None
+30360,33,28,0,Nominal,System Healthy,9999,None
+30420,23,18,1,Nominal,System Healthy,9999,None
+30480,54,42,0,Nominal,System Healthy,9999,None
+30540,48,35,0,Nominal,System Healthy,9999,None
+30600,115,81,1,Slow Decay,Operational Friction,115,Schedule Display Controller Diagnostic
+30660,61,36,2,Nominal,System Healthy,9999,None
+30720,858,96,5,Rapid Fail,Severe Hardware Fault,4,Restart Display Controller & Isolate Node
+30780,31,42,2,Nominal,System Healthy,9999,None
+30840,33,24,0,Nominal,System Healthy,9999,None
+30900,153,75,4,Slow Decay,Network Saturation,65,Throttle Non-Critical CDN Bandwidth
+30960,22,30,0,Nominal,System Healthy,9999,None
+31020,66,42,1,Nominal,System Healthy,9999,None
+31080,40,32,1,Nominal,System Healthy,9999,None
+31140,32,38,2,Nominal,System Healthy,9999,None
+31200,196,75,2,Slow Decay,Operational Friction,57,Schedule Display Controller Diagnostic
+31260,60,19,0,Nominal,System Healthy,9999,None
+31320,913,89,12,Rapid Fail,Severe Hardware Fault,13,Restart Display Controller & Isolate Node
+31380,40,15,0,Nominal,System Healthy,9999,None
+31440,49,34,1,Nominal,System Healthy,9999,None
+31500,44,16,2,Nominal,System Healthy,9999,None
+31560,34,44,1,Nominal,System Healthy,9999,None
+31620,57,28,1,Nominal,System Healthy,9999,None
+31680,230,63,1,Slow Decay,Network Saturation,89,Throttle Non-Critical CDN Bandwidth
+31740,47,34,0,Nominal,System Healthy,9999,None
+31800,5,20,1,Nominal,System Healthy,9999,None
+31860,32,36,0,Nominal,System Healthy,9999,None
+31920,151,82,2,Slow Decay,Operational Friction,110,Schedule Display Controller Diagnostic
+31980,127,48,3,Slow Decay,Network Saturation,61,Throttle Non-Critical CDN Bandwidth
+32040,929,79,7,Rapid Fail,Unauthorized Access,12,Lock Admin Console & Revert Overrides
+32100,40,29,0,Nominal,System Healthy,9999,None
+32160,28,27,2,Nominal,System Healthy,9999,None
+32220,37,46,0,Nominal,System Healthy,9999,None
+32280,38,30,2,Nominal,System Healthy,9999,None
+32340,11,30,2,Nominal,System Healthy,9999,None
+32400,199,59,1,Slow Decay,Operational Friction,112,Schedule Display Controller Diagnostic
+32460,49,39,1,Nominal,System Healthy,9999,None
+32520,40,41,1,Nominal,System Healthy,9999,None
+32580,42,49,0,Nominal,System Healthy,9999,None
+32640,44,32,2,Nominal,System Healthy,9999,None
+32700,74,32,2,Nominal,System Healthy,9999,None
+32760,43,34,1,Nominal,System Healthy,9999,None
+32820,160,54,2,Slow Decay,Operational Friction,109,Schedule Display Controller Diagnostic
+32880,167,76,2,Slow Decay,Network Saturation,115,Throttle Non-Critical CDN Bandwidth
+32940,346,97,9,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+33000,22,20,0,Nominal,System Healthy,9999,None
+33060,160,80,2,Slow Decay,Operational Friction,116,Schedule Display Controller Diagnostic
+33120,44,23,0,Nominal,System Healthy,9999,None
+33180,27,25,1,Nominal,System Healthy,9999,None
+33240,36,36,0,Nominal,System Healthy,9999,None
+33300,17,33,1,Nominal,System Healthy,9999,None
+33360,43,43,1,Nominal,System Healthy,9999,None
+33420,23,28,1,Nominal,System Healthy,9999,None
+33480,47,41,1,Nominal,System Healthy,9999,None
+33540,57,18,2,Nominal,System Healthy,9999,None
+33600,40,28,1,Nominal,System Healthy,9999,None
+33660,606,98,9,Rapid Fail,Unauthorized Access,12,Lock Admin Console & Revert Overrides
+33720,53,24,2,Nominal,System Healthy,9999,None
+33780,856,90,9,Rapid Fail,Severe Hardware Fault,6,Restart Display Controller & Isolate Node
+33840,177,63,3,Slow Decay,Operational Friction,97,Schedule Display Controller Diagnostic
+33900,53,24,0,Nominal,System Healthy,9999,None
+33960,41,31,0,Nominal,System Healthy,9999,None
+34020,5,35,1,Nominal,System Healthy,9999,None
+34080,45,29,0,Nominal,System Healthy,9999,None
+34140,39,44,0,Nominal,System Healthy,9999,None
+34200,52,30,1,Nominal,System Healthy,9999,None
+34260,112,63,4,Slow Decay,Operational Friction,96,Schedule Display Controller Diagnostic
+34320,16,35,1,Nominal,System Healthy,9999,None
+34380,5,27,2,Nominal,System Healthy,9999,None
+34440,36,24,0,Nominal,System Healthy,9999,None
+34500,28,18,0,Nominal,System Healthy,9999,None
+34560,29,15,1,Nominal,System Healthy,9999,None
+34620,44,38,0,Nominal,System Healthy,9999,None
+34680,34,26,0,Nominal,System Healthy,9999,None
+34740,51,15,0,Nominal,System Healthy,9999,None
+34800,554,94,13,Rapid Fail,Severe Hardware Fault,10,Restart Display Controller & Isolate Node
+34860,52,28,1,Nominal,System Healthy,9999,None
+34920,1195,92,6,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+34980,20,34,1,Nominal,System Healthy,9999,None
+35040,156,61,1,Slow Decay,Operational Friction,76,Schedule Display Controller Diagnostic
+35100,60,15,2,Nominal,System Healthy,9999,None
+35160,190,61,1,Slow Decay,Operational Friction,95,Schedule Display Controller Diagnostic
+35220,1078,94,8,Rapid Fail,Unauthorized Access,12,Lock Admin Console & Revert Overrides
+35280,69,23,0,Nominal,System Healthy,9999,None
+35340,56,24,2,Nominal,System Healthy,9999,None
+35400,468,93,13,Rapid Fail,Unauthorized Access,8,Lock Admin Console & Revert Overrides
+35460,7,39,0,Nominal,System Healthy,9999,None
+35520,29,26,1,Nominal,System Healthy,9999,None
+35580,35,15,1,Nominal,System Healthy,9999,None
+35640,867,95,10,Rapid Fail,Unauthorized Access,7,Lock Admin Console & Revert Overrides
+35700,126,54,3,Slow Decay,Network Saturation,75,Throttle Non-Critical CDN Bandwidth
+35760,109,48,2,Slow Decay,Operational Friction,105,Schedule Display Controller Diagnostic
+35820,55,35,0,Nominal,System Healthy,9999,None
+35880,42,41,0,Nominal,System Healthy,9999,None
+35940,160,63,4,Slow Decay,Operational Friction,114,Schedule Display Controller Diagnostic
+36000,25,6,0,Nominal,System Healthy,9999,None
+36060,122,53,2,Slow Decay,Network Saturation,62,Throttle Non-Critical CDN Bandwidth
+36120,27,38,2,Nominal,System Healthy,9999,None
+36180,881,80,8,Rapid Fail,Severe Hardware Fault,4,Restart Display Controller & Isolate Node
+36240,34,22,2,Nominal,System Healthy,9999,None
+36300,70,26,0,Nominal,System Healthy,9999,None
+36360,59,50,1,Nominal,System Healthy,9999,None
+36420,151,71,3,Slow Decay,Network Saturation,96,Throttle Non-Critical CDN Bandwidth
+36480,34,19,1,Nominal,System Healthy,9999,None
+36540,65,31,1,Nominal,System Healthy,9999,None
+36600,894,87,6,Rapid Fail,Severe Hardware Fault,6,Restart Display Controller & Isolate Node
+36660,12,28,1,Nominal,System Healthy,9999,None
+36720,454,91,10,Rapid Fail,Severe Hardware Fault,13,Restart Display Controller & Isolate Node
+36780,163,52,2,Slow Decay,Operational Friction,70,Schedule Display Controller Diagnostic
+36840,56,43,2,Nominal,System Healthy,9999,None
+36900,193,70,4,Slow Decay,Network Saturation,106,Throttle Non-Critical CDN Bandwidth
+36960,826,93,7,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+37020,24,34,1,Nominal,System Healthy,9999,None
+37080,171,64,4,Slow Decay,Network Saturation,62,Throttle Non-Critical CDN Bandwidth
+37140,46,33,1,Nominal,System Healthy,9999,None
+37200,939,97,10,Rapid Fail,Unauthorized Access,6,Lock Admin Console & Revert Overrides
+37260,129,77,3,Slow Decay,Network Saturation,60,Throttle Non-Critical CDN Bandwidth
+37320,18,44,2,Nominal,System Healthy,9999,None
+37380,32,34,0,Nominal,System Healthy,9999,None
+37440,164,35,3,Slow Decay,Network Saturation,59,Throttle Non-Critical CDN Bandwidth
+37500,30,6,1,Nominal,System Healthy,9999,None
+37560,1254,80,5,Rapid Fail,Severe Hardware Fault,10,Restart Display Controller & Isolate Node
+37620,45,24,0,Nominal,System Healthy,9999,None
+37680,26,39,2,Nominal,System Healthy,9999,None
+37740,44,37,1,Nominal,System Healthy,9999,None
+37800,12,18,1,Nominal,System Healthy,9999,None
+37860,790,83,15,Rapid Fail,Severe Hardware Fault,10,Restart Display Controller & Isolate Node
+37920,41,17,2,Nominal,System Healthy,9999,None
+37980,1016,94,9,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+38040,117,58,2,Slow Decay,Operational Friction,69,Schedule Display Controller Diagnostic
+38100,63,16,2,Nominal,System Healthy,9999,None
+38160,141,91,4,Slow Decay,Operational Friction,53,Schedule Display Controller Diagnostic
+38220,31,34,1,Nominal,System Healthy,9999,None
+38280,58,18,2,Nominal,System Healthy,9999,None
+38340,42,16,0,Nominal,System Healthy,9999,None
+38400,24,49,0,Nominal,System Healthy,9999,None
+38460,35,33,1,Nominal,System Healthy,9999,None
+38520,26,38,0,Nominal,System Healthy,9999,None
+38580,52,26,1,Nominal,System Healthy,9999,None
+38640,28,38,2,Nominal,System Healthy,9999,None
+38700,46,19,2,Nominal,System Healthy,9999,None
+38760,38,57,0,Nominal,System Healthy,9999,None
+38820,31,23,0,Nominal,System Healthy,9999,None
+38880,205,52,4,Slow Decay,Operational Friction,89,Schedule Display Controller Diagnostic
+38940,678,87,13,Rapid Fail,Severe Hardware Fault,15,Restart Display Controller & Isolate Node
+39000,70,23,2,Nominal,System Healthy,9999,None
+39060,755,81,8,Rapid Fail,Severe Hardware Fault,2,Restart Display Controller & Isolate Node
+39120,48,27,2,Nominal,System Healthy,9999,None
+39180,5,19,0,Nominal,System Healthy,9999,None
+39240,413,87,5,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+39300,18,21,0,Nominal,System Healthy,9999,None
+39360,30,42,2,Nominal,System Healthy,9999,None
+39420,68,46,4,Slow Decay,Network Saturation,88,Throttle Non-Critical CDN Bandwidth
+39480,26,28,1,Nominal,System Healthy,9999,None
+39540,67,21,0,Nominal,System Healthy,9999,None
+39600,26,33,0,Nominal,System Healthy,9999,None
+39660,191,78,3,Slow Decay,Network Saturation,91,Throttle Non-Critical CDN Bandwidth
+39720,48,19,1,Nominal,System Healthy,9999,None
+39780,41,36,1,Nominal,System Healthy,9999,None
+39840,49,22,0,Nominal,System Healthy,9999,None
+39900,29,15,0,Nominal,System Healthy,9999,None
+39960,55,16,0,Nominal,System Healthy,9999,None
+40020,49,22,2,Nominal,System Healthy,9999,None
+40080,42,23,2,Nominal,System Healthy,9999,None
+40140,160,87,3,Slow Decay,Network Saturation,95,Throttle Non-Critical CDN Bandwidth
+40200,55,34,0,Nominal,System Healthy,9999,None
+40260,40,5,1,Nominal,System Healthy,9999,None
+40320,51,42,2,Nominal,System Healthy,9999,None
+40380,67,13,1,Nominal,System Healthy,9999,None
+40440,152,75,4,Slow Decay,Network Saturation,55,Throttle Non-Critical CDN Bandwidth
+40500,125,58,4,Slow Decay,Operational Friction,57,Schedule Display Controller Diagnostic
+40560,182,47,1,Slow Decay,Operational Friction,110,Schedule Display Controller Diagnostic
+40620,34,20,0,Nominal,System Healthy,9999,None
+40680,165,64,4,Slow Decay,Network Saturation,85,Throttle Non-Critical CDN Bandwidth
+40740,37,37,0,Nominal,System Healthy,9999,None
+40800,930,91,10,Rapid Fail,Severe Hardware Fault,9,Restart Display Controller & Isolate Node
+40860,51,8,0,Nominal,System Healthy,9999,None
+40920,49,40,0,Nominal,System Healthy,9999,None
+40980,48,41,2,Nominal,System Healthy,9999,None
+41040,31,29,2,Nominal,System Healthy,9999,None
+41100,43,44,0,Nominal,System Healthy,9999,None
+41160,54,48,0,Nominal,System Healthy,9999,None
+41220,145,53,2,Slow Decay,Operational Friction,110,Schedule Display Controller Diagnostic
+41280,59,14,2,Nominal,System Healthy,9999,None
+41340,39,9,0,Nominal,System Healthy,9999,None
+41400,33,29,1,Nominal,System Healthy,9999,None
+41460,15,38,2,Nominal,System Healthy,9999,None
+41520,57,30,2,Nominal,System Healthy,9999,None
+41580,874,88,13,Rapid Fail,Severe Hardware Fault,4,Restart Display Controller & Isolate Node
+41640,53,29,2,Nominal,System Healthy,9999,None
+41700,35,36,1,Nominal,System Healthy,9999,None
+41760,36,20,1,Nominal,System Healthy,9999,None
+41820,14,28,1,Nominal,System Healthy,9999,None
+41880,46,21,0,Nominal,System Healthy,9999,None
+41940,50,30,1,Nominal,System Healthy,9999,None
+42000,727,92,5,Rapid Fail,Severe Hardware Fault,5,Restart Display Controller & Isolate Node
+42060,32,9,1,Nominal,System Healthy,9999,None
+42120,44,30,1,Nominal,System Healthy,9999,None
+42180,34,34,0,Nominal,System Healthy,9999,None
+42240,51,46,0,Nominal,System Healthy,9999,None
+42300,50,16,2,Nominal,System Healthy,9999,None
+42360,133,59,3,Slow Decay,Network Saturation,68,Throttle Non-Critical CDN Bandwidth
+42420,159,58,1,Slow Decay,Network Saturation,111,Throttle Non-Critical CDN Bandwidth
+42480,875,91,4,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+42540,865,85,11,Rapid Fail,Severe Hardware Fault,6,Restart Display Controller & Isolate Node
+42600,132,22,3,Slow Decay,Operational Friction,71,Schedule Display Controller Diagnostic
+42660,31,46,0,Nominal,System Healthy,9999,None
+42720,42,27,1,Nominal,System Healthy,9999,None
+42780,39,40,0,Nominal,System Healthy,9999,None
+42840,40,34,1,Nominal,System Healthy,9999,None
+42900,34,28,2,Nominal,System Healthy,9999,None
+42960,31,31,2,Nominal,System Healthy,9999,None
+43020,23,36,2,Nominal,System Healthy,9999,None
+43080,1048,79,8,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+43140,34,38,2,Nominal,System Healthy,9999,None
+43200,121,64,2,Slow Decay,Operational Friction,47,Schedule Display Controller Diagnostic
+43260,39,8,2,Nominal,System Healthy,9999,None
+43320,31,30,1,Nominal,System Healthy,9999,None
+43380,56,38,0,Nominal,System Healthy,9999,None
+43440,153,74,1,Slow Decay,Network Saturation,86,Throttle Non-Critical CDN Bandwidth
+43500,25,33,1,Nominal,System Healthy,9999,None
+43560,33,25,1,Nominal,System Healthy,9999,None
+43620,41,34,1,Nominal,System Healthy,9999,None
+43680,35,29,0,Nominal,System Healthy,9999,None
+43740,13,37,0,Nominal,System Healthy,9999,None
+43800,131,58,3,Slow Decay,Operational Friction,53,Schedule Display Controller Diagnostic
+43860,41,29,0,Nominal,System Healthy,9999,None
+43920,13,46,0,Nominal,System Healthy,9999,None
+43980,69,40,3,Slow Decay,Operational Friction,116,Schedule Display Controller Diagnostic
+44040,54,32,2,Nominal,System Healthy,9999,None
+44100,60,22,0,Nominal,System Healthy,9999,None
+44160,37,21,0,Nominal,System Healthy,9999,None
+44220,40,25,2,Nominal,System Healthy,9999,None
+44280,21,27,1,Nominal,System Healthy,9999,None
+44340,944,82,5,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+44400,87,87,3,Slow Decay,Network Saturation,50,Throttle Non-Critical CDN Bandwidth
+44460,37,31,0,Nominal,System Healthy,9999,None
+44520,46,28,1,Nominal,System Healthy,9999,None
+44580,142,83,4,Slow Decay,Network Saturation,56,Throttle Non-Critical CDN Bandwidth
+44640,784,87,15,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+44700,181,51,4,Slow Decay,Operational Friction,99,Schedule Display Controller Diagnostic
+44760,136,68,3,Slow Decay,Operational Friction,66,Schedule Display Controller Diagnostic
+44820,1019,91,8,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+44880,43,31,0,Nominal,System Healthy,9999,None
+44940,53,41,1,Nominal,System Healthy,9999,None
+45000,26,27,1,Nominal,System Healthy,9999,None
+45060,894,94,4,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+45120,41,41,1,Nominal,System Healthy,9999,None
+45180,195,55,4,Slow Decay,Network Saturation,51,Throttle Non-Critical CDN Bandwidth
+45240,26,22,1,Nominal,System Healthy,9999,None
+45300,1020,89,13,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+45360,17,25,0,Nominal,System Healthy,9999,None
+45420,59,55,2,Nominal,System Healthy,9999,None
+45480,211,67,1,Slow Decay,Operational Friction,65,Schedule Display Controller Diagnostic
+45540,60,31,1,Nominal,System Healthy,9999,None
+45600,224,34,4,Slow Decay,Operational Friction,87,Schedule Display Controller Diagnostic
+45660,25,28,2,Nominal,System Healthy,9999,None
+45720,35,16,2,Nominal,System Healthy,9999,None
+45780,34,30,2,Nominal,System Healthy,9999,None
+45840,45,27,2,Nominal,System Healthy,9999,None
+45900,76,22,1,Nominal,System Healthy,9999,None
+45960,939,93,12,Rapid Fail,Unauthorized Access,5,Lock Admin Console & Revert Overrides
+46020,29,20,0,Nominal,System Healthy,9999,None
+46080,44,21,0,Nominal,System Healthy,9999,None
+46140,30,31,2,Nominal,System Healthy,9999,None
+46200,30,33,1,Nominal,System Healthy,9999,None
+46260,36,16,2,Nominal,System Healthy,9999,None
+46320,13,32,0,Nominal,System Healthy,9999,None
+46380,52,32,1,Nominal,System Healthy,9999,None
+46440,182,68,4,Slow Decay,Network Saturation,114,Throttle Non-Critical CDN Bandwidth
+46500,39,33,0,Nominal,System Healthy,9999,None
+46560,542,96,13,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+46620,55,30,1,Nominal,System Healthy,9999,None
+46680,18,29,1,Nominal,System Healthy,9999,None
+46740,189,60,4,Slow Decay,Operational Friction,101,Schedule Display Controller Diagnostic
+46800,718,92,4,Rapid Fail,Unauthorized Access,4,Lock Admin Console & Revert Overrides
+46860,25,21,2,Nominal,System Healthy,9999,None
+46920,29,31,1,Nominal,System Healthy,9999,None
+46980,54,45,1,Nominal,System Healthy,9999,None
+47040,23,34,1,Nominal,System Healthy,9999,None
+47100,123,55,4,Slow Decay,Network Saturation,88,Throttle Non-Critical CDN Bandwidth
+47160,175,41,2,Slow Decay,Operational Friction,102,Schedule Display Controller Diagnostic
+47220,170,93,4,Slow Decay,Network Saturation,54,Throttle Non-Critical CDN Bandwidth
+47280,523,78,4,Rapid Fail,Unauthorized Access,2,Lock Admin Console & Revert Overrides
+47340,1110,95,5,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+47400,201,61,2,Slow Decay,Operational Friction,49,Schedule Display Controller Diagnostic
+47460,25,16,2,Nominal,System Healthy,9999,None
+47520,49,35,1,Nominal,System Healthy,9999,None
+47580,5,23,0,Nominal,System Healthy,9999,None
+47640,1225,83,11,Rapid Fail,Severe Hardware Fault,13,Restart Display Controller & Isolate Node
+47700,54,43,0,Nominal,System Healthy,9999,None
+47760,163,71,3,Slow Decay,Operational Friction,51,Schedule Display Controller Diagnostic
+47820,36,65,1,Nominal,System Healthy,9999,None
+47880,13,16,2,Nominal,System Healthy,9999,None
+47940,154,66,2,Slow Decay,Operational Friction,111,Schedule Display Controller Diagnostic
+48000,26,43,0,Nominal,System Healthy,9999,None
+48060,38,31,0,Nominal,System Healthy,9999,None
+48120,37,19,0,Nominal,System Healthy,9999,None
+48180,149,60,2,Slow Decay,Network Saturation,108,Throttle Non-Critical CDN Bandwidth
+48240,33,26,0,Nominal,System Healthy,9999,None
+48300,45,31,0,Nominal,System Healthy,9999,None
+48360,42,45,0,Nominal,System Healthy,9999,None
+48420,185,39,1,Slow Decay,Operational Friction,96,Schedule Display Controller Diagnostic
+48480,831,93,7,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+48540,53,14,0,Nominal,System Healthy,9999,None
+48600,215,57,1,Slow Decay,Network Saturation,120,Throttle Non-Critical CDN Bandwidth
+48660,32,25,1,Nominal,System Healthy,9999,None
+48720,38,44,0,Nominal,System Healthy,9999,None
+48780,50,17,0,Nominal,System Healthy,9999,None
+48840,13,31,1,Nominal,System Healthy,9999,None
+48900,69,31,0,Nominal,System Healthy,9999,None
+48960,56,15,2,Nominal,System Healthy,9999,None
+49020,30,19,0,Nominal,System Healthy,9999,None
+49080,58,34,2,Nominal,System Healthy,9999,None
+49140,136,16,2,Slow Decay,Operational Friction,118,Schedule Display Controller Diagnostic
+49200,592,100,8,Rapid Fail,Severe Hardware Fault,15,Restart Display Controller & Isolate Node
+49260,558,90,9,Rapid Fail,Severe Hardware Fault,3,Restart Display Controller & Isolate Node
+49320,47,35,1,Nominal,System Healthy,9999,None
+49380,48,21,2,Nominal,System Healthy,9999,None
+49440,20,22,1,Nominal,System Healthy,9999,None
+49500,235,78,3,Slow Decay,Network Saturation,50,Throttle Non-Critical CDN Bandwidth
+49560,158,50,4,Slow Decay,Operational Friction,82,Schedule Display Controller Diagnostic
+49620,157,93,3,Slow Decay,Operational Friction,48,Schedule Display Controller Diagnostic
+49680,1023,80,15,Rapid Fail,Unauthorized Access,12,Lock Admin Console & Revert Overrides
+49740,137,70,3,Slow Decay,Operational Friction,46,Schedule Display Controller Diagnostic
+49800,171,55,1,Slow Decay,Network Saturation,85,Throttle Non-Critical CDN Bandwidth
+49860,39,40,2,Nominal,System Healthy,9999,None
+49920,959,78,14,Rapid Fail,Unauthorized Access,10,Lock Admin Console & Revert Overrides
+49980,144,65,4,Slow Decay,Network Saturation,75,Throttle Non-Critical CDN Bandwidth
+50040,36,15,0,Nominal,System Healthy,9999,None
+50100,42,40,2,Nominal,System Healthy,9999,None
+50160,513,100,9,Rapid Fail,Severe Hardware Fault,15,Restart Display Controller & Isolate Node
+50220,8,11,0,Nominal,System Healthy,9999,None
+50280,38,27,0,Nominal,System Healthy,9999,None
+50340,54,18,2,Nominal,System Healthy,9999,None
+50400,37,23,0,Nominal,System Healthy,9999,None
+50460,53,44,2,Nominal,System Healthy,9999,None
+50520,69,19,2,Nominal,System Healthy,9999,None
+50580,108,63,3,Slow Decay,Operational Friction,115,Schedule Display Controller Diagnostic
+50640,48,30,2,Nominal,System Healthy,9999,None
+50700,1030,90,8,Rapid Fail,Severe Hardware Fault,3,Restart Display Controller & Isolate Node
+50760,32,34,1,Nominal,System Healthy,9999,None
+50820,9,49,1,Nominal,System Healthy,9999,None
+50880,166,65,4,Slow Decay,Operational Friction,80,Schedule Display Controller Diagnostic
+50940,143,73,1,Slow Decay,Operational Friction,90,Schedule Display Controller Diagnostic
+51000,758,91,4,Rapid Fail,Severe Hardware Fault,15,Restart Display Controller & Isolate Node
+51060,48,17,2,Nominal,System Healthy,9999,None
+51120,479,70,4,Rapid Fail,Unauthorized Access,15,Lock Admin Console & Revert Overrides
+51180,163,75,2,Slow Decay,Network Saturation,116,Throttle Non-Critical CDN Bandwidth
+51240,33,21,0,Nominal,System Healthy,9999,None
+51300,840,82,13,Rapid Fail,Severe Hardware Fault,11,Restart Display Controller & Isolate Node
+51360,31,39,0,Nominal,System Healthy,9999,None
+51420,172,49,3,Slow Decay,Operational Friction,59,Schedule Display Controller Diagnostic
+51480,526,82,15,Rapid Fail,Unauthorized Access,13,Lock Admin Console & Revert Overrides
+51540,26,38,0,Nominal,System Healthy,9999,None
+51600,1009,85,5,Rapid Fail,Unauthorized Access,6,Lock Admin Console & Revert Overrides
+51660,711,88,12,Rapid Fail,Severe Hardware Fault,3,Restart Display Controller & Isolate Node
+51720,54,19,2,Nominal,System Healthy,9999,None
+51780,5,26,0,Nominal,System Healthy,9999,None
+51840,9,9,0,Nominal,System Healthy,9999,None
+51900,22,32,2,Nominal,System Healthy,9999,None
+51960,50,39,1,Nominal,System Healthy,9999,None
+52020,985,92,10,Rapid Fail,Unauthorized Access,11,Lock Admin Console & Revert Overrides
+52080,172,69,4,Slow Decay,Operational Friction,69,Schedule Display Controller Diagnostic
+52140,40,29,2,Nominal,System Healthy,9999,None
+52200,152,51,4,Slow Decay,Operational Friction,52,Schedule Display Controller Diagnostic
+52260,60,41,1,Nominal,System Healthy,9999,None
+52320,813,89,9,Rapid Fail,Severe Hardware Fault,12,Restart Display Controller & Isolate Node
+52380,55,16,2,Nominal,System Healthy,9999,None
+52440,24,32,2,Nominal,System Healthy,9999,None
+52500,30,30,2,Nominal,System Healthy,9999,None
+52560,21,28,0,Nominal,System Healthy,9999,None
+52620,39,26,0,Nominal,System Healthy,9999,None
+52680,40,21,1,Nominal,System Healthy,9999,None
+52740,762,93,6,Rapid Fail,Unauthorized Access,3,Lock Admin Console & Revert Overrides
+52800,115,62,1,Slow Decay,Network Saturation,104,Throttle Non-Critical CDN Bandwidth
+52860,31,27,1,Nominal,System Healthy,9999,None
+52920,56,32,1,Nominal,System Healthy,9999,None
+52980,523,84,11,Rapid Fail,Unauthorized Access,9,Lock Admin Console & Revert Overrides
+53040,33,15,0,Nominal,System Healthy,9999,None
+53100,179,73,2,Slow Decay,Operational Friction,60,Schedule Display Controller Diagnostic
+53160,51,24,2,Nominal,System Healthy,9999,None
+53220,83,52,2,Slow Decay,Operational Friction,89,Schedule Display Controller Diagnostic
+53280,27,41,2,Nominal,System Healthy,9999,None
+53340,23,19,2,Nominal,System Healthy,9999,None
+53400,125,54,1,Slow Decay,Operational Friction,102,Schedule Display Controller Diagnostic
+53460,16,30,1,Nominal,System Healthy,9999,None
+53520,49,43,1,Nominal,System Healthy,9999,None
+53580,217,49,4,Slow Decay,Operational Friction,84,Schedule Display Controller Diagnostic
+53640,118,57,4,Slow Decay,Operational Friction,81,Schedule Display Controller Diagnostic
+53700,53,40,1,Nominal,System Healthy,9999,None
+53760,908,89,15,Rapid Fail,Severe Hardware Fault,14,Restart Display Controller & Isolate Node
+53820,17,20,2,Nominal,System Healthy,9999,None
+53880,34,30,2,Nominal,System Healthy,9999,None
+53940,24,17,2,Nominal,System Healthy,9999,None
+54000,24,35,1,Nominal,System Healthy,9999,None
+54060,140,77,4,Slow Decay,Network Saturation,52,Throttle Non-Critical CDN Bandwidth
+54120,50,20,2,Nominal,System Healthy,9999,None
+54180,100,44,4,Slow Decay,Network Saturation,86,Throttle Non-Critical CDN Bandwidth
+54240,158,85,4,Slow Decay,Operational Friction,63,Schedule Display Controller Diagnostic
+54300,49,8,2,Nominal,System Healthy,9999,None
+54360,38,18,2,Nominal,System Healthy,9999,None
+54420,7,49,1,Nominal,System Healthy,9999,None
+54480,43,34,0,Nominal,System Healthy,9999,None
+54540,43,23,2,Nominal,System Healthy,9999,None
+54600,56,29,2,Nominal,System Healthy,9999,None
+54660,30,42,2,Nominal,System Healthy,9999,None
+54720,25,21,1,Nominal,System Healthy,9999,None
+54780,59,24,2,Nominal,System Healthy,9999,None
+54840,71,38,2,Nominal,System Healthy,9999,None
+54900,44,42,1,Nominal,System Healthy,9999,None
+54960,195,77,3,Slow Decay,Network Saturation,102,Throttle Non-Critical CDN Bandwidth
+55020,53,34,2,Nominal,System Healthy,9999,None
+55080,198,49,2,Slow Decay,Operational Friction,71,Schedule Display Controller Diagnostic
+55140,13,27,2,Nominal,System Healthy,9999,None
+55200,46,15,1,Nominal,System Healthy,9999,None
+55260,33,25,1,Nominal,System Healthy,9999,None
+55320,42,21,2,Nominal,System Healthy,9999,None
+55380,40,18,2,Nominal,System Healthy,9999,None
+55440,108,59,3,Slow Decay,Operational Friction,120,Schedule Display Controller Diagnostic
+55500,34,26,1,Nominal,System Healthy,9999,None
+55560,59,31,2,Nominal,System Healthy,9999,None
+55620,15,32,2,Nominal,System Healthy,9999,None
+55680,24,37,0,Nominal,System Healthy,9999,None
+55740,28,25,1,Nominal,System Healthy,9999,None
+55800,507,89,4,Rapid Fail,Unauthorized Access,6,Lock Admin Console & Revert Overrides
+55860,64,36,2,Nominal,System Healthy,9999,None
+55920,165,50,2,Slow Decay,Operational Friction,85,Schedule Display Controller Diagnostic
+55980,1165,69,15,Rapid Fail,Severe Hardware Fault,5,Restart Display Controller & Isolate Node
+56040,37,39,0,Nominal,System Healthy,9999,None
+56100,38,18,2,Nominal,System Healthy,9999,None
+56160,32,35,1,Nominal,System Healthy,9999,None
+56220,682,87,15,Rapid Fail,Severe Hardware Fault,9,Restart Display Controller & Isolate Node
+56280,202,57,2,Slow Decay,Operational Friction,106,Schedule Display Controller Diagnostic
+56340,217,78,2,Slow Decay,Operational Friction,120,Schedule Display Controller Diagnostic
+56400,152,74,1,Slow Decay,Network Saturation,75,Throttle Non-Critical CDN Bandwidth
+56460,35,20,2,Nominal,System Healthy,9999,None
+56520,125,58,2,Slow Decay,Network Saturation,50,Throttle Non-Critical CDN Bandwidth
+56580,50,39,1,Nominal,System Healthy,9999,None
+56640,316,84,4,Rapid Fail,Unauthorized Access,13,Lock Admin Console & Revert Overrides
+56700,25,24,2,Nominal,System Healthy,9999,None
+56760,41,42,2,Nominal,System Healthy,9999,None
+56820,145,73,2,Slow Decay,Operational Friction,53,Schedule Display Controller Diagnostic
+56880,147,56,1,Slow Decay,Network Saturation,105,Throttle Non-Critical CDN Bandwidth
+56940,59,34,0,Nominal,System Healthy,9999,None
+57000,905,90,10,Rapid Fail,Severe Hardware Fault,2,Restart Display Controller & Isolate Node
+57060,52,38,1,Nominal,System Healthy,9999,None
+57120,33,29,1,Nominal,System Healthy,9999,None
+57180,197,75,3,Slow Decay,Operational Friction,60,Schedule Display Controller Diagnostic
+57240,26,33,2,Nominal,System Healthy,9999,None
+57300,157,41,2,Slow Decay,Network Saturation,111,Throttle Non-Critical CDN Bandwidth
+57360,57,30,0,Nominal,System Healthy,9999,None
+57420,51,34,0,Nominal,System Healthy,9999,None
+57480,57,50,2,Nominal,System Healthy,9999,None
+57540,41,29,0,Nominal,System Healthy,9999,None
+57600,147,85,4,Slow Decay,Operational Friction,98,Schedule Display Controller Diagnostic
+57660,37,24,0,Nominal,System Healthy,9999,None
+57720,132,57,1,Slow Decay,Network Saturation,116,Throttle Non-Critical CDN Bandwidth
+57780,58,23,2,Nominal,System Healthy,9999,None
+57840,46,13,1,Nominal,System Healthy,9999,None
+57900,39,24,0,Nominal,System Healthy,9999,None
+57960,40,44,1,Nominal,System Healthy,9999,None
+58020,129,75,3,Slow Decay,Operational Friction,115,Schedule Display Controller Diagnostic
+58080,1033,97,10,Rapid Fail,Unauthorized Access,6,Lock Admin Console & Revert Overrides
+58140,31,13,0,Nominal,System Healthy,9999,None
+58200,40,36,2,Nominal,System Healthy,9999,None
+58260,58,34,1,Nominal,System Healthy,9999,None
+58320,41,47,1,Nominal,System Healthy,9999,None
+58380,150,63,2,Slow Decay,Network Saturation,113,Throttle Non-Critical CDN Bandwidth
+58440,73,30,2,Nominal,System Healthy,9999,None
+58500,51,31,2,Nominal,System Healthy,9999,None
+58560,721,91,11,Rapid Fail,Severe Hardware Fault,7,Restart Display Controller & Isolate Node
+58620,148,81,3,Slow Decay,Operational Friction,82,Schedule Display Controller Diagnostic
+58680,45,36,1,Nominal,System Healthy,9999,None
+58740,48,28,1,Nominal,System Healthy,9999,None
+58800,45,23,2,Nominal,System Healthy,9999,None
+58860,39,27,2,Nominal,System Healthy,9999,None
+58920,36,47,1,Nominal,System Healthy,9999,None
+58980,52,36,1,Nominal,System Healthy,9999,None
+59040,51,42,1,Nominal,System Healthy,9999,None
+59100,54,39,1,Nominal,System Healthy,9999,None
+59160,77,34,2,Nominal,System Healthy,9999,None
+59220,59,26,1,Nominal,System Healthy,9999,None
+59280,55,30,1,Nominal,System Healthy,9999,None
+59340,61,31,0,Nominal,System Healthy,9999,None
+59400,91,87,1,Slow Decay,Operational Friction,73,Schedule Display Controller Diagnostic
+59460,53,24,1,Nominal,System Healthy,9999,None
+59520,41,38,2,Nominal,System Healthy,9999,None
+59580,34,22,1,Nominal,System Healthy,9999,None
+59640,1186,100,13,Rapid Fail,Unauthorized Access,14,Lock Admin Console & Revert Overrides
+59700,217,86,2,Slow Decay,Network Saturation,96,Throttle Non-Critical CDN Bandwidth
+59760,59,31,2,Nominal,System Healthy,9999,None
+59820,36,25,2,Nominal,System Healthy,9999,None
+59880,59,36,2,Nominal,System Healthy,9999,None
+59940,40,43,1,Nominal,System Healthy,9999,None

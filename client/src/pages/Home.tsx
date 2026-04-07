@@ -84,12 +84,12 @@ export default function Home() {
             display_logs: { 
               content_id: 'display-01', 
               play_time: 120, 
-              frequency: isUnderAttack ? Math.random() * 50 : 500 + Math.random() * 50 
+              frequency: isUnderAttack ? Math.round(Math.random() * 50) : Math.round(500 + Math.random() * 50)
             },
             admin_actions: { login_time: new Date().toISOString(), content_change: false, device_access: 'normal' },
             network_logs: { 
               packets: isUnderAttack ? 15000 : 800, 
-              latency: isUnderAttack ? 800 + Math.random() * 400 : 20 + Math.random() * 15, 
+              latency: isUnderAttack ? Math.round(800 + Math.random() * 400) : Math.round(20 + Math.random() * 15), 
               bandwidth: 100 
             },
             behavior_logs: { session_duration: 300, interaction_count: 5 },
@@ -97,7 +97,7 @@ export default function Home() {
           engine_analysis: {
             is_anomalous: isUnderAttack,
             anomaly_severity: isUnderAttack ? 9 : 0,
-            trust_score: isUnderAttack ? 25 + Math.random() * 15 : 98 + Math.random() * 2,
+            trust_score: isUnderAttack ? Math.round(25 + Math.random() * 15) : Math.round(98 + Math.random() * 2),
             status: isUnderAttack ? 'Critical DDoS Detected' : 'Healthy',
           }
         };
@@ -180,7 +180,7 @@ export default function Home() {
           <div className="md:col-span-1">
             <div className="sticky top-8">
               <h2 className="text-lg font-semibold text-cyan-400 mb-4">Intelligence</h2>
-              <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} />
+              <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
             </div>
           </div>
         </div>

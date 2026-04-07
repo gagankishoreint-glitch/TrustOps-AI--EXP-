@@ -4,9 +4,10 @@ import { AlertCircle, Zap } from 'lucide-react';
 interface SecurityCopilotProps {
   trustScore: number;
   recentAnomalies: any[];
+  isDemo?: boolean;
 }
 
-export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, recentAnomalies }) => {
+export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, recentAnomalies, isDemo = false }) => {
   const [explanation, setExplanation] = useState<string>('');
   const [actions, setActions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,14 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
   const fetchRiskExplanation = async () => {
     try {
       setLoading(true);
+      if (isDemo) {
+        // Mock GenAI response for presentation
+        setTimeout(() => {
+          setExplanation("GenAI Insight: Detected severe simulated anomalous behavior indicating a volumetric DDoS attack. Inbound latency is highly irregular from multiple nodes. Affected region isolated.");
+          setLoading(false);
+        }, 1200);
+        return;
+      }
       const response = await fetch('http://127.0.0.1:8000/api/v1/explain-risk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,12 +48,16 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
       console.error('Failed to fetch risk explanation:', error);
       setExplanation('Unable to fetch risk analysis at this time.');
     } finally {
-      setLoading(false);
+      if (!isDemo) setLoading(false);
     }
   };
 
   const triggerAutoResponse = async () => {
     try {
+      if (isDemo) {
+        setActions(prev => ["Rerouted network traffic via secondary CDN", "Blocked malicious ingress IPs", ...prev].slice(0, 10));
+        return;
+      }
       const response = await fetch('http://127.0.0.1:8000/api/v1/auto-response', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

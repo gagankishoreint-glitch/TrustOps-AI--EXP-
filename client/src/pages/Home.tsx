@@ -39,6 +39,7 @@ export default function Home() {
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true');
+  const [manualOverride, setManualOverride] = useState(false);
 
   const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({ active: false, type: '', tick: 0 });
 
@@ -141,6 +142,20 @@ export default function Home() {
     }
   }, [isDemo, handlePayload]);
 
+  // Executive Presentation Override (Shift + D)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'D' && e.shiftKey) {
+        setManualOverride(true);
+        anomalyEngine.current.active = true;
+        anomalyEngine.current.tick = 25; // Force cascade depth
+        anomalyEngine.current.type = 'behavior'; // Force specific Human+System narrative
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-50">
@@ -150,7 +165,9 @@ export default function Home() {
               TrustOps AI {activeLocation && <span className="text-gray-100 font-medium text-xl ml-2 border-l border-gray-700 pl-2">{activeLocation}</span>}
             </h1>
             <p className="text-gray-400 text-[11px] font-bold tracking-widest uppercase mt-1">
-              Intelligence Layer ABOVE Existing Systems {isDemo && <span className="text-yellow-500 font-bold ml-2">(Demo Mode Active)</span>}
+              Intelligence Layer ABOVE Existing Systems 
+              {isDemo && <span className="text-yellow-500 font-bold ml-2">(Demo Mode Active)</span>}
+              {manualOverride && <span className="text-red-500 font-black ml-2 animate-pulse">[MANUAL OVERRIDE: ACTIVE]</span>}
             </p>
           </div>
           <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isConnected ? (anomalyEngine.current.active ? 'border-red-500 bg-red-950/20' : 'border-green-500 bg-green-950/20') : 'border-red-500 bg-red-950/20'}`}>

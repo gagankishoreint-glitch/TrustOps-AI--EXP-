@@ -7,7 +7,7 @@ interface BusinessImpactAnalysisProps {
   trustScores: TrustScores;
 }
 
-export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ currentScore, trustScores }) => {
+export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = React.memo(({ currentScore, trustScores }) => {
 
   const impactMetrics = useMemo(() => {
     // 1. Customer Experience Risk
@@ -113,4 +113,4 @@ export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ 
       </div>
     </div>
   );
-};
+});

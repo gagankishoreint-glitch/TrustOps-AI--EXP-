@@ -15,7 +15,7 @@ interface FleetViewProps {
   isDemo?: boolean;
 }
 
-export const FleetView: React.FC<FleetViewProps> = ({ onSelectShowroom, isDemo }) => {
+export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroom, isDemo = false }) => {
 
   const showrooms: Showroom[] = [
     { id: '1', name: 'Showroom A (Tokyo)', score: 98, status: 'Healthy', risk: 'Low', activeNodes: 24 },
@@ -84,4 +84,4 @@ export const FleetView: React.FC<FleetViewProps> = ({ onSelectShowroom, isDemo }
       </div>
     </div>
   );
-};
+});

@@ -20,7 +20,7 @@ interface ExplainableInsight {
   highlightIndex: number;
 }
 
-export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, recentAnomalies, isDemo = false }) => {
+export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ trustScore, recentAnomalies, isDemo = false }) => {
   const [insight, setInsight] = useState<ExplainableInsight | null>(null);
   const [decisionState, setDecisionState] = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
   const [loading, setLoading] = useState(false);
@@ -271,4 +271,4 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
 
     </div>
   );
-};
+});

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Wrench, Target } from 'lucide-react';
+import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Target } from 'lucide-react';
 
 interface SecurityCopilotProps {
   trustScore: number;
@@ -14,14 +14,15 @@ interface ExplainableInsight {
   riskLevel: 'Stable' | 'Caution' | 'Critical';
   suggestedAction: string;
   confidence: number;
+  impactIfIgnored: string;
+  timeToFailure: number;
 }
 
 export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, recentAnomalies, isDemo = false }) => {
   const [insight, setInsight] = useState<ExplainableInsight | null>(null);
-  const [actions, setActions] = useState<string[]>([]);
+  const [decisionState, setDecisionState] = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
   const [loading, setLoading] = useState(false);
 
-  // Dynamic Telemetry Parsing Engine
   const deriveInsight = (anomaly: any): ExplainableInsight => {
     const scores = anomaly.engine_analysis.trust_scores || { operational: 100, performance: 100, security: 100, behavior: 100 };
     const tel = anomaly.raw_telemetry;
@@ -41,7 +42,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     const freq = tel.display_logs?.frequency || 0;
     const finalScore = anomaly.engine_analysis.final_trust_score || 100;
     
-    // Calculate Evidence dynamically
+    // Evidence
     let evidence = `Sub-system fault detected.`;
     if (lowest[0] === 'performance' || latency > 400) {
       evidence = `Network latency spiked to ${latency}ms, exceeding nominal thresholds.`;
@@ -49,30 +50,30 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
       evidence = `Display rendering dropped to ${freq}Hz concurrently with connectivity jitter.`;
     }
 
-    // Determine Likely Cause
+    // Likely Cause
     let cause = "Hardware Malfunction";
     if (latency > 600) cause = "Severe Network Bandwidth Saturation";
     else if (freq < 150) cause = "Display Controller Desync / Memory Leak";
     
-    // Decide Suggested Action
+    // Action
     let action = "Initiate full system diagnostic.";
     if (cause.includes("Network")) action = "Reroute display traffic via secondary network CDN.";
-    if (cause.includes("Controller")) action = "Flag Display Controller #04 for immediate firmware reset.";
+    if (cause.includes("Controller")) action = "Restart Display Controller #04";
 
-    // Mathematical Confidence Generation
+    // Impact & Time To Failure
+    let impact = "Critical systemic failure.";
+    if (lowest[0] === 'operational') impact = "Complete content outage across all local showrooms.";
+    else if (lowest[0] === 'performance') impact = "Network gateway timeout causing multi-device desync.";
+    else if (lowest[0] === 'security') impact = "Unauthorized hardware manipulation across sector.";
+
+    const timeToFailure = Math.max(1, Math.round(finalScore * 0.35)); // Math generating e.g. 20 minutes
+
+    // Confidence
     const confidenceDeviation = 100 - (lowest[1] * 0.4); 
     const confidence = Math.max(85, Math.min(99.9, confidenceDeviation));
-
     const riskLevel = finalScore < 60 ? 'Critical' : 'Caution';
 
-    return {
-      type,
-      evidence,
-      likelyCause: cause,
-      suggestedAction: action,
-      confidence,
-      riskLevel
-    };
+    return { type, evidence, likelyCause: cause, suggestedAction: action, confidence, riskLevel, impactIfIgnored: impact, timeToFailure };
   };
 
   useEffect(() => {
@@ -80,35 +81,28 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
       setLoading(true);
       if (isDemo) {
         setTimeout(() => {
-          const generatedInsight = deriveInsight(recentAnomalies[0]);
-          setInsight(generatedInsight);
+          setInsight(deriveInsight(recentAnomalies[0]));
+          setDecisionState('pending');
           setLoading(false);
         }, 1100);
       } else {
-        // Mocking real backend processing
         setTimeout(() => {
           setInsight(deriveInsight(recentAnomalies[0]));
+          setDecisionState('pending');
           setLoading(false);
         }, 1100);
       }
     } else if (trustScore >= 80) {
       setInsight(null);
+      setDecisionState('idle');
     }
   }, [recentAnomalies, trustScore, insight, loading]);
 
-  useEffect(() => {
-    if (trustScore < 75 && actions.length === 0 && insight) {
-      triggerAutoResponse();
-    } else if (trustScore >= 75) {
-      setActions([]);
-    }
-  }, [trustScore, actions.length, insight]);
-
-  const triggerAutoResponse = async () => {
-    if (isDemo || insight) {
-      // Act directly on the suggested action decoded by XAI
-      setActions([insight?.suggestedAction || "Reverting manual overrides"]);
-    }
+  const handleExecuteAction = () => {
+    setDecisionState('executing');
+    setTimeout(() => {
+      setDecisionState('executed');
+    }, 1800);
   };
 
   const InsightCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) => (
@@ -123,6 +117,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
 
   return (
     <div className="space-y-4">
+      
       {/* Explainable AI Grid Panel */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
         <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
@@ -137,40 +132,76 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
         ) : insight ? (
           <div className="grid grid-cols-2 gap-3">
             <InsightCard icon={<AlertTriangle className="w-4 h-4" />} color="text-purple-400" label="Anomaly Type" value={insight.type} />
-            <InsightCard icon={<Target className="w-4 h-4" />} color="text-green-400" label="Confidence" value={`${insight.confidence.toFixed(1)}%`} />
+            <InsightCard icon={<ShieldAlert className="w-4 h-4" />} color={insight.riskLevel === 'Critical' ? 'text-red-500' : 'text-yellow-400'} label="Risk Level" value={insight.riskLevel} />
             <div className="col-span-2">
               <InsightCard icon={<Activity className="w-4 h-4" />} color="text-blue-400" label="Direct Evidence" value={insight.evidence} />
             </div>
             <InsightCard icon={<Search className="w-4 h-4" />} color="text-orange-400" label="Likely Cause" value={insight.likelyCause} />
-            <InsightCard icon={<ShieldAlert className="w-4 h-4" />} color={insight.riskLevel === 'Critical' ? 'text-red-500' : 'text-yellow-400'} label="Risk Level" value={insight.riskLevel} />
+             <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between items-center text-center">
+              <div className="flex justify-center mb-1 text-green-400">
+                <Target className="w-5 h-5" />
+              </div>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-green-400 mb-1">Confidence</p>
+              <p className="text-xl text-green-400 font-extrabold">{Math.round(insight.confidence)}%</p>
+            </div>
           </div>
         ) : (
           <p className="text-gray-500 text-sm text-center py-6">Telemetry stabilized. No active anomalies.</p>
         )}
       </div>
 
-      {/* Auto-Response Actions Feed */}
+      {/* Decision Intelligence Panel / Human-in-Loop Execution */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
           <Zap className="w-5 h-5 text-yellow-400" />
-          <h3 className="text-yellow-400 text-sm font-semibold tracking-wide">Action Executed</h3>
+          <h3 className="text-yellow-400 text-sm font-bold tracking-wide">Decision Intelligence</h3>
         </div>
         
-        {actions.length > 0 ? (
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {actions.map((action, idx) => (
-              <div key={idx} className="flex items-start gap-2 text-sm bg-black/40 p-2 rounded border border-green-900/30">
-                <span className="text-green-400 mt-0.5 font-bold">✓</span>
-                <div>
-                  <p className="text-gray-300 font-medium capitalize">{action}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        {decisionState === 'idle' || !insight ? (
+          <p className="text-gray-500 text-xs italic text-center py-4">Awaiting diagnostic resolution.</p>
         ) : (
-          <p className="text-gray-500 text-xs italic">Awaiting AI diagnostic resolution.</p>
+          <div className="space-y-4">
+             <div className="bg-black/40 border border-gray-800 rounded p-3">
+                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Recommended Action</p>
+                <p className="text-cyan-400 font-semibold text-sm">{insight.suggestedAction}</p>
+             </div>
+             
+             <div className="grid grid-cols-2 gap-3">
+                <div className="bg-black/40 border border-red-900/30 rounded p-3">
+                   <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Impact If Ignored</p>
+                   <p className="text-gray-300 text-xs font-medium">{insight.impactIfIgnored}</p>
+                </div>
+                <div className="bg-red-950/20 border border-red-900/40 rounded p-3 text-center flex flex-col justify-center">
+                   <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Time To Failure</p>
+                   <p className="text-red-400 font-black text-xl">{insight.timeToFailure} Mins</p>
+                </div>
+             </div>
+             
+             <div className="pt-2">
+               {decisionState === 'pending' && (
+                 <button 
+                  onClick={handleExecuteAction}
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded uppercase tracking-wide transition-colors text-xs"
+                 >
+                   Execute Action
+                 </button>
+               )}
+               {decisionState === 'executing' && (
+                 <button disabled className="w-full bg-gray-800 text-gray-400 font-bold py-3 rounded uppercase tracking-wide text-xs flex justify-center items-center gap-3 cursor-not-allowed">
+                   <span className="w-4 h-4 border-2 border-gray-500 border-t-white rounded-full animate-spin"></span>
+                   Executing Sequence...
+                 </button>
+               )}
+               {decisionState === 'executed' && (
+                 <button disabled className="w-full bg-green-900/40 border border-green-500/50 text-green-400 font-bold py-3 rounded uppercase tracking-wide text-xs cursor-not-allowed">
+                   ✓ Action Deployed Successfully
+                 </button>
+               )}
+             </div>
+          </div>
         )}
       </div>
+
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Zap, Activity, AlertTriangle, Search, ShieldAlert, Target, GitMerge } from 'lucide-react';
+import { getRootCauseChain } from '../utils/rootCauseEngine';
 
 interface SecurityCopilotProps {
   trustScore: number;
@@ -46,23 +47,9 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     const freq = tel.display_logs?.frequency || 0;
     const finalScore = anomaly.engine_analysis.final_trust_score || 100;
     
-    // Root Cause Chain Nodes (Human+System Script)
-    let rootNodes: string[] = [];
-    let hIndex = 0;
-
-    if (type === 'Behavior Risk' || type === 'Operational Risk') {
-      rootNodes = ["Unusual Admin Login Time", "Behavior Drop Registered", "Heavy Unknown Query Sent", "Performance Bandwidth Cascading Failure", "Composite Trust Crash"];
-      hIndex = 0; // Highlight the unusual human admin login
-    } else if (type === 'Performance Risk') {
-      rootNodes = ["Regional Server Degradation", "Network Bandwidth Limits", "Gateway Timeout", "Trust score drop"];
-      hIndex = 1;
-    } else if (type === 'Security Risk') {
-      rootNodes = ["Unrecognized Gateway ping", "Admin console exploit", "Database Lockdown", "Trust score drop"];
-      hIndex = 1;
-    } else {
-      rootNodes = ["Session Interaction Freeze", "Input Rate Drop", "Timeout Logged", "Trust score drop"];
-      hIndex = 0;
-    }
+    // Root Cause Chain Nodes (Dynamic Mentor Request)
+    const rootNodes = getRootCauseChain(scores);
+    const hIndex = type === 'Behavior Risk' ? 0 : 1; // Arbitrary dynamic highlight
     
     // Evidence
     let evidence = `Sub-system fault detected.`;

@@ -6,6 +6,7 @@ import { MultiScoreDisplay, TrustScores } from '@/components/MultiScoreDisplay';
 import { PredictiveTimeline } from '@/components/PredictiveTimeline';
 import { BusinessImpactAnalysis } from '@/components/BusinessImpactAnalysis';
 import { FleetView } from '@/components/FleetView';
+import { useStochasticStream } from '@/hooks/useStochasticStream';
 
 interface TelemetryData {
   timestamp: number;
@@ -35,28 +36,18 @@ export default function Home() {
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
   });
-  const [telemetryData, setTelemetryData] = useState<TelemetryData[]>([]);
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true');
 
   const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({ active: false, type: '', tick: 0 });
 
+  // Hook handles organic charting data independently from the backend logic
+  const stochasticData = useStochasticStream(anomalyEngine.current.active);
+
   const handlePayload = useCallback((payload: StreamPayload) => {
     setTrustScore(payload.engine_analysis.final_trust_score);
     setTrustScores(payload.engine_analysis.trust_scores);
-
-    setTelemetryData(prev => {
-      const newData = [
-        ...prev,
-        {
-          timestamp: Date.now(),
-          latency: payload.raw_telemetry.network_logs.latency,
-          frequency: payload.raw_telemetry.display_logs.frequency
-        }
-      ];
-      return newData.slice(-60);
-    });
 
     if (payload.engine_analysis.is_anomalous) {
       setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
@@ -189,7 +180,7 @@ export default function Home() {
               <div className="md:col-span-1">
                 <div className="sticky top-8">
                   <h2 className="text-lg font-semibold text-cyan-400 mb-4">Telemetry</h2>
-                  <TelemetryCharts data={telemetryData} />
+                  <TelemetryCharts data={stochasticData} />
                 </div>
               </div>
 

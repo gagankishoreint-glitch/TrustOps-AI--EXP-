@@ -96,9 +96,9 @@ export default function Home() {
           },
           engine_analysis: {
             is_anomalous: isUnderAttack,
-            anomaly_severity: isUnderAttack ? 9 : 0,
-            trust_score: isUnderAttack ? Math.round(25 + Math.random() * 15) : Math.round(98 + Math.random() * 2),
-            status: isUnderAttack ? 'Critical DDoS Detected' : 'Healthy',
+            anomaly_severity: isUnderAttack ? 7 : 0,
+            trust_score: isUnderAttack ? Math.round(55 + Math.random() * 15) : Math.round(98 + Math.random() * 2),
+            status: isUnderAttack ? 'Operational Friction Detected' : 'Healthy',
           }
         };
 

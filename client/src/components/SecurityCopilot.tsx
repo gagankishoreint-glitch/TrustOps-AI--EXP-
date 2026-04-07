@@ -32,7 +32,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
       if (isDemo) {
         // Mock GenAI response for presentation
         setTimeout(() => {
-          setExplanation("GenAI Insight: Detected severe simulated anomalous behavior indicating a volumetric DDoS attack. Inbound latency is highly irregular from multiple nodes. Affected region isolated.");
+          setExplanation("GenAI Insight: Frequent content reloads and irregular admin activity suggest operational inconsistency rather than a security breach. Display system instability is leading to inefficient workflows.");
           setLoading(false);
         }, 1200);
         return;
@@ -55,7 +55,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
   const triggerAutoResponse = async () => {
     try {
       if (isDemo) {
-        setActions(prev => ["Rerouted network traffic via secondary CDN", "Blocked malicious ingress IPs", ...prev].slice(0, 10));
+        setActions(prev => ["Flagged Display Controller #04 for maintenance", "Reverting manual admin overrides", "Notifying regional operational manager"].slice(0, 10));
         return;
       }
       const response = await fetch('http://127.0.0.1:8000/api/v1/auto-response', {

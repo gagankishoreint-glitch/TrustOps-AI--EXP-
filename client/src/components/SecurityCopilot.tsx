@@ -22,6 +22,8 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
   const [insight, setInsight] = useState<ExplainableInsight | null>(null);
   const [decisionState, setDecisionState] = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
   const [loading, setLoading] = useState(false);
+  const [baseConfidence, setBaseConfidence] = useState(75);
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'improving' | 'recalibrating'>('idle');
 
   const deriveInsight = (anomaly: any): ExplainableInsight => {
     const scores = anomaly.engine_analysis.trust_scores || { operational: 100, performance: 100, security: 100, behavior: 100 };
@@ -69,11 +71,9 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     const timeToFailure = Math.max(1, Math.round(finalScore * 0.35)); // Math generating e.g. 20 minutes
 
     // Confidence
-    const confidenceDeviation = 100 - (lowest[1] * 0.4); 
-    const confidence = Math.max(85, Math.min(99.9, confidenceDeviation));
     const riskLevel = finalScore < 60 ? 'Critical' : 'Caution';
 
-    return { type, evidence, likelyCause: cause, suggestedAction: action, confidence, riskLevel, impactIfIgnored: impact, timeToFailure };
+    return { type, evidence, likelyCause: cause, suggestedAction: action, confidence: baseConfidence, riskLevel, impactIfIgnored: impact, timeToFailure };
   };
 
   useEffect(() => {
@@ -103,6 +103,17 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
     setTimeout(() => {
       setDecisionState('executed');
     }, 1800);
+  };
+
+  const handleFeedback = (isHelpful: boolean) => {
+    if (isHelpful) {
+      setBaseConfidence(prev => Math.min(99, prev + 6));
+      setFeedbackStatus('improving');
+    } else {
+      setBaseConfidence(prev => Math.max(50, prev - 4));
+      setFeedbackStatus('recalibrating');
+    }
+    setTimeout(() => setFeedbackStatus('idle'), 3000);
   };
 
   const InsightCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) => (
@@ -137,18 +148,50 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
               <InsightCard icon={<Activity className="w-4 h-4" />} color="text-blue-400" label="Direct Evidence" value={insight.evidence} />
             </div>
             <InsightCard icon={<Search className="w-4 h-4" />} color="text-orange-400" label="Likely Cause" value={insight.likelyCause} />
-             <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between items-center text-center">
+             <div className="bg-black/40 border border-gray-800/80 rounded p-3 flex flex-col justify-between items-center text-center transition-all duration-300">
               <div className="flex justify-center mb-1 text-green-400">
-                <Target className="w-5 h-5" />
+                <Target className={`w-5 h-5 ${feedbackStatus === 'improving' ? 'animate-ping' : ''}`} />
               </div>
               <p className="text-[10px] uppercase font-bold tracking-widest text-green-400 mb-1">Confidence</p>
-              <p className="text-xl text-green-400 font-extrabold">{Math.round(insight.confidence)}%</p>
+              <p className="text-xl text-green-400 font-extrabold">{baseConfidence}%</p>
             </div>
           </div>
         ) : (
           <p className="text-gray-500 text-sm text-center py-6">Telemetry stabilized. No active anomalies.</p>
         )}
       </div>
+
+      {/* Feedback Learning Loop */}
+      {insight && (
+        <div className="bg-gray-900 rounded-lg p-3 border border-gray-800 flex items-center justify-between">
+          <div>
+            <h4 className="text-gray-400 text-[10px] font-bold tracking-widest uppercase mb-0.5">RLHF Target Loop</h4>
+            {feedbackStatus === 'idle' ? (
+              <p className="text-gray-500 text-[10px]">Was this anomaly correlation accurate?</p>
+            ) : feedbackStatus === 'improving' ? (
+              <p className="text-green-400 text-[10px] font-medium animate-pulse">Model confidence improving from feedback...</p>
+            ) : (
+              <p className="text-yellow-400 text-[10px] font-medium animate-pulse">Recalibrating inference weighting...</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => handleFeedback(true)}
+              disabled={feedbackStatus !== 'idle'}
+              className="px-3 py-1 bg-green-950/30 text-green-400 border border-green-900/50 hover:bg-green-900/50 rounded text-xs font-bold transition-colors disabled:opacity-50"
+            >
+              YES
+            </button>
+            <button 
+              onClick={() => handleFeedback(false)}
+              disabled={feedbackStatus !== 'idle'}
+              className="px-3 py-1 bg-red-950/30 text-red-500 border border-red-900/50 hover:bg-red-900/50 rounded text-xs font-bold transition-colors disabled:opacity-50"
+            >
+              NO
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Decision Intelligence Panel / Human-in-Loop Execution */}
       <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">

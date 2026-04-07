@@ -23,6 +23,11 @@ interface StreamPayload {
     anomaly_severity: number;
     trust_scores: TrustScores;
     final_trust_score: number;
+    correlation_engine?: {
+      confidence_score: number;
+      correlated_signals: string[];
+      root_cause_chain: string;
+    };
     status: string;
   };
 }
@@ -117,6 +122,11 @@ export default function Home() {
               behavior: behav
             },
             final_trust_score: finalWeighted,
+            correlation_engine: isUnderAttack ? {
+              confidence_score: 97,
+              correlated_signals: ['Latency Spike', 'Device Frequency Drop', 'Failed Admin Override'],
+              root_cause_chain: 'Network Latency Volatility → Display Desync → Admin Override Attempt'
+            } : undefined,
             status: isUnderAttack ? 'Operational Friction Detected' : 'Healthy',
           }
         };

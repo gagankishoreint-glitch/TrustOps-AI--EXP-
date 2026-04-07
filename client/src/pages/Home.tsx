@@ -42,7 +42,9 @@ export default function Home() {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
   const [manualOverride, setManualOverride] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [isDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true');
+  // Always run in demo/synthetic mode — no backend is deployed.
+  // To connect a real backend, remove this line and pass ?demo=false in the URL.
+  const isDemo = true;
 
   // === SINGLE REACTIVE STATE — everything derives from this ===
   const [trustScore, setTrustScore] = useState(100);

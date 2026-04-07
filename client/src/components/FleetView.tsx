@@ -36,7 +36,12 @@ export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroo
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className="font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">{room.name}</h3>
-              <div className={`w-2 h-2 rounded-full ${room.status === 'Healthy' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]'}`}></div>
+              <div className={`w-2 h-2 rounded-full ${
+                room.status === 'Healthy' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' :
+                room.status === 'Stable' ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' :
+                room.status === 'Caution' ? 'bg-yellow-400 animate-pulse shadow-[0_0_8px_#facc15]' :
+                'bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]'
+              }`} />
             </div>
 
             <div className="flex items-end gap-3 mb-6">
@@ -53,7 +58,12 @@ export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroo
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-gray-500 flex items-center gap-1"><Activity className="w-3 h-3" /> Status</span>
-                <span className={room.status === 'Healthy' ? 'text-green-400' : 'text-red-400 font-bold'}>{room.status}</span>
+                <span className={
+                  room.status === 'Healthy' ? 'text-green-400' :
+                  room.status === 'Stable' ? 'text-cyan-400' :
+                  room.status === 'Caution' ? 'text-yellow-400 font-bold' :
+                  'text-red-400 font-bold'
+                }>{room.status}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Risk Level</span>

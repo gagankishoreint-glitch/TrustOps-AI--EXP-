@@ -14,17 +14,22 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
 
   // Fetch risk explanation when anomalies are detected
   useEffect(() => {
-    if (recentAnomalies.length > 0 && trustScore < 80) {
+    // Only fetch if we haven't already fetched the explanation, to prevent flashing
+    if (recentAnomalies.length > 0 && trustScore < 80 && !explanation && !loading) {
       fetchRiskExplanation();
+    } else if (trustScore >= 80) {
+      setExplanation(''); // Reset when healthy
     }
-  }, [recentAnomalies, trustScore]);
+  }, [recentAnomalies, trustScore, explanation, loading]);
 
-  // Trigger auto-response when trust score drops below 50
+  // Trigger auto-response when trust score drops below 75
   useEffect(() => {
-    if (trustScore < 50) {
+    if (trustScore < 75 && actions.length === 0) {
       triggerAutoResponse();
+    } else if (trustScore >= 75) {
+      setActions([]);
     }
-  }, [trustScore]);
+  }, [trustScore, actions.length]);
 
   const fetchRiskExplanation = async () => {
     try {
@@ -115,9 +120,9 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = ({ trustScore, re
       </div>
 
       {/* Status Indicator */}
-      <div className={`rounded-lg p-3 border ${trustScore < 50 ? 'border-red-500 bg-red-950/20' : 'border-cyan-400 bg-cyan-950/20'}`}>
-        <p className={`text-xs font-semibold ${trustScore < 50 ? 'text-red-400' : 'text-cyan-400'}`}>
-          {trustScore < 50 ? 'CRITICAL: Intervention Required' : 'System Status: Healthy'}
+      <div className={`rounded-lg p-3 border ${trustScore < 75 ? 'border-red-500 bg-red-950/20' : 'border-cyan-400 bg-cyan-950/20'}`}>
+        <p className={`text-xs font-semibold ${trustScore < 75 ? 'text-red-400' : 'text-cyan-400'}`}>
+          {trustScore < 75 ? 'CRITICAL: Intervention Required' : 'System Status: Healthy'}
         </p>
       </div>
     </div>

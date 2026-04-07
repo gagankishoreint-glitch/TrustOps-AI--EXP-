@@ -98,19 +98,20 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
   };
 
   useEffect(() => {
-    // Relying on real or simulated backend changes flowing down
-    if (recentAnomalies.length > 0 && trustScore < 85 && !insight && !loading) {
-      setLoading(true);
-      setTimeout(() => {
-        setInsight(deriveInsight(recentAnomalies[0]));
-        setDecisionState('pending');
-        setLoading(false);
-      }, 900);
+    if (trustScore < 70 && recentAnomalies.length > 0 && !loading) {
+      if (!insight || trustScore < 60) {
+        setLoading(true);
+        setTimeout(() => {
+          setInsight(deriveInsight(recentAnomalies[0]));
+          setDecisionState('pending');
+          setLoading(false);
+        }, 600);
+      }
     } else if (trustScore >= 85) {
       setInsight(null);
       setDecisionState('idle');
     }
-  }, [recentAnomalies, trustScore, insight, loading]);
+  }, [trustScore, recentAnomalies]);
 
   const handleExecuteAction = () => {
     setDecisionState('executing');

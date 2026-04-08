@@ -3,6 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { execFile } from "child_process";
+import { saveCase, getSimilarCases } from "./database.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,64 +14,58 @@ async function startServer() {
 
   app.use(express.json());
 
-  // POST /api/analyze - The Hybrid Intelligence Bridge
-  app.post("/api/analyze", (req, res) => {
-    const { latency, cpu, adminCount } = req.body;
-    
-    if (latency === undefined || cpu === undefined || adminCount === undefined) {
-      return res.status(400).json({ error: "Missing required telemetry fields." });
-    }
+  // Helper for generating Gaussian noise (Industry Scaling)
+  const gaussianRandom = (mean: number, stdev: number) => {
+    const u = 1 - Math.random(); 
+    const v = Math.random();
+    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    return z * stdev + mean;
+  };
 
+  // POST /api/analyze - The 11-Dimensional Hybrid Intelligent Layer
+  app.post("/api/analyze", (req, res) => {
+    const { 
+      latency, jitter, ploss, cpu, mem, admin, 
+      pfreq, vrip, humid, temp, hours 
+    } = req.body;
+    
     const pythonExecutable = path.resolve(__dirname, "..", ".venv", "bin", "python");
     const inferenceScript = path.resolve(__dirname, "hybrid_inference.py");
 
-    // Phase 1: Reflex & Math (Isolation & Random Forests)
-    execFile(pythonExecutable, [inferenceScript, latency.toString(), cpu.toString(), adminCount.toString()], async (error, stdout, stderr) => {
+    const args = [
+      latency, jitter, ploss, cpu, mem, admin, 
+      pfreq, vrip, humid, temp, hours
+    ].map(a => a.toString());
+
+    execFile(pythonExecutable, [inferenceScript, ...args], async (error, stdout, stderr) => {
       if (error) {
-        console.error("Python Error:", error);
+        console.error("Inference Error:", stderr);
         return res.status(500).json({ error: "Inference Engine failed." });
       }
 
       try {
         const mlResult = JSON.parse(stdout.trim());
-        
-        // If not an anomaly, return the baseline prediction
-        if (!mlResult.is_anomaly) {
-          return res.json({ result: mlResult });
-        }
+        if (mlResult.error) throw new Error(mlResult.error);
+        if (!mlResult.is_anomaly) return res.json({ result: mlResult });
 
-        // Phase 2: The Brain (GenAI Explanation for Anomaly)
-        // Implementing Corporate Liability Constraints: #16 (Role), #11 (Tone), #9 (Strict), #2 (Compliance)
-        const prompt = `### CORPORATE LIABILITY ADVISORY: You are an Authorized Decision Intelligence AI for TrustOps.
-### ENTITY: Panasonic Sensor Decision Layer.
-### MISSION: Provide executive-level risk assessment for industrial display infrastructure.
+        // Generate Corporate Liability Insight using TrustOps-Expert
+        const prompt = `### INFERENCE VECTOR: ${JSON.stringify(req.body)}
+### ML PREDICTION: ${mlResult.context} (${mlResult.confidence}% Confidence)
 
-### TELEMETRY LOGS:
-- DETECTED PATTERN: ${mlResult.context}
-- SENSOR LATENCY: ${latency}ms
-- TIME TO FAILURE (TTF): ${mlResult.ttf} minutes
-- ML CONFIDENCE: ${mlResult.confidence}%
+### MISSION: Synthesize a professional industrial advisory for this vector. 
+- [RISK]: A snappy 2-word summary.
+- [ADVISORY]: A detailed, 10-word technical business action.
+DO NOT repeat the same phrase for both.`;
 
-### MANDATORY INSTRUCTIONS:
-1. Act as a professionally liable security analyst. Your insights will be used for critical infrastructure decisions.
-2. Analyze the risk of "${mlResult.context}" in the context of Panasonic hardware reliability.
-3. Synthesize ONE HIGH-IMPACT SENTENCE summarizing the operational risk and the required business action.
-4. DO NOT speculate. Focus only on the provided telemetry.
-5. Tone: Authoritative, succinct, and conservative.
-
-### BUSINESS ACTION: ${mlResult.action}
-
-### EXECUTIVE INSIGHT:`;
-
-        let explainableText = mlResult.action; // Fallback
+        let explainableText = mlResult.action;
 
         try {
-          // Attempt to call local Ollama for the "Voice"
-          const ollamaRes = await fetch("http://localhost:11434/api/generate", {
+          const ollamaHost = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
+          const ollamaRes = await fetch(`${ollamaHost}/api/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              model: "mistral", // Switched to Mistral as requested for Corporate Liability
+              model: "TrustOps-Expert",
               prompt: prompt,
               stream: false
             })
@@ -80,43 +75,77 @@ async function startServer() {
             const ollamaData = await ollamaRes.json();
             explainableText = ollamaData.response.trim();
           }
-        } catch (ollamaErr) {
-          console.warn("Ollama is not reachable, using fallback text.", ollamaErr);
+        } catch (err) {
+          console.warn("TrustOps-Expert offline, using fallback.");
         }
 
-        // Return combined result
         return res.json({
-          result: {
-            ...mlResult,
-            explainable_brain: explainableText
-          }
+          result: { ...mlResult, explainable_brain: explainableText }
         });
 
-      } catch (parseErr) {
-        console.error("Failed to parse ML output:", parseErr);
-        return res.status(500).json({ error: "Invalid prediction format." });
+      } catch (parseErr: any) {
+        return res.status(500).json({ error: parseErr.message });
       }
     });
   });
 
-  // Serve static files from dist/public in production
+  // POST /api/chat - The Expert Advisor with Case Memory
+  app.post("/api/chat", async (req, res) => {
+    const { messages, contextData } = req.body;
+
+    const similarCases: any = getSimilarCases(
+      contextData?.latency || 0,
+      contextData?.cpu || 0,
+      contextData?.adminCount || 0
+    );
+
+    const memoryPrompt = similarCases.length > 0 
+      ? `### CASE MEMORY:
+Previously, the operator labeled these similar patterns as:
+${similarCases.map((c: any) => `- ${c.human_label} (${c.is_accurate ? 'Verified' : 'Overridden'})`).join('\n')}`
+      : "### CASE MEMORY: First instance of this behavior in showroom history.";
+
+    try {
+      const ollamaHost = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
+      const ollamaRes = await fetch(`${ollamaHost}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "TrustOps-Expert",
+          prompt: `SYSTEM: ${memoryPrompt}\n\nUSER_QUERY: ${messages[messages.length - 1].content}\n\nADVISORY:`,
+          stream: false
+        })
+      });
+
+      if (ollamaRes.ok) {
+        const data = await ollamaRes.json();
+        return res.json({ response: data.response.trim() });
+      }
+      res.status(500).json({ error: "Expert Advisor is recalibrating." });
+    } catch (err) {
+      res.status(500).json({ error: "Chat Bridge Failed." });
+    }
+  });
+
+  app.post("/api/feedback", (req, res) => {
+    try {
+      saveCase(req.body.caseData);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: "Feedback Sync Failed" });
+    }
+  });
+
   const staticPath =
     process.env.NODE_ENV === "production"
       ? path.resolve(__dirname, "public")
       : path.resolve(__dirname, "..", "dist", "public");
 
   app.use(express.static(staticPath));
-
-  // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(staticPath, "index.html"));
-  });
+  app.get("*", (_req, res) => res.sendFile(path.join(staticPath, "index.html")));
 
   const port = process.env.PORT || 5001;
-
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
-  });
+  server.listen(port, () => console.log(`TrustOps Server: http://localhost:${port}/`));
 }
 
 startServer().catch(console.error);

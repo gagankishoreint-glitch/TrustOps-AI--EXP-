@@ -239,7 +239,36 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
           <div className="flex gap-2">
             {(['YES', 'NO'] as const).map(v => (
               <button key={v}
-                onClick={() => { setFeedback(v === 'YES' ? 'improving' : 'recalibrating'); setTimeout(() => setFeedback('idle'), 3000); }}
+                onClick={async () => { 
+                  setFeedback(v === 'YES' ? 'improving' : 'recalibrating'); 
+                  
+                  // Persistent Case Logging
+                  if (recentAnomalies[0] && insight) {
+                    const tel = recentAnomalies[0].raw_telemetry;
+                    const caseData = {
+                      location: window.location.pathname.split('/').pop() || 'Unknown',
+                      latency: tel?.network_logs?.latency || 0,
+                      cpu: tel?.display_logs?.frequency || 0, // Mapping frequency to 'cpu' for schema consistency
+                      adminCount: tel?.network_logs?.admin_count || 0,
+                      inferenceContext: insight.type,
+                      humanLabel: v === 'YES' ? insight.type : 'Manual Override/Power Drift',
+                      isAccurate: v === 'YES',
+                      confidence: insight.confidence
+                    };
+
+                    try {
+                      await fetch('/api/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ caseData })
+                      });
+                    } catch (err) {
+                      console.error("Feedback Sync Failed", err);
+                    }
+                  }
+
+                  setTimeout(() => setFeedback('idle'), 3000); 
+                }}
                 disabled={feedback !== 'idle'}
                 className={`px-3 py-1 text-xs font-bold border rounded disabled:opacity-40 transition-colors ${
                   v === 'YES'

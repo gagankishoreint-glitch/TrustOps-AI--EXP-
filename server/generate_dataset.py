@@ -1,14 +1,21 @@
 import csv
 import random
 import os
+import math
 
-def generate_dataset(filename="trustops_panasonic_dataset.csv", rows=1000):
+def generate_dataset(filename="trustops_panasonic_dataset.csv", rows=100000):
     headers = [
-        "Timestamp_Offset", 
         "Network_Latency_ms", 
+        "Network_Jitter_ms",
+        "Packet_Loss_Pct",
         "CPU_Load_Pct", 
+        "Memory_Usage_MB",
         "Admin_Interaction_Count", 
-        "Degradation_Pattern", 
+        "Power_Freq_Hz",
+        "Voltage_Ripple_mV",
+        "Sensor_Humidity_Pct",
+        "Temp_Delta_C",
+        "Showroom_Hours_Elapsed",
         "Anomaly_Context", 
         "Time_to_Failure_mins", 
         "Recommended_Action"
@@ -16,57 +23,81 @@ def generate_dataset(filename="trustops_panasonic_dataset.csv", rows=1000):
     
     data = []
     
+    # Pre-calculate base values for stability
     for i in range(rows):
-        # Base distributions
-        # Normal (0.55), Security-IoT-23 (0.3), Panasonic-Industrial (0.15)
-        pattern = random.choices(['Nominal', 'IoT-23 Security Event', 'Panasonic Hardware Desync'], weights=[0.55, 0.3, 0.15])[0]
+        # Patterns: Nominal (0.6), IoT-23 Security (0.2), Panasonic Operational (0.15), Extreme Anomaly (0.05)
+        pattern = random.choices(['Nominal', 'IoT-23 Security', 'Panasonic Operational', 'Extreme Anomaly'], 
+                                  weights=[0.6, 0.2, 0.15, 0.05])[0]
         
+        # Default Jitter (Gaussian noise)
+        def nj(mu, sigma): return max(0.01, random.gauss(mu, sigma))
+
         if pattern == 'Nominal':
-            latency = 20 + random.uniform(-2, 2)
-            cpu = 15 + random.uniform(-3, 3)
+            lat = nj(22, 5)
+            jit = nj(2, 1)
+            ploss = nj(0.01, 0.005)
+            cpu = nj(15, 4)
+            mem = nj(1200, 50)
             admin = 0
+            pfreq = nj(50.0, 0.02)
+            vrip = nj(12, 2)
+            humid = nj(45, 2)
+            temp = nj(1.2, 0.3)
             context = 'System Healthy'
             ttf = 9999
             action = 'None'
             
-        elif pattern == 'IoT-23 Security Event':
-            # Signatures of IoT botnets
-            latency = 300 + random.uniform(50, 200)
-            cpu = 40 + random.uniform(10, 30)
-            admin = random.randint(5, 20)
-            context = random.choice([
-                "IoT-23: Botnet Command & Control",
-                "IoT-23: Mirai Horizontal Scanning",
-                "IoT-23: Remote Console Hijack"
-            ])
-            ttf = random.randint(5, 30)
-            action = 'Isolate External Gateway & Roll API Keys'
+        elif pattern == 'IoT-23 Security':
+            # Signatures of scanning/botnets
+            lat = nj(450, 150)
+            jit = nj(45, 15)
+            ploss = nj(1.5, 0.8)
+            cpu = nj(55, 12)
+            mem = nj(2800, 400)
+            admin = random.randint(8, 25) # High admin density
+            pfreq = nj(50.0, 0.05)
+            vrip = nj(15, 5)
+            humid = nj(46, 5)
+            temp = nj(4.5, 1.5)
+            context = random.choice(["IoT-23: Mirai Scanning", "IoT-23: C&C Heartbeat Hijack", "IoT-23: Brute Force Entry"])
+            ttf = random.randint(10, 45)
+            action = 'Isolate Gateway & Reset Admin Credentials'
             
-        else: # Panasonic Hardware Desync
-            latency = 80 + random.uniform(10, 40)
-            cpu = 70 + random.uniform(5, 20)
-            admin = random.randint(1, 3)
-            context = random.choice([
-                "Panasonic: PLC Memory Corruption",
-                "Panasonic: Sensor Noise Threshold Error",
-                "Panasonic: Actuator Desync Fault"
-            ])
-            ttf = random.randint(60, 480)
+        elif pattern == 'Panasonic Operational':
+            # Hardware drift/wear
+            lat = nj(85, 20)
+            jit = nj(8, 3)
+            ploss = nj(0.1, 0.05)
+            cpu = nj(82, 15)
+            mem = nj(1800, 200)
+            admin = random.randint(1, 4)
+            pfreq = nj(49.2, 0.4) # Frequency droop
+            vrip = nj(45, 15) # High ripple
+            humid = nj(75, 10) # Environmental stress
+            temp = nj(12, 4) # Thermal stress
+            context = random.choice(["Panasonic: Phase L3 Instability", "Panasonic: Optical Calibration Drift", "Panasonic: Heat Sink Failure"])
+            ttf = random.randint(120, 720)
+            action = 'Scheduled Hardware Maintenance (Sector B)'
             
-            if 'Memory' in context:
-                action = 'Re-flash Controller Firmware & Reset Sequence'
-            else:
-                action = 'Recalibrate Acoustic Sensor Array'
-                
+        else: # Extreme Anomaly
+            lat = nj(2500, 500)
+            jit = nj(200, 50)
+            ploss = nj(18, 5)
+            cpu = nj(98, 2)
+            mem = nj(3900, 100)
+            admin = random.randint(1, 10)
+            pfreq = nj(47.5, 1.5)
+            vrip = nj(120, 30)
+            humid = nj(90, 5)
+            temp = nj(28, 6)
+            context = 'Critical Systemic Fault (Cascading)'
+            ttf = random.randint(1, 15)
+            action = 'Emergency System E-Stop & Physical Inspection'
+
         data.append([
-            i * 60, # Simulated seconds offset
-            latency,
-            cpu,
-            admin,
-            pattern,
-            context,
-            ttf,
-            action
+            lat, jit, ploss, cpu, mem, admin, pfreq, vrip, humid, temp, 
+            random.randint(0, 1000), # Showroom Hours
+            context, ttf, action
         ])
         
     os.makedirs(os.path.dirname(os.path.abspath(filename)), exist_ok=True)
@@ -76,7 +107,7 @@ def generate_dataset(filename="trustops_panasonic_dataset.csv", rows=1000):
         writer.writerow(headers)
         writer.writerows(data)
         
-    print(f"Successfully generated {rows} synthetic logs at {filename}")
+    print(f"Successfully generated {rows} INDUSTRIAL-GRADE logs at {filename}")
 
 if __name__ == "__main__":
-    generate_dataset("../trustops_panasonic_dataset.csv")
+    generate_dataset("trustops_panasonic_dataset.csv")

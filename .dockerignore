@@ -1,0 +1,11 @@
+node_modules
+.venv
+dist
+.git
+*.sqlite
+*.joblib
+server/trustops_cases.sqlite
+.DS_Store
+*.pyc
+__pycache__
+.env

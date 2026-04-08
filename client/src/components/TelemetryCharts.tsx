@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  AreaChart, Area, LineChart, Line,
+  AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
 } from 'recharts';
@@ -21,7 +21,6 @@ const CustomTooltip = ({ active, payload, label, unit }: any) => {
 export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) => {
   const chartData = data.map((d, i) => ({ ...d, t: `${i}s` }));
   const avgLatency = data.length ? data.reduce((s, d) => s + d.latency, 0) / data.length : 0;
-  const peakFreq   = data.length ? Math.max(...data.map(d => d.frequency)) : 0;
   const latencyHigh = avgLatency > 1200;
 
   const axisStyle = { fill: '#475569', fontSize: 10, fontFamily: 'monospace' };
@@ -42,7 +41,7 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
         </div>
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 10 }}>
               <defs>
                 <linearGradient id="latGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor={latencyHigh ? '#ef4444' : '#00d4ff'} stopOpacity={0.25} />
@@ -53,9 +52,9 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
               <XAxis dataKey="t" tick={axisStyle} tickLine={false} axisLine={false} interval={4} />
               <YAxis tick={axisStyle} tickLine={false} axisLine={false} width={40} domain={[600, 'auto']} />
               <ReferenceLine y={800} stroke="#f59e0b" strokeDasharray="3 3" strokeWidth={1}
-                label={{ value: 'Warning (800ms)', fill: '#f59e0b', fontSize: 8, position: 'insideRight' }} />
+                label={{ value: 'Warning', fill: '#f59e0b', fontSize: 8, position: 'insideRight' }} />
               <ReferenceLine y={1200} stroke="#ef4444" strokeDasharray="4 2" strokeWidth={1}
-                label={{ value: 'Critical (1200ms)', fill: '#ef4444', fontSize: 8, position: 'insideRight' }} />
+                label={{ value: 'Critical', fill: '#ef4444', fontSize: 8, position: 'insideRight' }} />
               <Tooltip content={<CustomTooltip unit="ms" />} />
               <Area type="monotone" dataKey="latency"
                 stroke={latencyHigh ? '#ef4444' : '#00d4ff'}
@@ -75,7 +74,7 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
         </div>
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 10 }}>
               <defs>
                 <linearGradient id="freqGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#a78bfa" stopOpacity={0.25} />
@@ -94,20 +93,6 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* ── Summary Strip ── */}
-      <div className="shrink-0 grid grid-cols-2 gap-3">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
-          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Avg Latency</p>
-          <p className={`text-lg font-black font-mono tabular-nums ${latencyHigh ? 'text-red-400' : 'text-cyan-400'}`}>
-            {avgLatency.toFixed(1)} ms
-          </p>
-        </div>
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
-          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Peak Frequency</p>
-          <p className="text-lg font-black font-mono tabular-nums text-violet-400">{peakFreq} Hz</p>
         </div>
       </div>
     </div>

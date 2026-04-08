@@ -120,7 +120,7 @@ export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroo
                   <div className="relative flex-shrink-0">
                     <MiniRing score={room.score} size={64} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className={`text-sm font-black tabular-nums ${cfg.color}`}>{room.score}</span>
+                      <span className={`text-sm font-black tabular-nums ${cfg.color}`}>{Math.round(room.score)}</span>
                     </div>
                   </div>
                   <div>

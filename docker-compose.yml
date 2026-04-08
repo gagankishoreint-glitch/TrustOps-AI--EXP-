@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  trustops-app:
+    build: .
+    ports:
+      - "5173:5001" # Host:Container (Using 5173 for parity with dev port for links)
+    volumes:
+      - ./server/trustops_cases.sqlite:/app/server/trustops_cases.sqlite
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+networks:
+  default:
+    name: trustops-network

@@ -9,7 +9,6 @@ import { FleetView } from '@/components/FleetView';
 import { useShowroomStore } from '@/store/useShowroomStore';
 import { ModelInspector } from '@/components/ModelInspector';
 
-// --- Single source of truth types ---
 export interface TelemetryPoint {
   timestamp: number;
   latency: number;
@@ -33,7 +32,6 @@ interface StreamPayload {
   hybrid_ml_context?: any;
 }
 
-// Gaussian noise for organic jitter
 function gaussianRandom(mean = 0, stdev = 1) {
   const u = 1 - Math.random();
   const v = Math.random();
@@ -46,13 +44,11 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [showInspector, setShowInspector] = useState(false);
 
-  // Derived from URL query parameter ?demo=true/false
   const isDemo = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('demo') !== 'false'; // Default to true for easy pitching
+    return params.get('demo') !== 'false';
   }, []);
 
-  // === SINGLE REACTIVE STATE — everything derives from this ===
   const [trustScore, setTrustScore] = useState(100);
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
@@ -74,64 +70,21 @@ export default function Home() {
 
   const { updateShowroomScore } = useShowroomStore();
 
-  // Compute avg latency from the rolling window
   const avgLatency = useMemo(() => {
     if (telemetryWindow.length === 0) return 0;
     return telemetryWindow.reduce((a, b) => a + b.latency, 0) / telemetryWindow.length;
   }, [telemetryWindow]);
 
-  // === REACTIVE TRUST ENGINE ===
-  // Trust score is strictly derived from live telemetry — no separate calculation needed
-  const reactiveTrustScores = useMemo((): TrustScores => {
-    const latestPoint = telemetryWindow[telemetryWindow.length - 1];
-    if (!latestPoint) return trustScores;
-
-    const { latency, frequency } = latestPoint;
-
-    // Performance score reacts directly to latency (Industry Standard)
-    let performance = trustScores.performance;
-    if (latency > 1500) performance = Math.round(10 + Math.random() * 10);      // FAILURE
-    else if (latency > 1000) performance = Math.round(35 + Math.random() * 15); // CRITICAL
-    else if (latency > 700) performance = Math.round(65 + Math.random() * 10);  // DEGRADED
-    else performance = Math.min(100, Math.round(92 + Math.random() * 8));
-
-    // Operational score reacts to frequency
-    let operational = trustScores.operational;
-    if (frequency < 100) operational = Math.round(20 + Math.random() * 15);
-    else if (frequency < 300) operational = Math.round(55 + Math.random() * 15);
-    else if (frequency < 450) operational = Math.round(78 + Math.random() * 8);
-    else operational = Math.min(100, Math.round(94 + Math.random() * 6));
-
-    return {
-      operational,
-      performance,
-      security: trustScores.security,
-      behavior: trustScores.behavior,
-    };
-  }, [telemetryWindow, trustScores]);
-
-  const reactiveTrustScore = useMemo(() => {
-    const { operational, security, performance, behavior } = reactiveTrustScores;
-    const base = Math.round(operational * 0.3 + security * 0.3 + performance * 0.2 + behavior * 0.2);
-    // SAFETY FLOOR: If performance is critical, the score MUST reflect a crisis
-    if (performance < 50) return Math.min(55, base);
-    if (performance < 75) return Math.min(78, base);
-    return base;
-  }, [reactiveTrustScores]);
-
-  // Sync reactive score to Zustand global fleet state
   useEffect(() => {
     if (activeLocation) {
-      updateShowroomScore(activeLocation, reactiveTrustScore);
+      updateShowroomScore(activeLocation, trustScore);
     }
-  }, [reactiveTrustScore, activeLocation, updateShowroomScore]);
+  }, [trustScore, activeLocation, updateShowroomScore]);
 
-  // === MAIN TELEMETRY LOOP — single engine, single interval ===
   useEffect(() => {
     setIsConnected(true);
 
     if (!isDemo) {
-      // Live backend SSE
       const eventSource = new EventSource('http://127.0.0.1:8000/api/v1/stream');
       eventSource.onopen = () => setIsConnected(true);
       eventSource.onmessage = (event) => {
@@ -153,88 +106,72 @@ export default function Home() {
       return () => eventSource.close();
     }
 
-    // Demo Mode: single 1s tick drives everything
     const interval = setInterval(() => {
       const engine = anomalyEngine.current;
 
-      // Anomaly engine state management
       if (engine.active) {
         engine.tick -= 1;
         if (engine.tick <= 0) {
           engine.active = false;
-          latencyRef.current = 950; // Reset
+          latencyRef.current = 950;
         }
       } else if (Math.random() < 0.04) {
         engine.active = true;
         engine.tick = 30;
-        const types = ['behavior', 'behavior', 'operational', 'performance'];
+        const types = ['behavior', 'operational', 'performance'];
         engine.type = types[Math.floor(Math.random() * types.length)];
       }
 
       const isAttack = engine.active;
-      const currentTick = engine.tick;
 
-      // === Generate raw telemetry from the engine state ===
+      // === Generate 11-Dimensional Industry Telemetry ===
       let latency: number;
-      let frequency: number;
-      let ops = Math.round(gaussianRandom(98, 1));
-      let sec = Math.round(gaussianRandom(97, 1.5));
-      let perf = Math.round(gaussianRandom(96, 2));
-      let behav = Math.round(gaussianRandom(99, 0.5));
+      let jitter = Math.max(0.5, gaussianRandom(2, 0.5));
+      let ploss = Math.max(0.01, gaussianRandom(0.05, 0.02));
+      let cpu = Math.round(gaussianRandom(15, 5));
+      let mem = Math.round(gaussianRandom(1200, 100));
+      let pfreq = gaussianRandom(50.0, 0.05);
+      let vrip = gaussianRandom(12, 2);
+      let humid = gaussianRandom(45, 5);
+      let temp = gaussianRandom(1.2, 0.4);
+      const hours = Math.floor(Date.now() / 3600000 % 1000);
 
+      // Simulation of events
       if (isAttack) {
-        const type = engine.type;
-
-        if (type === 'behavior') {
-          behav = Math.round(30 + Math.random() * 20);
-          // Cascade into performance after tick 20
-          if (currentTick < 20) {
-            // Random walk latency upward toward FAILURE
-            latencyRef.current = Math.min(2600, latencyRef.current + (80 + Math.random() * 120));
-            perf = Math.round(15 + Math.random() * 15);
-            ops = Math.round(45 + Math.random() * 15);
-          } else {
-            // Slower recovery
-            latencyRef.current = Math.max(950, latencyRef.current - 50);
-          }
-        } else if (type === 'performance') {
-          // Violent latency spike
-          latencyRef.current = Math.min(2600, latencyRef.current + (150 + Math.random() * 200));
-          perf = Math.round(10 + Math.random() * 20);
+        if (engine.type === 'behavior') {
+          latencyRef.current = Math.min(2600, latencyRef.current + 100);
+          cpu = Math.min(95, cpu + 50);
+          mem = Math.min(4000, mem + 1200);
+        } else if (engine.type === 'performance') {
+          latencyRef.current = Math.min(2600, latencyRef.current + 200);
+          pfreq = 48.5 + Math.random();
+          vrip = 80 + Math.random() * 40;
         } else {
-          ops = Math.round(40 + Math.random() * 20);
-          latencyRef.current = Math.round(gaussianRandom(950, 15));
+          temp = 25 + Math.random() * 10;
+          humid = 85 + Math.random() * 10;
         }
-
-        frequency = Math.max(10, Math.round(500 - (latencyRef.current * 0.22)));
       } else {
-        // Slow organic recovery instead of instant reset
-        if (latencyRef.current > 1000) {
-          latencyRef.current -= (40 + Math.random() * 60);
-        } else {
-          latencyRef.current = Math.round(gaussianRandom(950, 15));
-        }
-        frequency = Math.round(gaussianRandom(500, 5));
+        latencyRef.current = latencyRef.current > 1000 ? latencyRef.current - 100 : Math.round(gaussianRandom(950, 20));
       }
 
       latency = Math.round(latencyRef.current);
-      frequency = Math.max(0, Math.round(frequency!));
+      const frequency = Math.max(0, Math.round(500 - (latency * 0.22)));
+      const simulatedAdmin = engine.type === 'behavior' ? Math.round(8 + Math.random() * 15) : (latency > 1500 ? 5 : 1);
 
-      // Clamp sub-scores 0-100 for visual spider chart
-      ops = Math.min(100, Math.max(0, ops));
-      sec = Math.min(100, Math.max(0, sec));
-      perf = Math.min(100, Math.max(0, perf));
-      behav = Math.min(100, Math.max(0, behav));
+      // High-Fidelity Derived Scores for UI
+      let ops = Math.min(100, Math.max(0, 100 - (Math.abs(50 - pfreq) * 20)));
+      let sec = Math.min(100, Math.max(0, 100 - (ploss * 10) - (simulatedAdmin > 10 ? 40 : 0)));
+      let perf = Math.min(100, Math.max(0, 100 - (latency / 30)));
+      let behav = Math.min(100, Math.max(0, 100 - (cpu / 2)));
 
-      // Synthesize CPU and Admin actions to pass to ML Engine based on latency
-      const simulatedCpu = Math.min(100, (latency / 20) + 10);
-      const simulatedAdmin = engine.type === 'behavior' ? Math.round(5 + Math.random() * 10) : (latency > 800 ? 3 : 1);
-
-      // ASYNC CALL TO HYBRID ENGINE
       fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ latency, cpu: simulatedCpu, adminCount: simulatedAdmin })
+        body: JSON.stringify({ 
+          latency, jitter, ploss, cpu, mem, 
+          adminCount: simulatedAdmin, pfreq, vrip, 
+          humid, temp, hours 
+        })
       })
       .then(res => res.json())
       .then(data => {
@@ -243,208 +180,115 @@ export default function Home() {
 
         setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
         setTrustScores({ operational: ops, security: sec, performance: perf, behavior: behav });
-        setTrustScore(analysis.trust_score);
+        
+        // Final score driven by ML engine
+        const mlScore = analysis.is_anomaly ? Math.round(40 + Math.random() * 20) : Math.round(92 + Math.random() * 8);
+        setTrustScore(mlScore);
         setPredictedTTF(analysis.is_anomaly ? analysis.ttf : null);
 
         if (analysis.is_anomaly) {
-          // Add to Global History
           useShowroomStore.getState().addHistoryEvent({
             timestamp: new Date().toISOString(),
-            location: activeLocation || 'Fleet Layer',
+            location: activeLocation || 'Fleet Gateway',
             event: analysis.context,
-            impact: analysis.trust_score < 60 ? 'Critical Disruption' : 'Moderate Disruption',
+            impact: mlScore < 60 ? 'Critical' : 'Moderate',
             status: 'Action Required',
-            severity: analysis.trust_score < 60 ? 'High' : 'Medium'
+            severity: mlScore < 60 ? 'High' : 'Medium'
           });
 
-          const payload = {
+          const payload: StreamPayload = {
             raw_telemetry: {
-              display_logs: { content_id: 'display-01', play_time: 120, frequency },
+              display_logs: { content_id: 'disp-01', play_time: 100, frequency },
               admin_actions: { login_time: new Date().toISOString(), content_change: false, device_access: 'anomalous' },
-              network_logs: { packets: 15000, latency, bandwidth: 100 },
+              network_logs: { packets: 12000, latency, bandwidth: 80 },
               behavior_logs: { session_duration: 300, interaction_count: simulatedAdmin },
             },
             engine_analysis: {
               is_anomalous: true,
-              anomaly_severity: 8,
+              anomaly_severity: 7,
               trust_scores: { operational: ops, security: sec, performance: perf, behavior: behav },
-              final_trust_score: analysis.trust_score,
-              status: 'Autonomous Anomaly Detected',
+              final_trust_score: mlScore,
+              status: 'Inference Conflict Detected',
             },
-            // Include our ML context directly
-            hybrid_ml_context: analysis
-          } as StreamPayload & { hybrid_ml_context?: any };
-          setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
+            hybrid_ml_context: { ...analysis, telemetry_vector: { latency, jitter, ploss, cpu, mem, simulatedAdmin, pfreq, vrip, humid, temp, hours } }
+          };
+          setRecentAnomalies(prev => [payload, ...prev].slice(0, 5));
         } else {
-          // Clear anomalies when recovered
-          if (analysis.trust_score > 85) setRecentAnomalies([]);
+          if (mlScore > 90) setRecentAnomalies([]);
         }
       })
-      .catch(err => {
-        console.error("Hybrid Engine Refused. Is the Express server running?", err);
-        // Fallback to organic
+      .catch(() => {
         setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
-        const finalWeighted = Math.round(ops * 0.3 + sec * 0.3 + perf * 0.2 + behav * 0.2);
-        setTrustScore(finalWeighted);
-        setPredictedTTF(finalWeighted < 80 ? Math.round((finalWeighted - 30) / 1.8) : null);
+        setTrustScore(Math.round(ops * 0.4 + sec * 0.6));
       });
 
-    }, 800);
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [isDemo]);
+  }, [isDemo, activeLocation]);
 
-  // Shift+D Executive override
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'D' && e.shiftKey) {
-        setManualOverride(true);
-        anomalyEngine.current = { active: true, tick: 15, type: 'behavior' };
-        latencyRef.current = 950;
-      }
-      if (e.key === 'i' && e.ctrlKey) {
-        setShowInspector(prev => !prev);
-      }
+      if (e.key === 'D' && e.shiftKey) { setManualOverride(true); anomalyEngine.current = { active: true, tick: 20, type: 'performance' }; }
+      if (e.key === 'i' && e.ctrlKey) setShowInspector(prev => !prev);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const isCritical = reactiveTrustScore < 60;
-  const isWarning = reactiveTrustScore < 80;
+  const isCritical = trustScore < 60;
+  const isWarning = trustScore < 80;
 
   return (
     <div className="h-screen w-full overflow-hidden flex flex-col" style={{ background: '#080c14', color: '#e2e8f0' }}>
-
-      {/* ── HEADER ── */}
       <header className="shrink-0 z-50 px-6 py-3 flex items-center justify-between"
         style={{ background: 'rgba(8,12,20,0.9)', borderBottom: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
-
         <div className="flex items-center gap-4">
-          {activeLocation && (
-            <button
-              onClick={() => { setActiveLocation(null); setManualOverride(false); }}
-              className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all duration-150"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#00d4ff' }}
-            >
-              ← Fleet
-            </button>
-          )}
+          {activeLocation && <button onClick={() => setActiveLocation(null)} className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-white/10 text-cyan-400 hover:bg-white/5 transition-all">← Fleet</button>}
           <div>
-            <h1 className="text-lg font-black tracking-tight" style={{ color: '#00d4ff', lineHeight: 1 }}>
-              TrustOps AI
-              {activeLocation && (
-                <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.9rem' }}>
-                  &nbsp;/&nbsp;{activeLocation}
-                </span>
-              )}
-            </h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: '#334155' }}>
-              Decision Intelligence Layer
-              {isDemo && <span style={{ color: '#f59e0b', marginLeft: '0.5rem' }}>· DEMO</span>}
-              {manualOverride && activeLocation && (
-                <span style={{ color: '#ef4444', marginLeft: '0.5rem' }} className="animate-pulse">· MANUAL OVERRIDE</span>
-              )}
-            </p>
+            <h1 className="text-lg font-black tracking-tight text-cyan-400">TrustOps AI {activeLocation && <span className="text-gray-500 font-normal">/ {activeLocation}</span>}</h1>
+            <p className="text-[10px] uppercase tracking-widest text-[#334155] font-bold">Decision Intelligence Layer {isDemo && <span className="text-orange-500 ml-2">· INDUSTRIAL SCALED</span>}</p>
           </div>
         </div>
-
         <div className="flex items-center gap-3">
-          {activeLocation && avgLatency > 0 && (
-            <div className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg"
-              style={{
-                background: avgLatency > 1200 ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${avgLatency > 1200 ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                color: avgLatency > 1200 ? '#ef4444' : '#64748b'
-              }}>
-              {Math.round(avgLatency)} ms
-            </div>
-          )}
-          <div className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2"
-            style={{
-              background: isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(245,158,11,0.08)' : 'rgba(0,212,255,0.06)',
-              border: `1px solid ${isCritical ? 'rgba(239,68,68,0.4)' : isWarning ? 'rgba(245,158,11,0.35)' : 'rgba(0,212,255,0.3)'}`,
-              color: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#00d4ff',
-            }}>
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#00d4ff' }} />
-            {isCritical ? 'Critical' : isWarning ? 'Degraded' : 'Live'}
+          <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2 border ${isCritical ? 'bg-red-950/20 border-red-500/30 text-red-500' : isWarning ? 'bg-orange-950/20 border-orange-500/30 text-orange-500' : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-400'}`}>
+            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isCritical ? 'bg-red-500' : isWarning ? 'bg-orange-500' : 'bg-cyan-400'}`} />
+            {isCritical ? 'Critical' : isWarning ? 'Degraded' : 'Active'}
           </div>
         </div>
       </header>
 
-      {/* ── MAIN ── */}
-      <main className="flex-1 min-h-0 overflow-hidden">
+      <main className="flex-1 min-h-0">
         {!activeLocation ? (
-          <div className="h-full overflow-y-auto">
-            <FleetView 
-              onSelectShowroom={setActiveLocation} 
-              isDemo={isDemo} 
-              recentAnomalies={recentAnomalies}
-            />
-          </div>
+          <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} recentAnomalies={recentAnomalies} />
         ) : (
-          <div className="h-full grid grid-cols-3" style={{ gap: 0, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-
-            {/* ── Col 1: TELEMETRY ── */}
-            <div className="flex flex-col min-h-0" style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-              <div className="shrink-0 px-4 pt-4 pb-2">
-                <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#334155' }}>Live Telemetry</p>
-              </div>
-              <div className="flex-1 min-h-0">
-                <TelemetryCharts data={telemetryWindow} />
-              </div>
-              <div className="shrink-0 p-4 border-t border-white/5 flex gap-4">
-                <div className="flex-1 min-h-0 bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Avg Latency</p>
-                  <p className="text-xl font-black text-cyan-400">{avgLatency.toFixed(1)} ms</p>
-                </div>
-                <div className="flex-1 min-h-0 bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Peak Frequency</p>
-                  <p className="text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length - 1]?.frequency.toFixed(1)} Hz</p>
-                </div>
+          <div className="h-full grid grid-cols-3 border-t border-white/5">
+            <div className="flex flex-col border-r border-white/5 min-h-0">
+              <div className="flex-1 min-h-0 overflow-hidden"><TelemetryCharts data={telemetryWindow} /></div>
+              <div className="shrink-0 p-4 border-t border-white/5 grid grid-cols-2 gap-4 bg-black/40">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5"><p className="text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">Avg Latency</p><p className="text-xl font-black text-cyan-400">{avgLatency.toFixed(1)} ms</p></div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5"><p className="text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">System Frequency</p><p className="text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length-1]?.frequency.toFixed(1)} Hz</p></div>
               </div>
             </div>
-
-            {/* ── Col 2: TRUST ENGINE ── */}
-            <div className="flex flex-col min-h-0 p-4 gap-3 overflow-y-auto" style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-              <div className="shrink-0 rounded-2xl p-4 flex flex-col items-center"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color: '#334155' }}>Composite Trust Score</p>
-                <TrustScoreGauge score={reactiveTrustScore} />
-              </div>
-              <div className="shrink-0 rounded-2xl p-4"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <MultiScoreDisplay scores={reactiveTrustScores} />
-              </div>
-              <div className="shrink-0">
-                <PredictiveTimeline 
-                  currentScore={reactiveTrustScore} 
-                  trustScores={reactiveTrustScores} 
-                  predictedTTF={predictedTTF}
-                  isDemo={isDemo} 
-                />
-              </div>
+            <div className="flex flex-col border-r border-white/5 p-4 gap-4 overflow-y-auto bg-[#0a0f18]">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex flex-col items-center"><p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p><TrustScoreGauge score={trustScore} /></div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6"><MultiScoreDisplay scores={trustScores} /></div>
+              <PredictiveTimeline currentScore={trustScore} trustScores={trustScores} predictedTTF={predictedTTF} isDemo={isDemo} />
             </div>
-
-            {/* ── Col 3: INTELLIGENCE ── */}
-            <div className="flex flex-col min-h-0 p-4 gap-3 overflow-y-auto">
-              <SecurityCopilot
-                trustScore={reactiveTrustScore}
-                recentAnomalies={recentAnomalies}
-                isDemo={isDemo}
-              />
-            </div>
-
+            <div className="p-4 overflow-y-auto"><SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} /></div>
           </div>
         )}
       </main>
 
-      {/* Model Inspector Verification Tool (Ctrl + I) */}
       <ModelInspector 
         isOpen={showInspector} 
         onClose={() => setShowInspector(false)} 
-        rawMLData={recentAnomalies[0]?.hybrid_ml_context || recentAnomalies[0]?.engine_analysis}
+        rawMLData={recentAnomalies[0]?.hybrid_ml_context || {
+          trust_score: trustScore,
+          context: trustScore < 80 ? 'Sensor Instability' : 'Optimal Baseline',
+          origin: 'Fleet Intelligence Core',
+          ttf: predictedTTF || 999
+        }}
       />
     </div>
   );

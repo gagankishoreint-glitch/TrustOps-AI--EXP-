@@ -77,7 +77,7 @@ export const useShowroomStore = create<ShowroomStore>((set) => ({
       
       if (Math.random() > 0.8) {
         const scoreJitter = (Math.random() - 0.5) * 2;
-        nextShowrooms[key].score = Math.min(100, Math.max(10, nextShowrooms[key].score + scoreJitter));
+        nextShowrooms[key].score = Math.round(Math.min(100, Math.max(10, nextShowrooms[key].score + scoreJitter)));
       }
     });
 

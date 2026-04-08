@@ -1,77 +1,82 @@
-# TrustOps AI: Hybrid Intelligence Architecture
+# TrustOps AI: Split Deployment Architecture
 
-TrustOps AI has been upgraded from a synthetic demo to a **Hybrid Intelligence Platform**. The "Brain" is now split into three distinct layers, ensuring the system is fast, mathematically precise, and human-readable.
+TrustOps AI has been refactored from a monolithic prototype into a **production-ready microservice architecture**. The system is now decoupled into three core layers for maximum performance, horizontal scalability, and "explainable" security intelligence.
 
-## 🧠 The Hybrid Architecture
+## 🏗️ The Split Architecture
 
-1.  **Reflexes (Isolation Forest)**: Fast anomaly detection trained on historical telemetry. It identifies "something is wrong" in milliseconds and triggers the deeper analysis layers.
-2.  **Math (Random Forest)**: Performs the heavy lifting. It classifies the root cause (e.g., "Network Saturation" vs "Unauthorized Access") and runs a regression to predict the **Time-To-Failure (TTF)**.
-3.  **Brain (Ollama Llama 3)**: Our GenAI layer. It only activates when the Reflexes spot an anomaly. It takes the mathematical context and generates professional, executive-ready insights for the **Security Copilot**.
+### 1. 🐍 ML Microservice (`/ml-service`)
+**Engine**: Python 3.12 + FastAPI + Scikit-Learn.
+- **Isolation Forest**: Real-time anomaly gate (Reflexes).
+- **Random Forest**: Context classification and TTF regression (Math).
+- **Features**: 11-dimensional telemetry vector processing.
+- **Scaling**: Containerized via Docker / Railway.
 
----
+### 2. ⚡ Node.js API Proxy (`/server`)
+**Engine**: Express.js + TypeScript.
+- Acts as a thin gateway between the frontend and the ML microservice.
+- **Chat Wrapper**: Converts raw JSON inference results into human-readable English via grounded templates.
+- **Ollama Integration**: Optional GenAI enrichment for executive-ready insights.
 
-## 🛠️ Setup & Prerequisite
-
-### 1. AI Model Support (Ollama)
-The system uses a local LLM for "Explainable AI."
-- **Install Ollama**: [ollama.com](https://ollama.com)
-- **Download Model**: Run `ollama run llama3` in your terminal.
-- **Service**: Ensure the Ollama service is running in the background while the dashboard is active.
-
-### 2. Machine Learning Dependencies (Python)
-The backend requires Python and Scikit-Learn to run the IF/RF models.
-```bash
-# Recommended: create a virtual environment
-pip install scikit-learn pandas joblib
-```
-
-### 3. Node Dependencies
-Due to the brand-new Vite 7 engine, some legacy plugins require a "legacy" install:
-```bash
-npm install --legacy-peer-deps
-```
+### 3. 🖥️ Fleet Dashboard (`/client`)
+**Engine**: React + Vite + Framer Motion.
+- Real-time visualization of the 11-dimensional telemetry stream.
+- **Security Copilot**: AI-driven advisory interface consuming the structured ML output.
 
 ---
 
-## 🚀 How to Start
+## 🛠️ Local Setup
 
-You must run the **Frontend** and the **AI Orchestrator (Backend)** simultaneously.
-
-### Step 1: Start the AI Backend
-This orchestrates the Python ML scripts and the Ollama API.
+### 1. START: ML Microservice
+The Python engine must be running for the dashboard to function.
 ```bash
+cd ml-service
+# Recommended: create a venv and install deps
+pip install -r requirements.txt
+uvicorn app:app --port 8000 --reload
+```
+*Runs on http://localhost:8000*
+
+### 2. START: Node Backend (Proxy)
+```bash
+pnpm install
 npm run server:dev
 ```
-*(Runs on http://localhost:5001)*
+*Runs on http://localhost:5001*
 
-### Step 2: Start the Dashboard
+### 3. START: Frontend Dashboard
 ```bash
 npm run dev
 ```
-*(Runs on http://localhost:3000)*
+*Runs on http://localhost:5173*
 
 ---
 
-## ⚡ Live Demo Walkthrough
+## 🧪 Validation & Testing
 
-### 1. Trigger the "Attack"
-While the dashboard is live, press **`Shift + D`**. 
-- The **Reflexes** will spot the latency spike.
-- The **Math** layer will calculate the exact confidence and TTF.
-- The **Brain (Ollama)** will generate a unique security insight.
+We have implemented a **15-Scenario Hold-Out Test Pack** to verify model integrity across various attack vectors (Mirai Scanning, Brute Force, Hardware Drifts).
 
-### 2. Check the "Intelligence"
-Click on a node (e.g., "Hyderabad Deccan") to open the **Intelligence Archive**. You will see:
-- Real-time **Confidence Meters** (jittering as the AI "thinks").
-- A precise **"Breach in ~X Min"** countdown driven by the Random Forest regressor.
-- The **Executive Insight** generated specifically for your current anomaly data.
+To run the verification:
+```bash
+npm run ml:test
+```
 
 ---
 
-## 📝 Developer Notes (Handover)
-- **Port Mapping**: The frontend proxies all `/api` calls to port `5001`. Do not change the backend port without updating `vite.config.ts`.
-- **Model Files**: The `.joblib` files in `/server` are the trained weights. If you change the dataset in `Panasonic_Showroom_Telecom.csv`, you must run `server/train_hybrid.py` to update them.
-- **Production**: For a production build, run `npm run build` then `npm start`.
+## 🚀 Docker Deployment
+
+To launch the entire stack using Docker Compose:
+```bash
+docker-compose up --build
+```
+- **Dashboard**: http://localhost:5173
+- **ML API**: http://localhost:8000
 
 ---
-*Maintained by the TrustOps Architecture Team.*
+
+## 📝 Developer Notes
+- **Env Vars**: Create a `.env` file based on `.env.example`.
+- **Field Mapping**: The system has been standardized on the `admin` telemetry field across the stack (fixing previous `adminCount` mismatches).
+- **GitHub Push**: This architecture is optimized for GitHub/Vercel/Railway deployment. Push the entire root directory to your repository.
+
+---
+*Maintained by the TrustOps EXcellence (EXP) Team.*

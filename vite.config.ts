@@ -185,6 +185,7 @@ export default defineConfig({
       deny: ["**/.*"],
     },
     proxy: {
+      // Node Express: handles /api/chat, /api/feedback, /api/health
       "/api": {
         target: "http://localhost:5001",
         changeOrigin: true,

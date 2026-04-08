@@ -1,141 +1,168 @@
+/**
+ * TrustOps — Local Development Express Server
+ *
+ * In production: Vercel serves the static frontend + /api/* serverless functions.
+ * In local dev:  This server proxies ML requests to the Python microservice and
+ *                handles /api/chat with the same template logic.
+ *
+ * Environment variables:
+ *   ML_API_URL   URL of the Python ML microservice (default: http://localhost:8000)
+ *   PORT         Express listen port (default: 5001)
+ */
+
 import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { execFile } from "child_process";
-import { saveCase, getSimilarCases } from "./database.js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
+
+const ML_API_URL = process.env.ML_API_URL ?? "http://localhost:8000";
+
+// ─── Chat helpers (same logic as api/chat.ts, kept in sync manually) ────────
+
+interface PredictionResult {
+  is_anomaly:   boolean;
+  trust_score:  number;
+  confidence:   number;
+  root_cause:   string;
+  risk:         string;
+  ttf_minutes:  number;
+  severity:     string;
+  action:       string;
+}
+
+function buildChatTemplate(ml: PredictionResult): string {
+  if (!ml.is_anomaly) {
+    return (
+      `The system is operating within normal parameters. ` +
+      `Trust score: ${ml.trust_score}/100. No action required.`
+    );
+  }
+  const ttf = ml.ttf_minutes > 8000
+    ? "well beyond the monitoring window"
+    : `~${Math.round(ml.ttf_minutes)} minutes`;
+
+  return (
+    `⚠️ **${ml.risk}** — ${ml.root_cause}.\n\n` +
+    `Confidence: **${ml.confidence.toFixed(1)}%** | Trust score: ${ml.trust_score}/100 | Severity: ${ml.severity}\n\n` +
+    `**Time to failure:** ${ttf}\n\n` +
+    `**Action:** ${ml.action}`
+  );
+}
+
+// ─── Server ──────────────────────────────────────────────────────────────────
 
 async function startServer() {
-  const app = express();
+  const app    = express();
   const server = createServer(app);
 
   app.use(express.json());
 
-  // Helper for generating Gaussian noise (Industry Scaling)
-  const gaussianRandom = (mean: number, stdev: number) => {
-    const u = 1 - Math.random(); 
-    const v = Math.random();
-    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-    return z * stdev + mean;
-  };
+  // ── POST /api/analyze ─────────────────────────────────────────────────────
+  app.post("/api/analyze", async (req, res) => {
+    const body = { ...req.body };
 
-  // POST /api/analyze - The 11-Dimensional Hybrid Intelligent Layer
-  app.post("/api/analyze", (req, res) => {
-    const { 
-      latency, jitter, ploss, cpu, mem, admin, 
-      pfreq, vrip, humid, temp, hours 
-    } = req.body;
-    
-    const pythonExecutable = path.resolve(__dirname, "..", ".venv", "bin", "python");
-    const inferenceScript = path.resolve(__dirname, "hybrid_inference.py");
-
-    const args = [
-      latency, jitter, ploss, cpu, mem, admin, 
-      pfreq, vrip, humid, temp, hours
-    ].map(a => a.toString());
-
-    execFile(pythonExecutable, [inferenceScript, ...args], async (error, stdout, stderr) => {
-      if (error) {
-        console.error("Inference Error:", stderr);
-        return res.status(500).json({ error: "Inference Engine failed." });
-      }
-
-      try {
-        const mlResult = JSON.parse(stdout.trim());
-        if (mlResult.error) throw new Error(mlResult.error);
-        if (!mlResult.is_anomaly) return res.json({ result: mlResult });
-
-        // Generate Corporate Liability Insight using TrustOps-Expert
-        const prompt = `### INFERENCE VECTOR: ${JSON.stringify(req.body)}
-### ML PREDICTION: ${mlResult.context} (${mlResult.confidence}% Confidence)
-
-### MISSION: Synthesize a professional industrial advisory for this vector. 
-- [RISK]: A snappy 2-word summary.
-- [ADVISORY]: A detailed, 10-word technical business action.
-DO NOT repeat the same phrase for both.`;
-
-        let explainableText = mlResult.action;
-
-        try {
-          const ollamaHost = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
-          const ollamaRes = await fetch(`${ollamaHost}/api/generate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "TrustOps-Expert",
-              prompt: prompt,
-              stream: false
-            })
-          });
-          
-          if (ollamaRes.ok) {
-            const ollamaData = await ollamaRes.json();
-            explainableText = ollamaData.response.trim();
-          }
-        } catch (err) {
-          console.warn("TrustOps-Expert offline, using fallback.");
-        }
-
-        return res.json({
-          result: { ...mlResult, explainable_brain: explainableText }
-        });
-
-      } catch (parseErr: any) {
-        return res.status(500).json({ error: parseErr.message });
-      }
-    });
-  });
-
-  // POST /api/chat - The Expert Advisor with Case Memory
-  app.post("/api/chat", async (req, res) => {
-    const { messages, contextData } = req.body;
-
-    const similarCases: any = getSimilarCases(
-      contextData?.latency || 0,
-      contextData?.cpu || 0,
-      contextData?.adminCount || 0
-    );
-
-    const memoryPrompt = similarCases.length > 0 
-      ? `### CASE MEMORY:
-Previously, the operator labeled these similar patterns as:
-${similarCases.map((c: any) => `- ${c.human_label} (${c.is_accurate ? 'Verified' : 'Overridden'})`).join('\n')}`
-      : "### CASE MEMORY: First instance of this behavior in showroom history.";
+    // Normalise field name: frontend sends admin (we fixed Home.tsx)
+    // but keep this guard for safety
+    if ("adminCount" in body && !("admin" in body)) {
+      body.admin = body.adminCount;
+      delete body.adminCount;
+    }
 
     try {
-      const ollamaHost = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
-      const ollamaRes = await fetch(`${ollamaHost}/api/generate`, {
-        method: "POST",
+      const mlRes = await fetch(`${ML_API_URL}/analyze`, {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "TrustOps-Expert",
-          prompt: `SYSTEM: ${memoryPrompt}\n\nUSER_QUERY: ${messages[messages.length - 1].content}\n\nADVISORY:`,
-          stream: false
-        })
+        body:    JSON.stringify(body),
+        signal:  AbortSignal.timeout(10_000),
       });
 
-      if (ollamaRes.ok) {
-        const data = await ollamaRes.json();
-        return res.json({ response: data.response.trim() });
+      if (!mlRes.ok) {
+        const err = await mlRes.text();
+        return res.status(502).json({ error: `ML service error: ${err}` });
       }
-      res.status(500).json({ error: "Expert Advisor is recalibrating." });
-    } catch (err) {
-      res.status(500).json({ error: "Chat Bridge Failed." });
+
+      const mlResult = await mlRes.json();
+      return res.json({ result: mlResult });
+
+    } catch (e: any) {
+      console.error("[/api/analyze] ML service unreachable:", e.message);
+      return res.status(502).json({
+        error: "ML service is offline. Start ml-service with: cd ml-service && uvicorn app:app --port 8000"
+      });
     }
   });
+
+  // ── POST /api/chat ─────────────────────────────────────────────────────────
+  app.post("/api/chat", async (req, res) => {
+    const { messages, mlResult } = req.body as {
+      messages:  { role: string; content: string }[];
+      mlResult?: PredictionResult;
+    };
+
+    if (!messages?.length) {
+      return res.status(400).json({ error: "messages array is required." });
+    }
+
+    if (!mlResult) {
+      return res.json({
+        response: "No active inference result. Run a telemetry analysis first."
+      });
+    }
+
+    const templateResponse = buildChatTemplate(mlResult);
+
+    // Optional Ollama enhancement
+    const ollamaHost = process.env.OLLAMA_HOST;
+    if (ollamaHost) {
+      try {
+        const userQuestion = messages[messages.length - 1]?.content ?? "";
+        const prompt =
+          `You are a concise industrial AI advisor. Use ONLY the following inference result.\n\n` +
+          `INFERENCE RESULT:\n${JSON.stringify(mlResult, null, 2)}\n\n` +
+          `OPERATOR QUESTION: ${userQuestion}\n\n` +
+          `ADVISORY (plain English, 3-5 sentences):`;
+
+        const ollamaRes = await fetch(`${ollamaHost}/api/generate`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ model: "TrustOps-Expert", prompt, stream: false }),
+          signal:  AbortSignal.timeout(6_000),
+        });
+
+        if (ollamaRes.ok) {
+          const data = await ollamaRes.json() as { response: string };
+          if (data.response?.trim().length > 20) {
+            return res.json({ response: data.response.trim() });
+          }
+        }
+      } catch {
+        // Ollama offline — fall through
+      }
+    }
+
+    return res.json({ response: templateResponse });
+  });
+
+  // ── POST /api/feedback ─────────────────────────────────────────────────────
+  // SQLite removed — in-memory session log only (ephemeral, but keeps UI flow)
+  const feedbackLog: any[] = [];
 
   app.post("/api/feedback", (req, res) => {
-    try {
-      saveCase(req.body.caseData);
-      res.json({ success: true });
-    } catch (err) {
-      res.status(500).json({ error: "Feedback Sync Failed" });
-    }
+    feedbackLog.push({ ts: new Date().toISOString(), ...req.body.caseData });
+    // Keep last 200 entries in memory
+    if (feedbackLog.length > 200) feedbackLog.shift();
+    res.json({ success: true });
   });
 
+  // ── GET /api/health ────────────────────────────────────────────────────────
+  app.get("/api/health", (_req, res) => {
+    res.json({ ok: true, layer: "express-dev", mlApiUrl: ML_API_URL });
+  });
+
+  // ── Static frontend ────────────────────────────────────────────────────────
   const staticPath =
     process.env.NODE_ENV === "production"
       ? path.resolve(__dirname, "public")
@@ -145,7 +172,10 @@ ${similarCases.map((c: any) => `- ${c.human_label} (${c.is_accurate ? 'Verified'
   app.get("*", (_req, res) => res.sendFile(path.join(staticPath, "index.html")));
 
   const port = process.env.PORT || 5001;
-  server.listen(port, () => console.log(`TrustOps Server: http://localhost:${port}/`));
+  server.listen(port, () =>
+    console.log(`\n🚀 TrustOps Dev Server: http://localhost:${port}/`)
+  );
+  console.log(`   ML Service target: ${ML_API_URL}`);
 }
 
 startServer().catch(console.error);

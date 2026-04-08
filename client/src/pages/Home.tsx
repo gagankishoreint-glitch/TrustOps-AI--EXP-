@@ -8,6 +8,7 @@ import { BusinessImpactAnalysis } from '@/components/BusinessImpactAnalysis';
 import { FleetView } from '@/components/FleetView';
 import { useShowroomStore } from '@/store/useShowroomStore';
 import { ModelInspector } from '@/components/ModelInspector';
+import { analyzeTelemetry, type TelemetryData, type AnalysisResult } from '@/lib/api';
 
 export interface TelemetryPoint {
   timestamp: number;
@@ -164,36 +165,35 @@ export default function Home() {
       let perf = Math.min(100, Math.max(0, 100 - (latency / 30)));
       let behav = Math.min(100, Math.max(0, 100 - (cpu / 2)));
 
-      fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          latency, jitter, ploss, cpu, mem, 
-          adminCount: simulatedAdmin, pfreq, vrip, 
-          humid, temp, hours 
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.result) return;
-        const analysis = data.result;
+      // Centralized API Call to External ML Endpoint
+      const telemetryPayload: TelemetryData = {
+        latency, jitter, ploss, cpu, mem,
+        admin: simulatedAdmin,
+        pfreq, vrip, humid, temp, hours
+      };
+
+      analyzeTelemetry(telemetryPayload)
+      .then((ml: AnalysisResult) => {
+        // Result is now the direct ML object from lib/api
+        if (!ml) return;
 
         setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
         setTrustScores({ operational: ops, security: sec, performance: perf, behavior: behav });
-        
-        // Final score driven by ML engine
-        const mlScore = analysis.is_anomaly ? Math.round(40 + Math.random() * 20) : Math.round(92 + Math.random() * 8);
-        setTrustScore(mlScore);
-        setPredictedTTF(analysis.is_anomaly ? analysis.ttf : null);
 
-        if (analysis.is_anomaly) {
+        const mlScore: number = typeof ml.trust_score === 'number' ? ml.trust_score
+          : ml.is_anomaly ? 45 : 95;
+        
+        setTrustScore(mlScore);
+        setPredictedTTF(ml.is_anomaly ? (ml.ttf_minutes ?? null) : null);
+
+        if (ml.is_anomaly) {
           useShowroomStore.getState().addHistoryEvent({
             timestamp: new Date().toISOString(),
             location: activeLocation || 'Fleet Gateway',
-            event: analysis.context,
+            event: ml.root_cause ?? 'Anomaly Detected',
             impact: mlScore < 60 ? 'Critical' : 'Moderate',
             status: 'Action Required',
-            severity: mlScore < 60 ? 'High' : 'Medium'
+            severity: (ml.severity as any) ?? (mlScore < 60 ? 'High' : 'Medium')
           });
 
           const payload: StreamPayload = {
@@ -210,14 +210,19 @@ export default function Home() {
               final_trust_score: mlScore,
               status: 'Inference Conflict Detected',
             },
-            hybrid_ml_context: { ...analysis, telemetry_vector: { latency, jitter, ploss, cpu, mem, simulatedAdmin, pfreq, vrip, humid, temp, hours } }
+            hybrid_ml_context: {
+              ...ml,
+              mlResult: ml,
+              telemetry_vector: telemetryPayload
+            }
           };
           setRecentAnomalies(prev => [payload, ...prev].slice(0, 5));
         } else {
           if (mlScore > 90) setRecentAnomalies([]);
         }
       })
-      .catch(() => {
+      .catch((err: any) => {
+        console.warn("Telemetry analysis failed:", err);
         setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
         setTrustScore(Math.round(ops * 0.4 + sec * 0.6));
       });

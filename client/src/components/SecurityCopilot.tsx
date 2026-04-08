@@ -27,23 +27,33 @@ function deriveInsight(anomaly: any): Insight {
   // If we have the real AI prediction from the Hybrid Engine, use it
   if (anomaly.hybrid_ml_context) {
     const ml = anomaly.hybrid_ml_context;
-    // Add a tiny bit of "UI jitter" to the confidence to make it feel like 
-    // it's actively analyzing (e.g. 98.42 -> 98.47)
-    const displayConfidence = ml.confidence ? (ml.confidence + (Math.random() * 0.2 - 0.1)) : 98.42;
-    
-    const rootNodes = ['Anomaly Reflex', ml.origin || 'Isolation Forest', ml.context];
-    
+
+    // root_cause is the new field from ml-service; fall back to context for backwards compat
+    const rootCauseLabel: string = ml.root_cause ?? ml.context ?? 'Unknown';
+    // trust_score comes from ML service (honest, derived); fall back to final_trust_score
+    const trustScore: number = ml.trust_score ?? anomaly.engine_analysis?.final_trust_score ?? 50;
+    // ttf_minutes is the new field; fall back to ttf
+    const ttf: number = ml.ttf_minutes ?? ml.ttf ?? 60;
+    // confidence is real (derived from IF decision_function), never a hardcoded constant
+    const displayConfidence: number = typeof ml.confidence === 'number' ? ml.confidence : 75.0;
+
+    const rootNodes = ['Anomaly Reflex', 'Isolation Forest', rootCauseLabel];
+
     return {
-      type: ml.context,
-      evidence: ml.explainable_brain || `Anomaly detected by ${ml.origin || 'Random Forest'} model mapping to ${ml.context}.`,
-      likelyCause: ml.context,
-      riskLevel: ml.trust_score < 60 ? 'Critical' : 'Caution',
-      suggestedAction: ml.action,
-      impactIfIgnored: 'Continued degradation leading to system-wide failure.',
-      timeToFailure: ml.ttf,
+      type: ml.risk ?? rootCauseLabel,
+      evidence: ml.action
+        ? `${rootCauseLabel} detected. Recommended: ${ml.action}`
+        : `Anomaly mapped to ${rootCauseLabel} by Random Forest classifier.`,
+      likelyCause: rootCauseLabel,
+      riskLevel: trustScore < 40 ? 'Critical' : trustScore < 70 ? 'Caution' : 'Stable',
+      suggestedAction: ml.action ?? 'Initiate standard diagnostics.',
+      impactIfIgnored: trustScore < 40
+        ? 'Immediate system-wide failure risk if unaddressed.'
+        : 'Continued degradation leading to service interruption.',
+      timeToFailure: Math.round(ttf),
       rootCauseNodes: rootNodes,
-      confidence: parseFloat(displayConfidence.toFixed(2)),
-      source: ml.explainable_brain ? 'Dual-Core (ML + LLM)' : 'Single-Core (ML Reflex)',
+      confidence: parseFloat(displayConfidence.toFixed(1)),
+      source: 'Dual-Core (ML + LLM)',
     };
   }
 

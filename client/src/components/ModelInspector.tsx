@@ -41,8 +41,9 @@ export const ModelInspector: React.FC<ModelInspectorProps> = ({ isOpen, onClose,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [...messages, userMsg],
+          // Pass structured ML result so chat wrapper can explain it without Ollama
+          mlResult: rawMLData?.mlResult ?? rawMLData,
           contextData: {
-            ...rawMLData,
             location: window.location.pathname.split('/').pop() || 'Fleet_Core'
           }
         })
@@ -134,12 +135,18 @@ export const ModelInspector: React.FC<ModelInspectorProps> = ({ isOpen, onClose,
                 <div className="text-[11px] text-gray-300 leading-relaxed font-sans">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-[9px] uppercase font-black text-gray-500">Predicted Context</span>
-                    <span className="text-amber-400 font-bold">{rawMLData?.context || 'Calibrating...'}</span>
+                    <span className="text-amber-400 font-bold">{rawMLData?.root_cause ?? rawMLData?.context ?? 'Calibrating...'}</span>
                   </div>
                   <div className="p-3 bg-black/30 rounded-lg border border-white/5 text-[10px]">
                     <p className="text-cyan-400 font-black mb-1 uppercase tracking-tighter">Automated Advisory:</p>
-                    <p className="text-gray-400 italic">"{rawMLData?.explainable_brain || 'Scanning 11 dimensions for diagnostic patterns...'}"</p>
+                    <p className="text-gray-400 italic">"{rawMLData?.action ?? rawMLData?.explainable_brain ?? 'Scanning 11 dimensions for diagnostic patterns...'}"</p>
                   </div>
+                  {typeof rawMLData?.confidence === 'number' && (
+                    <div className="flex items-center justify-between mt-2 px-1">
+                      <span className="text-[9px] text-gray-500 uppercase font-black">Confidence</span>
+                      <span className="text-emerald-400 font-bold text-sm">{rawMLData.confidence.toFixed(1)}%</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

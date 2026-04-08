@@ -1,64 +1,77 @@
-# TrustOps AI
+# TrustOps AI: Hybrid Intelligence Architecture
 
-TrustOps AI is a cutting-edge **Operational Intelligence Dashboard** designed to solve the problem of alert fatigue in large-scale hardware, IoT, and security ecosystems. Rather than relying on human operators to manually monitor and correlate thousands of telemetry data points (latency, ping frequency, etc.), TrustOps synthesizes live metrics into a unified baseline metric: **The Trust Score**.
+TrustOps AI has been upgraded from a synthetic demo to a **Hybrid Intelligence Platform**. The "Brain" is now split into three distinct layers, ensuring the system is fast, mathematically precise, and human-readable.
 
-With a strong focus on *Management by Exception*, the system operates quietly when health is optimal. When an anomaly occurs across the network or hardware boundaries, the system's GenAI-powered **Security Copilot** instantly interprets the issue and provides operators with clear, executable context—effectively shifting Security Operations from reactive digging to proactive intelligence.
+## 🧠 The Hybrid Architecture
 
-## Features
-
-- **Live Data Telemetry**: High-frequency streaming UI visualizing network metrics without the clutter.
-- **The Trust Score**: A dynamic 0-100 metric acting as the central gauge of the entire operational ecosystem's health.
-- **Security Copilot**: An automated GenAI assistant that intercepts data anomalies and translates them into plain-English "Insights" and "Automated Actions," mitigating the need for deep log dives.
-- **Cyberpunk Aesthetic**: An immersive, high-contrast UI designed for dark-mode command center experiences.
+1.  **Reflexes (Isolation Forest)**: Fast anomaly detection trained on historical telemetry. It identifies "something is wrong" in milliseconds and triggers the deeper analysis layers.
+2.  **Math (Random Forest)**: Performs the heavy lifting. It classifies the root cause (e.g., "Network Saturation" vs "Unauthorized Access") and runs a regression to predict the **Time-To-Failure (TTF)**.
+3.  **Brain (Ollama Llama 3)**: Our GenAI layer. It only activates when the Reflexes spot an anomaly. It takes the mathematical context and generates professional, executive-ready insights for the **Security Copilot**.
 
 ---
 
-## Getting Started
+## 🛠️ Setup & Prerequisite
 
-### Local Development
-To run this application locally on your machine, clone the repository and install the dependencies using `pnpm`:
+### 1. AI Model Support (Ollama)
+The system uses a local LLM for "Explainable AI."
+- **Install Ollama**: [ollama.com](https://ollama.com)
+- **Download Model**: Run `ollama run llama3` in your terminal.
+- **Service**: Ensure the Ollama service is running in the background while the dashboard is active.
 
+### 2. Machine Learning Dependencies (Python)
+The backend requires Python and Scikit-Learn to run the IF/RF models.
 ```bash
-git clone https://github.com/gagankishoreint-glitch/TrustOps-AI.git
-cd TrustOps-AI
-npm install -g pnpm 
-pnpm install
+# Recommended: create a virtual environment
+pip install scikit-learn pandas joblib
 ```
 
-Start the Vite development server:
+### 3. Node Dependencies
+Due to the brand-new Vite 7 engine, some legacy plugins require a "legacy" install:
 ```bash
-pnpm dev
-```
-
-### Production Build
-To create a production bundle and run the finalized Express server locally:
-```bash
-pnpm build
-pnpm start
+npm install --legacy-peer-deps
 ```
 
 ---
 
-## ⚡ Presentation "Demo Mode"
-We built a discreet local simulation engine into the production site specifically for live pitches (e.g., panel presentations). This allows you to forcefully demonstrate the AI mitigation process without needing to run the actual backend attack scripts.
+## 🚀 How to Start
 
-**1. Activate Demo Mode**
-Append the `?demo=true` parameter to your URL. 
-Example: `https://trustops-dashboard.vercel.app/?demo=true`
-*(A small yellow "(Demo Mode Active)" indicator will verify you are in the mode).*
+You must run the **Frontend** and the **AI Orchestrator (Backend)** simultaneously.
 
-**2. Trigger the "Attack"**
-While presenting the dashboard to the panel, press **`Shift + D`** on your keyboard. 
-This will instantly:
-- Spike simulated network latency to >800ms.
-- Plunge the Trust Score into the critical red zone.
-- Trigger the AI **Security Copilot** to produce an automated DDoS identification insight right before their eyes.
+### Step 1: Start the AI Backend
+This orchestrates the Python ML scripts and the Ollama API.
+```bash
+npm run server:dev
+```
+*(Runs on http://localhost:5001)*
 
-*(Press `Shift + D` again to resolve the simulated attack and return to 100% health).*
+### Step 2: Start the Dashboard
+```bash
+npm run dev
+```
+*(Runs on http://localhost:3000)*
 
 ---
 
-## Deployment
-TrustOps AI is deployed via **Vercel**. Pushing to the `main` branch automatically builds and deploys the Vite Single-Page Application using `vercel.json` rewrite rules.
+## ⚡ Live Demo Walkthrough
 
-*Live URL: [https://trustops-dashboard.vercel.app](https://trustops-dashboard.vercel.app)*
+### 1. Trigger the "Attack"
+While the dashboard is live, press **`Shift + D`**. 
+- The **Reflexes** will spot the latency spike.
+- The **Math** layer will calculate the exact confidence and TTF.
+- The **Brain (Ollama)** will generate a unique security insight.
+
+### 2. Check the "Intelligence"
+Click on a node (e.g., "Hyderabad Deccan") to open the **Intelligence Archive**. You will see:
+- Real-time **Confidence Meters** (jittering as the AI "thinks").
+- A precise **"Breach in ~X Min"** countdown driven by the Random Forest regressor.
+- The **Executive Insight** generated specifically for your current anomaly data.
+
+---
+
+## 📝 Developer Notes (Handover)
+- **Port Mapping**: The frontend proxies all `/api` calls to port `5001`. Do not change the backend port without updating `vite.config.ts`.
+- **Model Files**: The `.joblib` files in `/server` are the trained weights. If you change the dataset in `Panasonic_Showroom_Telecom.csv`, you must run `server/train_hybrid.py` to update them.
+- **Production**: For a production build, run `npm run build` then `npm start`.
+
+---
+*Maintained by the TrustOps Architecture Team.*

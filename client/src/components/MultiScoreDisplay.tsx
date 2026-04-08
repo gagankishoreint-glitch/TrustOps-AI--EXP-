@@ -36,14 +36,14 @@ export const MultiScoreDisplay: React.FC<{ scores: TrustScores }> = ({ scores })
         return (
           <div key={key}>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+              <span className="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
               <div className="flex items-center gap-1.5">
                 {delta !== 0 && (
-                  <span className={`text-[9px] font-bold ${delta > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span className={`text-[8px] md:text-[9px] font-bold ${delta > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                     {delta > 0 ? '▲' : '▼'}{Math.abs(delta)}
                   </span>
                 )}
-                <span className={`text-sm font-black tabular-nums ${clr.text}`}>{score}</span>
+                <span className={`text-xs md:text-sm font-black tabular-nums ${clr.text}`}>{score}</span>
               </div>
             </div>
             <div className="h-2.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: clr.track }}>

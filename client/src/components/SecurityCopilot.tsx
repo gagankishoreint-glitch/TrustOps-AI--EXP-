@@ -176,9 +176,9 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
       <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
           <AlertCircle className="w-4 h-4 text-cyan-400" />
-          <h3 className="text-cyan-400 text-xs font-bold uppercase tracking-widest">Decision Intelligence Layer</h3>
+          <h3 className="text-cyan-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Decision Intelligence Layer</h3>
           {sev && (
-            <span className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${sev.border} ${sev.bg} ${sev.text}`}>
+            <span className={`ml-auto text-[8px] md:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 md:px-2.5 md:py-1 rounded-full border ${sev.border} ${sev.bg} ${sev.text}`}>
               {sev.label}
             </span>
           )}
@@ -208,10 +208,10 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
         {!loading && insight && (
           <div className="space-y-3">
             {/* 2-col insight cards */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
               <Card icon={ShieldAlert} label="Risk Type"  value={insight.type}      color="text-violet-400" />
               <Card icon={AlertCircle} label="Severity"   value={insight.riskLevel} color={sev?.text ?? 'text-red-400'} />
-              <div className="col-span-2">
+              <div className="xs:col-span-2">
                 <Card icon={Search} label="Direct Evidence" value={insight.evidence} color="text-blue-400" />
               </div>
             </div>
@@ -236,12 +236,12 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
               <Card icon={Search} label="Likely Cause" value={insight.likelyCause} color="text-orange-400" />
               <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex flex-col items-center justify-center">
-                <Target className={`w-5 h-5 mb-1 ${feedback === 'improving' ? 'text-emerald-400 animate-ping' : 'text-emerald-400'}`} />
-                <p className="text-[9px] uppercase font-bold tracking-widest text-emerald-400 mb-0.5">Confidence</p>
-                <p className="text-2xl font-black text-emerald-400 tabular-nums">{insight.confidence}%</p>
+                <Target className={`w-4 h-4 md:w-5 md:h-5 mb-1 ${feedback === 'improving' ? 'text-emerald-400 animate-ping' : 'text-emerald-400'}`} />
+                <p className="text-[8px] md:text-[9px] uppercase font-bold tracking-widest text-emerald-400 mb-0.5">Confidence</p>
+                <p className="text-lg md:text-2xl font-black text-emerald-400 tabular-nums">{insight.confidence}%</p>
               </div>
             </div>
           </div>

@@ -256,42 +256,62 @@ export default function Home() {
   const isWarning = trustScore < 80;
 
   return (
-    <div className="h-screen w-full overflow-hidden flex flex-col" style={{ background: '#080c14', color: '#e2e8f0' }}>
-      <header className="shrink-0 z-50 px-6 py-3 flex items-center justify-between"
+    <div className="min-h-screen md:h-screen w-full md:overflow-hidden flex flex-col" style={{ background: '#080c14', color: '#e2e8f0' }}>
+      <header className="shrink-0 z-50 px-4 md:px-6 py-3 flex items-center justify-between"
         style={{ background: 'rgba(8,12,20,0.9)', borderBottom: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
-        <div className="flex items-center gap-4">
-          {activeLocation && <button onClick={() => setActiveLocation(null)} className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-white/10 text-cyan-400 hover:bg-white/5 transition-all">← Fleet</button>}
+        <div className="flex items-center gap-3 md:gap-4">
+          {activeLocation && <button onClick={() => setActiveLocation(null)} className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border border-white/10 text-cyan-400 hover:bg-white/5 transition-all">← Fleet</button>}
           <div>
-            <h1 className="text-lg font-black tracking-tight text-cyan-400">TrustOps AI {activeLocation && <span className="text-gray-500 font-normal">/ {activeLocation}</span>}</h1>
-            <p className="text-[10px] uppercase tracking-widest text-[#334155] font-bold">Decision Intelligence Layer {isDemo && <span className="text-orange-500 ml-2">· INDUSTRIAL SCALED</span>}</p>
+            <h1 className="text-base md:text-lg font-black tracking-tight text-cyan-400">TrustOps AI {activeLocation && <span className="text-gray-500 font-normal">/ {activeLocation}</span>}</h1>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-[#334155] font-bold">Decision Intelligence Layer {isDemo && <span className="text-orange-500 ml-2 hidden sm:inline">· INDUSTRIAL SCALED</span>}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2 border ${isCritical ? 'bg-red-950/20 border-red-500/30 text-red-500' : isWarning ? 'bg-orange-950/20 border-orange-500/30 text-orange-500' : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-400'}`}>
             <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isCritical ? 'bg-red-500' : isWarning ? 'bg-orange-500' : 'bg-cyan-400'}`} />
-            {isCritical ? 'Critical' : isWarning ? 'Degraded' : 'Active'}
+            <span className="hidden xs:inline">{isCritical ? 'Critical' : isWarning ? 'Degraded' : 'Active'}</span>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 min-h-0">
+      <main className="flex-1 min-h-0 overflow-y-auto md:overflow-visible">
         {!activeLocation ? (
           <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} recentAnomalies={recentAnomalies} />
         ) : (
-          <div className="h-full grid grid-cols-3 border-t border-white/5">
-            <div className="flex flex-col border-r border-white/5 min-h-0">
-              <div className="flex-1 min-h-0 overflow-hidden"><TelemetryCharts data={telemetryWindow} /></div>
+          <div className="flex flex-col md:grid md:grid-cols-3 border-t border-white/5 h-full">
+            {/* ── Column 1: Network & Stats (Mobile Order: 2) ── */}
+            <div className="flex flex-col border-b md:border-b-0 md:border-r border-white/5 min-h-0 order-2 md:order-1">
+              <div className="h-[300px] md:flex-1 min-h-0 overflow-hidden"><TelemetryCharts data={telemetryWindow} /></div>
               <div className="shrink-0 p-4 border-t border-white/5 grid grid-cols-2 gap-4 bg-black/40">
-                <div className="p-3 bg-white/5 rounded-xl border border-white/5"><p className="text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">Avg Latency</p><p className="text-xl font-black text-cyan-400">{avgLatency.toFixed(1)} ms</p></div>
-                <div className="p-3 bg-white/5 rounded-xl border border-white/5"><p className="text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">System Frequency</p><p className="text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length-1]?.frequency.toFixed(1)} Hz</p></div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">Avg Latency</p>
+                  <p className="text-lg md:text-xl font-black text-cyan-400">{avgLatency.toFixed(1)} ms</p>
+                </div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">System Freq</p>
+                  <p className="text-lg md:text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length-1]?.frequency.toFixed(1)} Hz</p>
+                </div>
               </div>
             </div>
-            <div className="flex flex-col border-r border-white/5 p-4 gap-4 overflow-y-auto bg-[#0a0f18]">
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex flex-col items-center"><p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p><TrustScoreGauge score={trustScore} /></div>
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6"><MultiScoreDisplay scores={trustScores} /></div>
-              <PredictiveTimeline currentScore={trustScore} trustScores={trustScores} predictedTTF={predictedTTF} isDemo={isDemo} />
+
+            {/* ── Column 2: Trust Core (Mobile Order: 1, 3, 5) ── */}
+            <div className="flex flex-col border-b md:border-b-0 md:border-r border-white/5 p-4 gap-4 bg-[#0a0f18] order-1 md:order-2">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 flex flex-col items-center order-1">
+                <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p>
+                <div className="scale-90 md:scale-100"><TrustScoreGauge score={trustScore} /></div>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 order-2">
+                <MultiScoreDisplay scores={trustScores} />
+              </div>
+              <div className="order-3">
+                <PredictiveTimeline currentScore={trustScore} trustScores={trustScores} predictedTTF={predictedTTF} isDemo={isDemo} />
+              </div>
             </div>
-            <div className="p-4 overflow-y-auto"><SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} /></div>
+
+            {/* ── Column 3: Copilot (Mobile Order: 4) ── */}
+            <div className="p-4 order-3 md:order-3 md:overflow-y-auto">
+              <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
+            </div>
           </div>
         )}
       </main>

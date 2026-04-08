@@ -6,6 +6,7 @@ import { TrustScores } from './MultiScoreDisplay';
 interface PredictiveTimelineProps {
   currentScore: number;
   trustScores: TrustScores;
+  predictedTTF: number | null;
   isDemo?: boolean;
 }
 
@@ -21,7 +22,7 @@ function nodeStyle(score: number) {
   return               { ring: '#ef4444', text: 'text-red-400',   label: 'Critical', bg: 'bg-red-950/40' };
 }
 
-export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(({ currentScore }) => {
+export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(({ currentScore, predictedTTF }) => {
   const p10  = project(currentScore, 10);
   const p30  = project(currentScore, 30);
   const p60  = project(currentScore, 60);
@@ -34,7 +35,7 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
     { label: '+1 hr',   score: p60 },
   ];
 
-  const ttf = degrading ? Math.round((currentScore - 30) / 1.8) : null;
+  const ttf = predictedTTF;
 
   return (
     <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">

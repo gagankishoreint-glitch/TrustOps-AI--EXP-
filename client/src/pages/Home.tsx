@@ -53,6 +53,7 @@ export default function Home() {
   });
   const [telemetryWindow, setTelemetryWindow] = useState<TelemetryPoint[]>([]);
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
+  const [predictedTTF, setPredictedTTF] = useState<number | null>(null);
 
   const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({
     active: false, type: '', tick: 0
@@ -198,40 +199,65 @@ export default function Home() {
       latency = Math.round(latencyRef.current);
       frequency = Math.max(0, Math.round(frequency!));
 
-      // Clamp scores 0-100
+      // Clamp sub-scores 0-100 for visual spider chart
       ops = Math.min(100, Math.max(0, ops));
       sec = Math.min(100, Math.max(0, sec));
       perf = Math.min(100, Math.max(0, perf));
       behav = Math.min(100, Math.max(0, behav));
 
-      const finalWeighted = Math.round(ops * 0.3 + sec * 0.3 + perf * 0.2 + behav * 0.2);
+      // Synthesize CPU and Admin actions to pass to ML Engine based on latency
+      const simulatedCpu = Math.min(100, (latency / 20) + 10);
+      const simulatedAdmin = engine.type === 'behavior' ? Math.round(5 + Math.random() * 10) : (latency > 800 ? 3 : 1);
 
-      // Update ALL state from this single tick
-      setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
-      setTrustScores({ operational: ops, security: sec, performance: perf, behavior: behav });
-      setTrustScore(finalWeighted);
+      // ASYNC CALL TO HYBRID ENGINE
+      fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ latency, cpu: simulatedCpu, adminCount: simulatedAdmin })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.result) return;
+        const analysis = data.result;
 
-      if (isAttack) {
-        const payload: StreamPayload = {
-          raw_telemetry: {
-            display_logs: { content_id: 'display-01', play_time: 120, frequency },
-            admin_actions: { login_time: new Date().toISOString(), content_change: false, device_access: 'anomalous' },
-            network_logs: { packets: 15000, latency, bandwidth: 100 },
-            behavior_logs: { session_duration: 300, interaction_count: 5 },
-          },
-          engine_analysis: {
-            is_anomalous: true,
-            anomaly_severity: 8,
-            trust_scores: { operational: ops, security: sec, performance: perf, behavior: behav },
-            final_trust_score: finalWeighted,
-            status: 'Autonomous Anomaly Detected',
-          }
-        };
-        setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
-      } else {
-        // Clear anomalies when recovered
-        if (finalWeighted > 85) setRecentAnomalies([]);
-      }
+        setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
+        setTrustScores({ operational: ops, security: sec, performance: perf, behavior: behav });
+        setTrustScore(analysis.trust_score);
+        setPredictedTTF(analysis.is_anomaly ? analysis.ttf : null);
+
+        if (analysis.is_anomaly) {
+          const payload = {
+            raw_telemetry: {
+              display_logs: { content_id: 'display-01', play_time: 120, frequency },
+              admin_actions: { login_time: new Date().toISOString(), content_change: false, device_access: 'anomalous' },
+              network_logs: { packets: 15000, latency, bandwidth: 100 },
+              behavior_logs: { session_duration: 300, interaction_count: simulatedAdmin },
+            },
+            engine_analysis: {
+              is_anomalous: true,
+              anomaly_severity: 8,
+              trust_scores: { operational: ops, security: sec, performance: perf, behavior: behav },
+              final_trust_score: analysis.trust_score,
+              status: 'Autonomous Anomaly Detected',
+            },
+            // Include our ML context directly
+            hybrid_ml_context: analysis
+          } as StreamPayload & { hybrid_ml_context?: any };
+          setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
+        } else {
+          // Clear anomalies when recovered
+          if (analysis.trust_score > 85) setRecentAnomalies([]);
+        }
+      })
+      .catch(err => {
+        console.error("Hybrid Engine Refused. Is the Express server running?", err);
+        // Fallback to organic
+        setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
+        const finalWeighted = Math.round(ops * 0.3 + sec * 0.3 + perf * 0.2 + behav * 0.2);
+        setTrustScore(finalWeighted);
+        setPredictedTTF(finalWeighted < 80 ? Math.round((finalWeighted - 30) / 1.8) : null);
+      });
+
     }, 1000);
 
     return () => clearInterval(interval);
@@ -344,7 +370,12 @@ export default function Home() {
                 <MultiScoreDisplay scores={reactiveTrustScores} />
               </div>
               <div className="shrink-0">
-                <PredictiveTimeline currentScore={reactiveTrustScore} trustScores={reactiveTrustScores} isDemo={isDemo} />
+                <PredictiveTimeline 
+                  currentScore={reactiveTrustScore} 
+                  trustScores={reactiveTrustScores} 
+                  predictedTTF={predictedTTF}
+                  isDemo={isDemo} 
+                />
               </div>
             </div>
 

@@ -51,7 +51,7 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
               </defs>
               <CartesianGrid {...gridStyle} />
               <XAxis dataKey="t" tick={axisStyle} tickLine={false} axisLine={false} interval={4} />
-              <YAxis tick={axisStyle} tickLine={false} axisLine={false} width={40} />
+              <YAxis tick={axisStyle} tickLine={false} axisLine={false} width={40} domain={[600, 'auto']} />
               <ReferenceLine y={1200} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={1}
                 label={{ value: '1200ms', fill: '#f59e0b', fontSize: 9, position: 'right' }} />
               <Tooltip content={<CustomTooltip unit="ms" />} />
@@ -82,7 +82,7 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
               </defs>
               <CartesianGrid {...gridStyle} />
               <XAxis dataKey="t" tick={axisStyle} tickLine={false} axisLine={false} interval={4} />
-              <YAxis tick={axisStyle} tickLine={false} axisLine={false} width={40} />
+              <YAxis tick={axisStyle} tickLine={false} axisLine={false} width={40} domain={[0, 600]} />
               <ReferenceLine y={300} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={1}
                 label={{ value: '300Hz', fill: '#f59e0b', fontSize: 9, position: 'right' }} />
               <Tooltip content={<CustomTooltip unit="Hz" />} />

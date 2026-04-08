@@ -355,7 +355,6 @@ export default function Home() {
                 recentAnomalies={recentAnomalies}
                 isDemo={isDemo}
               />
-              <BusinessImpactAnalysis trustScore={reactiveTrustScore} />
             </div>
 
           </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AlertCircle, Zap, GitMerge, ShieldAlert, Search, Target, CheckCircle } from 'lucide-react';
 import { getRootCauseChain } from '../utils/rootCauseEngine';
 import { contextualScaleRisk } from '../utils/predictiveEngine';
+import { BusinessImpactAnalysis } from './BusinessImpactAnalysis';
 
 interface SecurityCopilotProps {
   trustScore: number;
@@ -219,6 +220,9 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
           </div>
         </div>
       )}
+
+      {/* ── Business Impact Analysis (Inject in the Middle) ── */}
+      {insight && <BusinessImpactAnalysis trustScore={trustScore} />}
 
       {/* ── Decision Intelligence ── */}
       <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">

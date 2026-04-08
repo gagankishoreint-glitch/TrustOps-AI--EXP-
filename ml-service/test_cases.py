@@ -74,8 +74,10 @@ def map_to_11(inp) -> pd.DataFrame:
 
 def run_local():
     print("="*70)
-    print(" TrustOps — v2.1 Model Specification Verification")
+    print(" TrustOps — v2.3 Predictive Specification Verification")
     print("="*70)
+    
+    import math
     
     passed = 0
     for label, tpl, exp_anomaly, exp_cause in SCENARIOS:
@@ -87,10 +89,17 @@ def run_local():
         cause      = RF_CLF.predict(X)[0]
         ttf        = float(RF_REG.predict(X)[0])
         
+        # Predictive Logic (Sync with app.py)
+        if not is_anomaly:
+            prob = 0.01
+        else:
+            prob = 1.0 / (1.0 + math.exp((ttf - 60) / 20.0))
+            prob = max(0.05, min(0.99, prob + (abs(score) * 0.5)))
+        
         anomaly_ok = True if exp_anomaly is None else (is_anomaly == exp_anomaly)
         status = "✅ PASS" if anomaly_ok else "❌ FAIL"
         
-        print(f"  {status} [{label}] | score={score:+.3f} | ttf={ttf:.0f}m | cause='{cause}'")
+        print(f"  {status} [{label}] | score={score:+.3f} | prob={prob:.1%} | cause='{cause}'")
         if anomaly_ok: passed += 1
 
     print("="*70)

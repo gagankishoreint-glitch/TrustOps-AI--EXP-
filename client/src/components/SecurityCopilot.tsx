@@ -22,6 +22,11 @@ interface Insight {
   confidence: number;
   source: 'Dual-Core (ML + LLM)' | 'Single-Core (ML Reflex)';
   executiveAdvisory?: string;
+  // v2.3 Predictive Fields
+  failureProbability?: number;
+  riskTrajectory?: string;
+  failureWindow?: string;
+  futureRisk?: string;
 }
 
 function deriveInsight(anomaly: any): Insight {
@@ -55,7 +60,11 @@ function deriveInsight(anomaly: any): Insight {
       rootCauseNodes: rootNodes,
       confidence: parseFloat(displayConfidence.toFixed(1)),
       source: 'Dual-Core (ML + LLM)',
-      executiveAdvisory: ml.advisory
+      executiveAdvisory: ml.advisory,
+      failureProbability: ml.failure_probability,
+      riskTrajectory: ml.risk_trajectory,
+      failureWindow: ml.failure_window,
+      futureRisk: ml.future_risk
     };
   }
 
@@ -301,8 +310,51 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
           <Zap className="w-4 h-4 text-amber-400" />
           <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest">Executive Remediation Advisory</h3>
         </div>
+
+        {/* ── Predictive Analysis Layer (v2.3) ── */}
+        {insight && insight.failureProbability !== undefined && (
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-[10px] text-purple-400 uppercase font-black tracking-widest">Predictive Failure Forecast</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3">
+                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Probability of Failure</p>
+                <div className="flex items-end gap-1.5">
+                   <p className={`text-2xl font-black tabular-nums ${
+                     (insight.failureProbability ?? 0) > 0.7 ? 'text-rose-500' : 
+                     (insight.failureProbability ?? 0) > 0.3 ? 'text-amber-500' : 'text-emerald-500'
+                   }`}>
+                     {Math.round((insight.failureProbability ?? 0) * 100)}%
+                   </p>
+                </div>
+              </div>
+              
+              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3">
+                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Risk Trajectory</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                   {insight.riskTrajectory === 'Degrading' ? (
+                     <ShieldAlert className="w-4 h-4 text-rose-500" />
+                   ) : (
+                     <CheckCircle className="w-4 h-4 text-emerald-500" />
+                   )}
+                   <p className={`text-xs font-bold uppercase ${
+                     insight.riskTrajectory === 'Degrading' ? 'text-rose-400' : 'text-emerald-400'
+                   }`}>{insight.riskTrajectory}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20 rounded-xl p-3">
+               <p className="text-[9px] text-purple-400/70 uppercase font-bold tracking-widest mb-1">Failure Window Prediction</p>
+               <p className="text-sm font-semibold text-purple-300">{insight.failureWindow}</p>
+            </div>
+          </div>
+        )}
         
-        {insight?.executiveAdvisory && (
+        {insight && insight.executiveAdvisory && (
           <div className="mb-4 bg-white/[0.04] border border-white/[0.08] rounded-xl p-4 overflow-hidden relative group">
             <div className="absolute top-0 right-0 p-2 opacity-20">
               <CheckCircle className="w-8 h-8 text-white" />

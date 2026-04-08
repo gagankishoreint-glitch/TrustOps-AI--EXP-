@@ -50,7 +50,7 @@ export default function Home() {
     return params.get('demo') !== 'false';
   }, []);
 
-  const [trustScore, setTrustScore] = useState(100);
+  const [trustScore, setTrustScore] = useState(95);
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
   });
@@ -63,6 +63,8 @@ export default function Home() {
   );
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [predictedTTF, setPredictedTTF] = useState<number | null>(null);
+
+  const trustHistoryRef = useRef<number[]>([]);
 
   const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({
     active: false, type: '', tick: 0
@@ -165,11 +167,20 @@ export default function Home() {
       let perf = Math.min(100, Math.max(0, 100 - (latency / 30)));
       let behav = Math.min(100, Math.max(0, 100 - (cpu / 2)));
 
+      // Derive Trend Momentum (v2.3)
+      const currentAvg = (ops + sec + perf) / 3;
+      const prevTrust = trustHistoryRef.current[trustHistoryRef.current.length - 1] || 95;
+      const trend = Math.max(-1, Math.min(1, (currentAvg - prevTrust) / 20)); // Normalized movement
+      
+      // Update sliding window
+      trustHistoryRef.current = [...trustHistoryRef.current.slice(-4), currentAvg];
+
       // Centralized API Call to External ML Endpoint
       const telemetryPayload: TelemetryData = {
         latency, jitter, ploss, cpu, mem,
         admin: simulatedAdmin,
-        pfreq, vrip, humid, temp, hours
+        pfreq, vrip, humid, temp, hours,
+        trend
       };
 
       analyzeTelemetry(telemetryPayload)

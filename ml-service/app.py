@@ -51,6 +51,7 @@ class AnalysisInput(BaseModel):
     device_frequency:  float = Field(..., description="Hardware/Power frequency")
     user_behaviour:    float = Field(..., description="Interaction/Login signals")
     device_health:     float = Field(..., description="CPU/Resource load signals")
+    trend:             float = Field(default=0.0, description="Trend signal (-1 to 1)")
 
 class AnalysisResponse(BaseModel):
     is_anomaly:     bool
@@ -63,6 +64,12 @@ class AnalysisResponse(BaseModel):
     decision:       str      # Conceptual "Decision State"
     advisory:       str      # Executive Summary Text
     risk_level:     str      # High/Medium/Low
+    # Predictive Analysis Layer (v2.3 Spec)
+    future_risk:         str
+    failure_probability: float
+    risk_trajectory:     str # Improving / Stable / Degrading
+    failure_window:      str # Human Friendly Window
+    recommended_action:  str
 
 # ─── Logic ─────────────────────────────────────────────────────────────
 
@@ -186,6 +193,29 @@ def analyze(body: AnalysisInput):
         f"ACTION: {action}"
     )
 
+    # 8. Predictive Analysis Layer (v2.3 Spec)
+    # Calculate failure probability based on TTF and Anomaly Strength
+    # - Short TTF (<30) + strong anomaly (<-0.1) -> ~90% probability
+    # - Long TTF (>300) -> ~5% probability
+    if not is_anomaly:
+        failure_prob = 0.01
+    else:
+        # Logistic-style decay: p = 1 / (1 + exp( (ttf-60)/30 ))
+        # Shifted so that 60 mins -> 50%
+        failure_prob = 1.0 / (1.0 + math.exp((ttf_minutes - 60) / 20.0))
+        # Nudge by anomaly strength
+        failure_prob = max(0.05, min(0.99, failure_prob + (abs(anomaly_score) * 0.5)))
+
+    risk_traj = "Stable"
+    if body.trend > 0.1: risk_traj = "Improving"
+    elif body.trend < -0.1: risk_traj = "Degrading"
+    
+    failure_window = "Indeterminate"
+    if ttf_minutes < 15: failure_window = "Immediate (<15m)"
+    elif ttf_minutes < 60: failure_window = "Near Term (<1h)"
+    elif ttf_minutes < 480: failure_window = "Next Shift (<8h)"
+    elif ttf_minutes < 10000: failure_window = "Operational (24h+)"
+
     # Business Logic override for Healthy state
     if not is_anomaly:
         root_cause = "Nominal Operations"
@@ -198,6 +228,10 @@ def analyze(body: AnalysisInput):
             "RISK:   None\n"
             "ACTION: No action required."
         )
+        failure_prob = 0.01
+        risk_traj = "Stable"
+        failure_window = "Operational (24h+)"
+        recommended_action = "No action required."
 
     return AnalysisResponse(
         is_anomaly=is_anomaly,
@@ -209,7 +243,12 @@ def analyze(body: AnalysisInput):
         action=action,
         decision=decision,
         advisory=advisory,
-        risk_level=risk_level
+        risk_level=risk_level,
+        future_risk=f"System Stable" if not is_anomaly else f"{severity} impact predicted within {failure_window}",
+        failure_probability=round(failure_prob, 3),
+        risk_trajectory=risk_traj,
+        failure_window=failure_window,
+        recommended_action=recommended_action
     )
 
 if __name__ == "__main__":

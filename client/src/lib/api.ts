@@ -18,6 +18,7 @@ export interface TelemetryData {
   humid: number;
   temp: number;
   hours: number;
+  trend?: number; // Momentum signal (-1.0 to 1.0)
 }
 
 export interface AnalysisResult {
@@ -31,6 +32,12 @@ export interface AnalysisResult {
   decision: string;
   advisory: string;
   risk_level: string;
+  // Predictive fields (v2.3)
+  future_risk: string;
+  failure_probability: number;
+  risk_trajectory: string;
+  failure_window: string;
+  recommended_action: string;
 }
 
 /**
@@ -43,7 +50,8 @@ export async function analyzeTelemetry(data: TelemetryData): Promise<AnalysisRes
     latency:          data.latency,
     device_frequency: data.pfreq,         // Map Power Freq to conceptual Device Freq
     user_behaviour:   data.admin,         // Map Admin to conceptual User Behaviour
-    device_health:    data.cpu            // Map CPU to conceptual Device Health
+    device_health:    data.cpu,           // Map CPU to conceptual Device Health
+    trend:            data.trend || 0.0   // v2.3 Predictive signal
   };
 
   try {
@@ -72,7 +80,12 @@ export async function analyzeTelemetry(data: TelemetryData): Promise<AnalysisRes
       action: 'Check connectivity to ML service.',
       decision: 'Stable',
       advisory: 'Telemetry station offline. Running on local cache.',
-      risk_level: 'Low'
+      risk_level: 'Low',
+      future_risk: 'System Stable',
+      failure_probability: 0.0,
+      risk_trajectory: 'Stable',
+      failure_window: 'Operational (24h+)',
+      recommended_action: 'No action required.'
     };
   }
 }

@@ -7,6 +7,7 @@ import { PredictiveTimeline } from '@/components/PredictiveTimeline';
 import { BusinessImpactAnalysis } from '@/components/BusinessImpactAnalysis';
 import { FleetView } from '@/components/FleetView';
 import { useShowroomStore } from '@/store/useShowroomStore';
+import { ModelInspector } from '@/components/ModelInspector';
 
 // --- Single source of truth types ---
 export interface TelemetryPoint {
@@ -29,6 +30,7 @@ interface StreamPayload {
     final_trust_score: number;
     status: string;
   };
+  hybrid_ml_context?: any;
 }
 
 // Gaussian noise for organic jitter
@@ -42,16 +44,26 @@ export default function Home() {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
   const [manualOverride, setManualOverride] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  // Always run in demo/synthetic mode — no backend is deployed.
-  // To connect a real backend, remove this line and pass ?demo=false in the URL.
-  const isDemo = true;
+  const [showInspector, setShowInspector] = useState(false);
+
+  // Derived from URL query parameter ?demo=true/false
+  const isDemo = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('demo') !== 'false'; // Default to true for easy pitching
+  }, []);
 
   // === SINGLE REACTIVE STATE — everything derives from this ===
   const [trustScore, setTrustScore] = useState(100);
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
   });
-  const [telemetryWindow, setTelemetryWindow] = useState<TelemetryPoint[]>([]);
+  const [telemetryWindow, setTelemetryWindow] = useState<TelemetryPoint[]>(
+    Array.from({ length: 20 }, (_, i) => ({
+      timestamp: Date.now() - (20 - i) * 1000,
+      latency: 900 + Math.random() * 100,
+      frequency: 490 + Math.random() * 20
+    }))
+  );
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [predictedTTF, setPredictedTTF] = useState<number | null>(null);
 
@@ -76,19 +88,19 @@ export default function Home() {
 
     const { latency, frequency } = latestPoint;
 
-    // Performance score reacts directly to latency
+    // Performance score reacts directly to latency (Industry Standard)
     let performance = trustScores.performance;
-    if (latency > 2000) performance = Math.round(20 + Math.random() * 10);
-    else if (latency > 1200) performance = Math.round(45 + Math.random() * 15);
-    else if (latency > 800) performance = Math.round(70 + Math.random() * 10);
-    else performance = Math.min(100, Math.round(90 + Math.random() * 10));
+    if (latency > 1500) performance = Math.round(10 + Math.random() * 10);      // FAILURE
+    else if (latency > 1000) performance = Math.round(35 + Math.random() * 15); // CRITICAL
+    else if (latency > 700) performance = Math.round(65 + Math.random() * 10);  // DEGRADED
+    else performance = Math.min(100, Math.round(92 + Math.random() * 8));
 
     // Operational score reacts to frequency
     let operational = trustScores.operational;
-    if (frequency < 200) operational = Math.round(30 + Math.random() * 15);
+    if (frequency < 100) operational = Math.round(20 + Math.random() * 15);
     else if (frequency < 300) operational = Math.round(55 + Math.random() * 15);
-    else if (frequency < 400) operational = Math.round(75 + Math.random() * 10);
-    else operational = Math.min(100, Math.round(92 + Math.random() * 8));
+    else if (frequency < 450) operational = Math.round(78 + Math.random() * 8);
+    else operational = Math.min(100, Math.round(94 + Math.random() * 6));
 
     return {
       operational,
@@ -100,7 +112,11 @@ export default function Home() {
 
   const reactiveTrustScore = useMemo(() => {
     const { operational, security, performance, behavior } = reactiveTrustScores;
-    return Math.round(operational * 0.3 + security * 0.3 + performance * 0.2 + behavior * 0.2);
+    const base = Math.round(operational * 0.3 + security * 0.3 + performance * 0.2 + behavior * 0.2);
+    // SAFETY FLOOR: If performance is critical, the score MUST reflect a crisis
+    if (performance < 50) return Math.min(55, base);
+    if (performance < 75) return Math.min(78, base);
+    return base;
   }, [reactiveTrustScores]);
 
   // Sync reactive score to Zustand global fleet state
@@ -173,26 +189,31 @@ export default function Home() {
           behav = Math.round(30 + Math.random() * 20);
           // Cascade into performance after tick 20
           if (currentTick < 20) {
-            // Random walk latency upward
-            latencyRef.current = Math.min(2600, latencyRef.current + (60 + Math.random() * 80));
-            perf = Math.round(20 + Math.random() * 15);
+            // Random walk latency upward toward FAILURE
+            latencyRef.current = Math.min(2600, latencyRef.current + (80 + Math.random() * 120));
+            perf = Math.round(15 + Math.random() * 15);
             ops = Math.round(45 + Math.random() * 15);
           } else {
-            latencyRef.current = Math.round(gaussianRandom(950, 15));
+            // Slower recovery
+            latencyRef.current = Math.max(950, latencyRef.current - 50);
           }
         } else if (type === 'performance') {
-          latencyRef.current = Math.min(2600, latencyRef.current + (80 + Math.random() * 100));
-          perf = Math.round(25 + Math.random() * 20);
+          // Violent latency spike
+          latencyRef.current = Math.min(2600, latencyRef.current + (150 + Math.random() * 200));
+          perf = Math.round(10 + Math.random() * 20);
         } else {
           ops = Math.round(40 + Math.random() * 20);
           latencyRef.current = Math.round(gaussianRandom(950, 15));
         }
 
-        frequency = Math.max(50, Math.round(500 - (latencyRef.current * 0.18)));
+        frequency = Math.max(10, Math.round(500 - (latencyRef.current * 0.22)));
       } else {
-        // Organic jitter during recovery
-        latencyRef.current = Math.max(800, latencyRef.current - (isAttack ? 0 : 30 + Math.random() * 20));
-        latencyRef.current = Math.round(gaussianRandom(950, 15));
+        // Slow organic recovery instead of instant reset
+        if (latencyRef.current > 1000) {
+          latencyRef.current -= (40 + Math.random() * 60);
+        } else {
+          latencyRef.current = Math.round(gaussianRandom(950, 15));
+        }
         frequency = Math.round(gaussianRandom(500, 5));
       }
 
@@ -226,6 +247,16 @@ export default function Home() {
         setPredictedTTF(analysis.is_anomaly ? analysis.ttf : null);
 
         if (analysis.is_anomaly) {
+          // Add to Global History
+          useShowroomStore.getState().addHistoryEvent({
+            timestamp: new Date().toISOString(),
+            location: activeLocation || 'Fleet Layer',
+            event: analysis.context,
+            impact: analysis.trust_score < 60 ? 'Critical Disruption' : 'Moderate Disruption',
+            status: 'Action Required',
+            severity: analysis.trust_score < 60 ? 'High' : 'Medium'
+          });
+
           const payload = {
             raw_telemetry: {
               display_logs: { content_id: 'display-01', play_time: 120, frequency },
@@ -258,7 +289,7 @@ export default function Home() {
         setPredictedTTF(finalWeighted < 80 ? Math.round((finalWeighted - 30) / 1.8) : null);
       });
 
-    }, 1000);
+    }, 800);
 
     return () => clearInterval(interval);
   }, [isDemo]);
@@ -268,8 +299,11 @@ export default function Home() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'D' && e.shiftKey) {
         setManualOverride(true);
-        anomalyEngine.current = { active: true, tick: 30, type: 'behavior' };
+        anomalyEngine.current = { active: true, tick: 15, type: 'behavior' };
         latencyRef.current = 950;
+      }
+      if (e.key === 'i' && e.ctrlKey) {
+        setShowInspector(prev => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -343,7 +377,11 @@ export default function Home() {
       <main className="flex-1 min-h-0 overflow-hidden">
         {!activeLocation ? (
           <div className="h-full overflow-y-auto">
-            <FleetView onSelectShowroom={setActiveLocation} isDemo={isDemo} />
+            <FleetView 
+              onSelectShowroom={setActiveLocation} 
+              isDemo={isDemo} 
+              recentAnomalies={recentAnomalies}
+            />
           </div>
         ) : (
           <div className="h-full grid grid-cols-3" style={{ gap: 0, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -355,6 +393,16 @@ export default function Home() {
               </div>
               <div className="flex-1 min-h-0">
                 <TelemetryCharts data={telemetryWindow} />
+              </div>
+              <div className="shrink-0 p-4 border-t border-white/5 flex gap-4">
+                <div className="flex-1 min-h-0 bg-black/20 p-4 rounded-xl border border-white/5">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Avg Latency</p>
+                  <p className="text-xl font-black text-cyan-400">{avgLatency.toFixed(1)} ms</p>
+                </div>
+                <div className="flex-1 min-h-0 bg-black/20 p-4 rounded-xl border border-white/5">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Peak Frequency</p>
+                  <p className="text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length - 1]?.frequency.toFixed(1)} Hz</p>
+                </div>
               </div>
             </div>
 
@@ -391,6 +439,13 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Model Inspector Verification Tool (Ctrl + I) */}
+      <ModelInspector 
+        isOpen={showInspector} 
+        onClose={() => setShowInspector(false)} 
+        rawMLData={recentAnomalies[0]?.hybrid_ml_context || recentAnomalies[0]?.engine_analysis}
+      />
     </div>
   );
 }

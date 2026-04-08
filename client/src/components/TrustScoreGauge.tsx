@@ -14,18 +14,20 @@ export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
   // Needle points RIGHT at angle 0. We store in degrees for Framer.
   const needleDeg = (clamped / 100) * 180 - 180;
 
-  // Origin as % of SVG element (200px wide, 110px tall)
-  const ox = `${(CX / 200) * 100}%`;  // 50%
-  const oy = `${(CY / 110) * 100}%`;  // 95.45...%
-
+  // Bulletproof SVG rotation: Use percentages relative to the viewBox
+  // CX=100, CY=105 on a 200x110 viewBox
+  const originX = 100 / 200; // 0.5
+  const originY = 105 / 110; // 0.9545
+  
   const clr = useMemo(() => {
     if (clamped >= 80) return { stroke: '#00d4ff', text: 'text-cyan-400',   badge: 'border-cyan-500/40  bg-cyan-500/10  text-cyan-400',   label: 'Nominal',   glow: '#00d4ff' };
     if (clamped >= 60) return { stroke: '#f59e0b', text: 'text-amber-400',  badge: 'border-amber-500/40 bg-amber-500/10 text-amber-400',  label: 'Caution',   glow: '#f59e0b' };
     return               { stroke: '#ef4444', text: 'text-red-400',    badge: 'border-red-500/40   bg-red-500/10   text-red-400',    label: 'Critical',  glow: '#ef4444' };
   }, [clamped]);
-
-  const spring = { type: 'spring' as const, stiffness: 55, damping: 16 };
-
+ 
+  // SNAPPY SPRING — Resolve "Takes a lot of time" feeling
+  const spring = { type: 'spring' as const, stiffness: 120, damping: 20, mass: 1 };
+ 
   return (
     <div className="flex flex-col items-center w-full select-none">
       <div className="relative w-full max-w-[210px]">
@@ -62,12 +64,12 @@ export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
           <motion.g
             animate={{ rotate: needleDeg }}
             transition={spring}
-            style={{ transformOrigin: `${ox} ${oy}` }}
+            style={{ originX, originY }}
           >
             <motion.g
               animate={{ rotate: [-0.3, 0.3] }}
               transition={{ repeat: Infinity, duration: 0.12, repeatType: 'mirror', ease: 'linear' }}
-              style={{ transformOrigin: `${ox} ${oy}` }}
+              style={{ originX, originY }}
             >
               {/* Main shaft pointing right */}
               <line x1={CX} y1={CY} x2={CX + R - 8} y2={CY}

@@ -18,43 +18,45 @@ def generate_dataset(filename="trustops_panasonic_dataset.csv", rows=1000):
     
     for i in range(rows):
         # Base distributions
-        pattern = random.choices(['Nominal', 'Slow Decay', 'Rapid Fail'], weights=[0.6, 0.25, 0.15])[0]
+        # Normal (0.55), Security-IoT-23 (0.3), Panasonic-Industrial (0.15)
+        pattern = random.choices(['Nominal', 'IoT-23 Security Event', 'Panasonic Hardware Desync'], weights=[0.55, 0.3, 0.15])[0]
         
         if pattern == 'Nominal':
-            latency = int(random.gauss(40, 15))
-            latency = max(5, latency)
-            cpu = int(random.gauss(30, 10))
-            cpu = max(5, min(80, cpu))
-            admin = random.randint(0, 2)
+            latency = 20 + random.uniform(-2, 2)
+            cpu = 15 + random.uniform(-3, 3)
+            admin = 0
             context = 'System Healthy'
             ttf = 9999
             action = 'None'
             
-        elif pattern == 'Slow Decay':
-            latency = int(random.gauss(150, 40))
-            cpu = int(random.gauss(65, 15))
-            cpu = min(95, cpu)
-            admin = random.randint(1, 4)
-            context = random.choice(['Operational Friction', 'Network Saturation'])
-            ttf = random.randint(45, 120)
+        elif pattern == 'IoT-23 Security Event':
+            # Signatures of IoT botnets
+            latency = 300 + random.uniform(50, 200)
+            cpu = 40 + random.uniform(10, 30)
+            admin = random.randint(5, 20)
+            context = random.choice([
+                "IoT-23: Botnet Command & Control",
+                "IoT-23: Mirai Horizontal Scanning",
+                "IoT-23: Remote Console Hijack"
+            ])
+            ttf = random.randint(5, 30)
+            action = 'Isolate External Gateway & Roll API Keys'
             
-            if context == 'Operational Friction':
-                action = 'Schedule Display Controller Diagnostic'
-            else:
-                action = 'Throttle Non-Critical CDN Bandwidth'
-                
-        else: # Rapid Fail
-            latency = int(random.gauss(800, 250))
-            cpu = int(random.gauss(90, 8))
-            cpu = min(100, cpu)
-            admin = random.randint(4, 15)
-            context = random.choice(['Unauthorized Access', 'Severe Hardware Fault'])
-            ttf = random.randint(2, 15)
+        else: # Panasonic Hardware Desync
+            latency = 80 + random.uniform(10, 40)
+            cpu = 70 + random.uniform(5, 20)
+            admin = random.randint(1, 3)
+            context = random.choice([
+                "Panasonic: PLC Memory Corruption",
+                "Panasonic: Sensor Noise Threshold Error",
+                "Panasonic: Actuator Desync Fault"
+            ])
+            ttf = random.randint(60, 480)
             
-            if context == 'Unauthorized Access':
-                action = 'Lock Admin Console & Revert Overrides'
+            if 'Memory' in context:
+                action = 'Re-flash Controller Firmware & Reset Sequence'
             else:
-                action = 'Restart Display Controller & Isolate Node'
+                action = 'Recalibrate Acoustic Sensor Array'
                 
         data.append([
             i * 60, # Simulated seconds offset

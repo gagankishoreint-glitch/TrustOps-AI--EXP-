@@ -1,55 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Clock, MapPin, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
-
-interface SecurityEvent {
-  id: string;
-  timestamp: string;
-  location: string;
-  event: string;
-  impact: string;
-  status: 'Resolved' | 'Monitoring' | 'Action Required';
-  severity: 'Low' | 'Medium' | 'High';
-}
-
-const mockEvents: SecurityEvent[] = [
-  {
-    id: '1',
-    timestamp: '2026-04-08 12:14:02',
-    location: 'Hyderabad Deccan',
-    event: 'Anomalous Admin Login Density',
-    impact: 'Moderate Operational Risk (₹4.7L)',
-    status: 'Action Required',
-    severity: 'Medium'
-  },
-  {
-    id: '2',
-    timestamp: '2026-04-08 11:30:45',
-    location: 'Mumbai HQ',
-    event: 'Packet Fragmentation Spike',
-    impact: 'Low - Automated Throttling Active',
-    status: 'Monitoring',
-    severity: 'Low'
-  },
-  {
-    id: '3',
-    timestamp: '2026-04-08 10:15:20',
-    location: 'Delhi NCR',
-    event: 'Unauthorized API Token Refresh',
-    impact: 'Critical - System Rotation Triggered',
-    status: 'Resolved',
-    severity: 'High'
-  },
-  {
-    id: '4',
-    timestamp: '2026-04-08 09:45:12',
-    location: 'Bangalore Tech Park',
-    event: 'SignEdge Firmware Desync',
-    impact: 'Negligible - Local Cache Rendering',
-    status: 'Resolved',
-    severity: 'Low'
-  }
-];
+import { useShowroomStore, HistoryEvent } from '../store/useShowroomStore';
 
 const severityColors = {
   Low: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
@@ -63,7 +15,34 @@ const statusIcons = {
   'Action Required': <AlertTriangle className="w-3 h-3 text-amber-400" />,
 };
 
-export const SecurityEventLog: React.FC = () => {
+interface SecurityEventLogProps {
+  recentAnomalies?: any[];
+}
+
+export const SecurityEventLog: React.FC<SecurityEventLogProps> = ({ recentAnomalies = [] }) => {
+  const { fleetHistory } = useShowroomStore();
+
+  const events = useMemo(() => {
+    // Map live session anomalies to the log format
+    const liveEvents = recentAnomalies.map((anom, i) => {
+      const ml = anom.hybrid_ml_context || anom.engine_analysis || {};
+      const tel = anom.raw_telemetry || {};
+      
+      return {
+        id: `live-${i}-${Date.now()}`,
+        timestamp: new Date().toLocaleTimeString(),
+        location: anom.location || 'Unknown Node',
+        event: ml.context || 'Anomaly Detected',
+        impact: ml.trust_score < 60 ? 'Critical Disruption' : 'Audit Baseline Sync Active',
+        status: ml.trust_score < 60 ? 'Action Required' : 'Monitoring',
+        severity: ml.trust_score < 60 ? 'High' : (ml.trust_score < 80 ? 'Medium' : 'Low'),
+      };
+    });
+
+    // Merge global store history with current session events
+    return [...liveEvents, ...fleetHistory].slice(0, 10);
+  }, [recentAnomalies, fleetHistory]);
+
   return (
     <div className="flex flex-col h-full bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden">
       <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.01]">
@@ -91,52 +70,60 @@ export const SecurityEventLog: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.02]">
-            {mockEvents.map((event, idx) => (
-              <motion.tr 
-                key={event.id}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="hover:bg-white/[0.02] transition-colors group"
-              >
-                <td className="px-5 py-3 tabular-nums text-[11px] text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-gray-600" />
-                    {event.timestamp.split(' ')[1]}
-                  </div>
+            {events.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-5 py-8 text-center text-[11px] text-gray-600 italic">
+                  Awaiting real-time intelligence events...
                 </td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3 h-3 text-gray-600" />
-                    <span className="text-xs font-bold text-gray-300 group-hover:text-cyan-400 transition-colors uppercase tracking-tight">
-                      {event.location}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-gray-200 font-medium">{event.event}</span>
-                    <span className={`inline-flex w-fit mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase border ${severityColors[event.severity]}`}>
-                      {event.severity} Severity
-                    </span>
-                  </div>
-                </td>
-                <td className="px-5 py-3 text-xs text-gray-500 italic">
-                  {event.impact}
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      event.status === 'Resolved' ? 'text-emerald-400' : 
-                      event.status === 'Monitoring' ? 'text-blue-400' : 'text-amber-400'
-                    }`}>
-                      {event.status}
-                    </span>
-                    {statusIcons[event.status]}
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
+              </tr>
+            ) : (
+              events.map((event, idx) => (
+                <motion.tr 
+                  key={event.id}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="hover:bg-white/[0.02] transition-colors group"
+                >
+                  <td className="px-5 py-3 tabular-nums text-[11px] text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3 h-3 text-gray-600" />
+                      {event.timestamp}
+                    </div>
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3 h-3 text-gray-600" />
+                      <span className="text-xs font-bold text-gray-300 uppercase tracking-tight">
+                        {event.location}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-200 font-medium">{event.event}</span>
+                      <span className={`inline-flex w-fit mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase border ${severityColors[event.severity as keyof typeof severityColors]}`}>
+                        {event.severity} Severity
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-xs text-gray-500 italic">
+                    {event.impact}
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                        event.status === 'Resolved' ? 'text-emerald-400' : 
+                        event.status === 'Monitoring' ? 'text-blue-400' : 'text-amber-400'
+                      }`}>
+                        {event.status}
+                      </span>
+                      {statusIcons[event.status as keyof typeof statusIcons]}
+                    </div>
+                  </td>
+                </motion.tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

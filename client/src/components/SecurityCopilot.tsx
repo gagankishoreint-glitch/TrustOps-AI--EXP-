@@ -20,6 +20,7 @@ interface Insight {
   timeToFailure: number;
   rootCauseNodes: string[];
   confidence: number;
+  source: 'Dual-Core (ML + LLM)' | 'Single-Core (ML Reflex)';
 }
 
 function deriveInsight(anomaly: any): Insight {
@@ -30,16 +31,19 @@ function deriveInsight(anomaly: any): Insight {
     // it's actively analyzing (e.g. 98.42 -> 98.47)
     const displayConfidence = ml.confidence ? (ml.confidence + (Math.random() * 0.2 - 0.1)) : 98.42;
     
+    const rootNodes = ['Anomaly Reflex', ml.origin || 'Isolation Forest', ml.context];
+    
     return {
       type: ml.context,
-      evidence: ml.explainable_brain || `Anomaly detected by Random Forest model mapping to ${ml.context}.`,
+      evidence: ml.explainable_brain || `Anomaly detected by ${ml.origin || 'Random Forest'} model mapping to ${ml.context}.`,
       likelyCause: ml.context,
       riskLevel: ml.trust_score < 60 ? 'Critical' : 'Caution',
       suggestedAction: ml.action,
       impactIfIgnored: 'Continued degradation leading to system-wide failure.',
       timeToFailure: ml.ttf,
-      rootCauseNodes: ['Isolation Forest', 'Reflex Alert', ml.context],
+      rootCauseNodes: rootNodes,
       confidence: parseFloat(displayConfidence.toFixed(2)),
+      source: ml.explainable_brain ? 'Dual-Core (ML + LLM)' : 'Single-Core (ML Reflex)',
     };
   }
 
@@ -97,6 +101,7 @@ function deriveInsight(anomaly: any): Insight {
     timeToFailure: Math.max(1, Math.round(finalScore * 0.35)),
     rootCauseNodes: rootNodes,
     confidence,
+    source: 'Single-Core (ML Reflex)',
   };
 }
 
@@ -150,16 +155,21 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
       <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
           <AlertCircle className="w-4 h-4 text-cyan-400" />
-          <h3 className="text-cyan-400 text-xs font-bold uppercase tracking-widest">Explainable AI Engine</h3>
+          <h3 className="text-cyan-400 text-xs font-bold uppercase tracking-widest">Decision Intelligence Layer</h3>
           {sev && (
             <span className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${sev.border} ${sev.bg} ${sev.text}`}>
               {sev.label}
             </span>
           )}
           {insight && (
-            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 ml-1">
-              Confidence: {insight.confidence}%
-            </span>
+            <div className="flex gap-1 ml-auto">
+              <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400">
+                {insight.source}
+              </span>
+              <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
+                Confidence: {insight.confidence}%
+              </span>
+            </div>
           )}
         </div>
 
@@ -248,7 +258,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
       <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
           <Zap className="w-4 h-4 text-amber-400" />
-          <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest">Decision Intelligence</h3>
+          <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest">Executive Remediation Advisory</h3>
         </div>
 
         {!insight ? (

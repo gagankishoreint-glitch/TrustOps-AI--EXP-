@@ -22,7 +22,7 @@ def train_models():
     
     # --- 1. Isolation Forest (Reflexes/Anomaly) ---
     print("Training Isolation Forest (Anomaly Detection)...")
-    iso_forest = IsolationForest(contamination=0.2, random_state=42)
+    iso_forest = IsolationForest(contamination=0.1, random_state=42)
     iso_forest.fit(X)
     
     if_path = os.path.join(os.path.dirname(__file__), "isolation_forest.joblib")

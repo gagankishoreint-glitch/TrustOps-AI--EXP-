@@ -8,6 +8,7 @@ import { SecurityEventLog } from './SecurityEventLog';
 interface FleetViewProps {
   onSelectShowroom: (id: string) => void;
   isDemo?: boolean;
+  recentAnomalies?: any[];
 }
 
 function MiniRing({ score, size = 56 }: { score: number; size?: number }) {
@@ -34,9 +35,17 @@ function MiniRing({ score, size = 56 }: { score: number; size?: number }) {
   );
 }
 
-export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroom }) => {
-  const { showrooms } = useShowroomStore();
+export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroom, recentAnomalies }) => {
+  const { showrooms, jitterFleet } = useShowroomStore();
   const arr = Object.values(showrooms);
+
+  // Fleet Heartbeat Engine — simulate living telemetry across the network
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      jitterFleet();
+    }, 5000); // Pulse every 5 seconds
+    return () => clearInterval(timer);
+  }, [jitterFleet]);
 
   const summary = useMemo(() => ({
     totalNodes: arr.reduce((s, r) => s + r.activeNodes, 0),
@@ -147,7 +156,7 @@ export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroo
 
       {/* ── Bottom: Security Audit Log ── */}
       <div className="shrink-0 h-[300px]">
-        <SecurityEventLog />
+        <SecurityEventLog recentAnomalies={recentAnomalies || []} />
       </div>
     </div>
   );

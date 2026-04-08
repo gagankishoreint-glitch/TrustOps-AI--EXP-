@@ -52,8 +52,10 @@ export const TelemetryCharts: React.FC<{ data: TelemetryPoint[] }> = ({ data }) 
               <CartesianGrid {...gridStyle} />
               <XAxis dataKey="t" tick={axisStyle} tickLine={false} axisLine={false} interval={4} />
               <YAxis tick={axisStyle} tickLine={false} axisLine={false} width={40} domain={[600, 'auto']} />
-              <ReferenceLine y={1200} stroke="#f59e0b" strokeDasharray="4 2" strokeWidth={1}
-                label={{ value: '1200ms', fill: '#f59e0b', fontSize: 9, position: 'right' }} />
+              <ReferenceLine y={800} stroke="#f59e0b" strokeDasharray="3 3" strokeWidth={1}
+                label={{ value: 'Warning (800ms)', fill: '#f59e0b', fontSize: 8, position: 'insideRight' }} />
+              <ReferenceLine y={1200} stroke="#ef4444" strokeDasharray="4 2" strokeWidth={1}
+                label={{ value: 'Critical (1200ms)', fill: '#ef4444', fontSize: 8, position: 'insideRight' }} />
               <Tooltip content={<CustomTooltip unit="ms" />} />
               <Area type="monotone" dataKey="latency"
                 stroke={latencyHigh ? '#ef4444' : '#00d4ff'}

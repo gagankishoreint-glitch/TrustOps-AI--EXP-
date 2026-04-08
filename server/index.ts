@@ -40,11 +40,27 @@ async function startServer() {
         }
 
         // Phase 2: The Brain (GenAI Explanation for Anomaly)
-        const prompt = `The Predictive ML model (Random Forest) has detected an anomaly.
-Context: ${mlResult.context}. 
-Time to Failure: ${mlResult.ttf} minutes. 
-Recommended Action: ${mlResult.action}.
-Write a single, highly professional 1-sentence analytical insight summarizing this for a Chief Information Security Officer dashboard. No introductory phrasing.`;
+        // Implementing Corporate Liability Constraints: #16 (Role), #11 (Tone), #9 (Strict), #2 (Compliance)
+        const prompt = `### CORPORATE LIABILITY ADVISORY: You are an Authorized Decision Intelligence AI for TrustOps.
+### ENTITY: Panasonic Sensor Decision Layer.
+### MISSION: Provide executive-level risk assessment for industrial display infrastructure.
+
+### TELEMETRY LOGS:
+- DETECTED PATTERN: ${mlResult.context}
+- SENSOR LATENCY: ${latency}ms
+- TIME TO FAILURE (TTF): ${mlResult.ttf} minutes
+- ML CONFIDENCE: ${mlResult.confidence}%
+
+### MANDATORY INSTRUCTIONS:
+1. Act as a professionally liable security analyst. Your insights will be used for critical infrastructure decisions.
+2. Analyze the risk of "${mlResult.context}" in the context of Panasonic hardware reliability.
+3. Synthesize ONE HIGH-IMPACT SENTENCE summarizing the operational risk and the required business action.
+4. DO NOT speculate. Focus only on the provided telemetry.
+5. Tone: Authoritative, succinct, and conservative.
+
+### BUSINESS ACTION: ${mlResult.action}
+
+### EXECUTIVE INSIGHT:`;
 
         let explainableText = mlResult.action; // Fallback
 
@@ -54,7 +70,7 @@ Write a single, highly professional 1-sentence analytical insight summarizing th
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              model: "llama3", // The default requested model, can be overridden by user
+              model: "mistral", // Switched to Mistral as requested for Corporate Liability
               prompt: prompt,
               stream: false
             })

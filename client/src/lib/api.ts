@@ -28,6 +28,9 @@ export interface AnalysisResult {
   ttf_minutes: number;
   severity: string;
   action: string;
+  decision: string;
+  advisory: string;
+  risk_level: string;
 }
 
 /**
@@ -66,7 +69,10 @@ export async function analyzeTelemetry(data: TelemetryData): Promise<AnalysisRes
       root_cause: 'Station Offline',
       ttf_minutes: 9999,
       severity: 'None',
-      action: 'Check connectivity to ML service.'
+      action: 'Check connectivity to ML service.',
+      decision: 'Stable',
+      advisory: 'Telemetry station offline. Running on local cache.',
+      risk_level: 'Low'
     };
   }
 }

@@ -60,6 +60,9 @@ class AnalysisResponse(BaseModel):
     ttf_minutes:    float    # Predicted time to failure
     severity:       str      # Medium/High/Critical
     action:         str      # Recommended remediation
+    decision:       str      # Conceptual "Decision State"
+    advisory:       str      # Executive Summary Text
+    risk_level:     str      # High/Medium/Low
 
 # ─── Logic ─────────────────────────────────────────────────────────────
 
@@ -96,16 +99,39 @@ def derive_trust_score(is_anomaly: bool, raw_score: float, ttf: float) -> int:
     nudge = max(-15, min(15, raw_score * 50))
     return int(max(5, min(65, base + nudge)))
 
+# ─── Operational Intelligence Mapping (Manager Friendly) ────────
+RISK_MAP: dict[str, str] = {
+    "IoT-23: Mirai Scanning":            "Unusual Network Scanning",
+    "IoT-23: C&C Heartbeat Hijack":      "Unauthorized Device Communication",
+    "IoT-23: Brute Force Entry":          "Security Authentication Breach",
+    "Panasonic: Phase L3 Instability":   "Power Supply Instability",
+    "Panasonic: Optical Calibration Drift": "Display Quality Degradation",
+    "Panasonic: Heat Sink Failure":       "Critical Unit Overheating",
+    "Critical Systemic Fault (Cascading)": "Total Systemic Failure",
+    "System Healthy":                     "Nominal Operations",
+}
+
+ACTION_MAP: dict[str, str] = {
+    "IoT-23: Mirai Scanning":            "Restrict external network ports and monitor incoming traffic.",
+    "IoT-23: C&C Heartbeat Hijack":      "Isolate hardware gateway and refresh encrypted credentials.",
+    "IoT-23: Brute Force Entry":          "Lock administrative interface and require identity re-verification.",
+    "Panasonic: Phase L3 Instability":   "Switch to backup power and alert site maintenance team.",
+    "Panasonic: Optical Calibration Drift": "Initiate lens cleaning and automated visual recalibration.",
+    "Panasonic: Heat Sink Failure":       "Activate secondary cooling and throttle unit performance.",
+    "Critical Systemic Fault (Cascading)": "Immediate physical shutdown and manual inspection required.",
+    "System Healthy":                    "No action required. Standard monitoring in progress.",
+}
+
 def get_severity_and_action(root_cause: str, is_anomaly: bool):
     if not is_anomaly:
         return "Low", "Continue standard monitoring."
     
     mapping = {
-        "IoT-23: Mirai Scanning":            ("High", "Isolate Port 23 and trace origin IP."),
-        "IoT-23: Brute Force Entry":          ("Critical", "Lockdown admin interface & force 2FA."),
-        "Panasonic: Heat Sink Failure":       ("High", "Activate backup cooling & throttle frequency."),
-        "Panasonic: Phase L3 Instability":   ("High", "Switch to redundant power & notify field tech."),
-        "Critical Systemic Fault (Cascading)": ("Critical", "Emergency stop — physical inspection required.")
+        "IoT-23: Mirai Scanning":            ("High", ACTION_MAP["IoT-23: Mirai Scanning"]),
+        "IoT-23: Brute Force Entry":          ("Critical", ACTION_MAP["IoT-23: Brute Force Entry"]),
+        "Panasonic: Heat Sink Failure":       ("High", ACTION_MAP["Panasonic: Heat Sink Failure"]),
+        "Panasonic: Phase L3 Instability":   ("High", ACTION_MAP["Panasonic: Phase L3 Instability"]),
+        "Critical Systemic Fault (Cascading)": ("Critical", ACTION_MAP["Critical Systemic Fault (Cascading)"])
     }
     return mapping.get(root_cause, ("Medium", "Initiate standard diagnostics."))
 
@@ -136,10 +162,42 @@ def analyze(body: AnalysisInput):
     # 5. Compute Severity & 6. Action
     severity, action = get_severity_and_action(root_cause, is_anomaly)
     
+    # 7. Decision Intelligence Layer (v2.2 Spec)
+    decision_map = {
+        "Critical": "IMMEDIATE ACTION REQUIRED",
+        "High":     "PREVENTIVE ACTION",
+        "Medium":   "MONITOR",
+        "Low":      "STABLE",
+        "None":     "STABLE"
+    }
+    decision = decision_map.get(severity, "STABLE")
+    
+    risk_level = "Low"
+    if severity in ["High", "Critical"]: risk_level = "High"
+    elif severity == "Medium" or not is_anomaly: risk_level = "Medium" if is_anomaly else "Low"
+    
+    friendly_cause = RISK_MAP.get(root_cause, "Unknown anomaly")
+    
+    # AI Explanation Generator (Manager Friendly Format)
+    advisory = (
+        f"STATUS: {decision}\n"
+        f"CAUSE:  {friendly_cause}\n"
+        f"RISK:   {risk_level} Impact - System failure potential high.\n"
+        f"ACTION: {action}"
+    )
+
     # Business Logic override for Healthy state
     if not is_anomaly:
         root_cause = "Nominal Operations"
         ttf_minutes = 9999.0
+        decision = "STABLE"
+        risk_level = "Low"
+        advisory = (
+            "STATUS: STABLE\n"
+            "CAUSE:  Nominal Operations\n"
+            "RISK:   None\n"
+            "ACTION: No action required."
+        )
 
     return AnalysisResponse(
         is_anomaly=is_anomaly,
@@ -148,7 +206,10 @@ def analyze(body: AnalysisInput):
         root_cause=root_cause,
         ttf_minutes=round(ttf_minutes, 1),
         severity=severity,
-        action=action
+        action=action,
+        decision=decision,
+        advisory=advisory,
+        risk_level=risk_level
     )
 
 if __name__ == "__main__":

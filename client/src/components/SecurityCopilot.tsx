@@ -21,6 +21,7 @@ interface Insight {
   rootCauseNodes: string[];
   confidence: number;
   source: 'Dual-Core (ML + LLM)' | 'Single-Core (ML Reflex)';
+  executiveAdvisory?: string;
 }
 
 function deriveInsight(anomaly: any): Insight {
@@ -54,6 +55,7 @@ function deriveInsight(anomaly: any): Insight {
       rootCauseNodes: rootNodes,
       confidence: parseFloat(displayConfidence.toFixed(1)),
       source: 'Dual-Core (ML + LLM)',
+      executiveAdvisory: ml.advisory
     };
   }
 
@@ -299,6 +301,32 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
           <Zap className="w-4 h-4 text-amber-400" />
           <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest">Executive Remediation Advisory</h3>
         </div>
+        
+        {insight?.executiveAdvisory && (
+          <div className="mb-4 bg-white/[0.04] border border-white/[0.08] rounded-xl p-4 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-2 opacity-20">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-3 flex items-center gap-1.5">
+              <Zap className="w-3 h-3 text-amber-500" /> Executive Manager Briefing
+            </p>
+            <div className="space-y-2">
+              {insight.executiveAdvisory.split('\n').map((line, i) => {
+                const [key, ...rest] = line.split(':');
+                const val = rest.join(':').trim();
+                if (!key || !val) return null;
+                return (
+                  <div key={i} className="flex gap-2 items-start">
+                    <span className="text-[10px] font-black text-gray-400 w-14 shrink-0">{key}:</span>
+                    <span className={`text-[11px] font-medium ${
+                      key === 'STATUS' ? (val.includes('ACTION') ? 'text-red-400' : 'text-emerald-400') : 'text-gray-200'
+                    }`}>{val}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {!insight ? (
           <p className="text-gray-600 text-xs text-center py-3">Awaiting diagnostic resolution.</p>

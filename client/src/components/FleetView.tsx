@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useShowroomStore } from '../store/useShowroomStore';
 import { Activity, Server, ShieldAlert, Zap, MapPin, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { SecurityEventLog } from './SecurityEventLog';
+
 
 interface FleetViewProps {
   onSelectShowroom: (id: string) => void;
@@ -141,6 +143,11 @@ export const FleetView: React.FC<FleetViewProps> = React.memo(({ onSelectShowroo
             );
           })}
         </div>
+      </div>
+
+      {/* ── Bottom: Security Audit Log ── */}
+      <div className="shrink-0 h-[300px]">
+        <SecurityEventLog />
       </div>
     </div>
   );

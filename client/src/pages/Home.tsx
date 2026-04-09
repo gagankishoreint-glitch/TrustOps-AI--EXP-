@@ -376,8 +376,11 @@ export default function Home() {
         <div className="flex items-center gap-3 md:gap-4">
           {activeLocation && <button onClick={() => setActiveLocation(null)} className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border border-white/10 text-cyan-400 hover:bg-white/5 transition-all">← Fleet</button>}
           <div>
-            <h1 className="text-base md:text-lg font-black tracking-tight text-cyan-400">TrustOps AI {activeLocation && <span className="text-gray-500 font-normal">/ {activeLocation}</span>}</h1>
-            <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-[#334155] font-bold">Decision Intelligence Layer {isDemo && <span className="text-orange-500 ml-2 hidden sm:inline">· INDUSTRIAL SCALED</span>}</p>
+            <h1 className="text-base md:text-xl font-black tracking-tighter text-cyan-400 leading-tight">TRUSTOPS CORE {activeLocation && <span className="text-white/20 font-black">/ {activeLocation}</span>}</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.25em] text-slate-500 whitespace-nowrap">Industrial Intelligence Layer</span>
+              {isDemo && <span className="text-[8px] font-black text-amber-500/60 uppercase tracking-widest px-1.5 py-0.5 border border-amber-500/20 rounded-sm">V2.4 STABLE</span>}
+            </div>
           </div>
         </div>
 
@@ -597,47 +600,6 @@ export default function Home() {
                 );
               })()}
 
-              {(() => {
-                 const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
-                 if (!hasAnomaly) return null;
-                 
-                 const currentAnomalyLatency = recentAnomalies[0]?.hybrid_ml_context?.telemetry_vector?.latency || 950;
-                 const currentAnomalyAdmin = recentAnomalies[0]?.hybrid_ml_context?.telemetry_vector?.admin || 1;
-                 const currentAnomalyHealth = recentAnomalies[0]?.engine_analysis?.trust_scores?.operational || 100;
-
-                 const latencyDelta = Math.round(currentAnomalyLatency - 950);
-                 const healthDelta = Math.round(currentAnomalyHealth - 100);
-                 const adminDelta = Math.round(currentAnomalyAdmin - 1);
-
-                 return (
-                   <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-lg shadow-black/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Diagnostic Delta (vs Baseline)</p>
-                     
-                     <div className="space-y-2">
-                       <div className="flex justify-between items-center text-[11px] uppercase tracking-wide">
-                         <span className="text-gray-400 font-bold">Latency</span>
-                         <span className={`font-mono font-black ${latencyDelta > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                           {latencyDelta > 0 ? '+' : ''}{latencyDelta}ms
-                         </span>
-                       </div>
-                       
-                       <div className="flex justify-between items-center text-[11px] uppercase tracking-wide">
-                         <span className="text-gray-400 font-bold">Device Health</span>
-                         <span className={`font-mono font-black ${healthDelta < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                           {healthDelta > 0 ? '+' : ''}{healthDelta} pts
-                         </span>
-                       </div>
-                       
-                       <div className="flex justify-between items-center text-[11px] uppercase tracking-wide">
-                         <span className="text-gray-400 font-bold">User Activity</span>
-                         <span className={`font-mono font-black ${adminDelta > 0 ? 'text-amber-400' : 'text-gray-500'}`}>
-                           {adminDelta > 0 ? '+' : ''}{adminDelta} cmds
-                         </span>
-                       </div>
-                     </div>
-                   </div>
-                 );
-              })()}
 
               <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
             </div>

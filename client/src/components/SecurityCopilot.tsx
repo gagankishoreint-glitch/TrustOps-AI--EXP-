@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AlertCircle, Zap, GitMerge, ShieldAlert, Search, Target, CheckCircle, MessageSquare } from 'lucide-react';
 import { SecurityChat } from './SecurityChat';
 import { getRootCauseChain } from '../utils/rootCauseEngine';
@@ -162,6 +162,19 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
 
   const sev = insight ? SEVERITY_CFG[insight.riskLevel] : null;
 
+  // Calculate deltas for the Incident DNA section
+  const incidentDNA = useMemo(() => {
+    if (!insight || !recentAnomalies[0]) return null;
+    const tel = recentAnomalies[0].hybrid_ml_context?.telemetry_vector;
+    const scores = recentAnomalies[0].engine_analysis?.trust_scores;
+    
+    return {
+      latency: Math.round((tel?.latency || 0) - 950),
+      health: Math.round((scores?.operational || 0) - 100),
+      activity: Math.round((tel?.admin || 0) - 1)
+    };
+  }, [insight, recentAnomalies]);
+
   const Card = ({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) => (
     <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3">
       <div className={`flex items-center gap-1.5 mb-2 ${color}`}>
@@ -174,23 +187,19 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
 
   return (
     <div className="flex flex-col gap-3">
-      {/* ── XAI Engine Panel ── */}
-      <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
-        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
-          <AlertCircle className="w-4 h-4 text-cyan-400" />
-          <h3 className="text-cyan-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Decision Intelligence Layer</h3>
-          {sev && (
-            <span className={`ml-auto text-[8px] md:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 md:px-2.5 md:py-1 rounded-full border ${sev.border} ${sev.bg} ${sev.text}`}>
-              {sev.label}
-            </span>
-          )}
+      {/* ── Business Impact Analysis (Inject in the Middle) ── */}
+      {insight && <BusinessImpactAnalysis trustScore={trustScore} />}
+
+      {/* ── Executive Intelligence Advisory ── */}
+      <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4 shadow-xl shadow-black/40">
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/[0.06]">
+          <Zap className="w-4 h-4 text-amber-400" />
+          <h3 className="text-amber-400 text-[10px] md:text-xs font-black uppercase tracking-widest">Executive Intelligence Advisory</h3>
+          
           {insight && (
             <div className="flex gap-1 ml-auto">
               <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400">
                 {insight.source}
-              </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
-                Confidence: {insight.confidence}%
               </span>
               <button 
                 onClick={() => setShowChat(prev => !prev)}
@@ -199,7 +208,6 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
                     ? 'bg-cyan-600 border-cyan-500 text-white shadow-[0_0_10px_rgba(6,182,212,0.5)]' 
                     : 'bg-white/[0.05] border-white/[0.1] text-cyan-400 hover:bg-white/[0.1]'
                 }`}
-                title="Open Intelligence Chat"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
               </button>
@@ -207,190 +215,141 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
           )}
         </div>
 
-        <SecurityChat 
-          isOpen={showChat} 
-          onClose={() => setShowChat(false)}
-          telemetry={recentAnomalies[0]?.hybrid_ml_context?.telemetry_vector || {}}
-          analysis={recentAnomalies[0]?.engine_analysis || {}}
-        />
-
-        {loading && (
-          <div className="flex items-center gap-3 py-6 justify-center">
-            <div className="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-cyan-500 text-xs font-bold uppercase tracking-widest animate-pulse">Diagnosing Telemetry…</p>
+        {!loading && !insight ? (
+          <div className="py-8 flex flex-col items-center justify-center opacity-40">
+            <Search className="w-8 h-8 text-gray-600 mb-2" />
+            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">Awaiting Diagnostic Signal...</p>
           </div>
-        )}
-
-        {!loading && !insight && (
-          <p className="text-gray-600 text-xs py-4 text-center">Telemetry bounds are optimal. Autonomous tracking enabled.</p>
-        )}
-
-        {!loading && insight && (
-          <div className="space-y-3">
-            {/* 2-col insight cards */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
-              <Card icon={ShieldAlert} label="Risk Type"  value={insight.type}      color="text-violet-400" />
-              <Card icon={AlertCircle} label="Severity"   value={insight.riskLevel} color={sev?.text ?? 'text-red-400'} />
-              <div className="xs:col-span-2">
-                <Card icon={Search} label="Direct Evidence" value={insight.evidence} color="text-blue-400" />
+        ) : !loading && insight ? (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            
+            {/* Incident DNA & Diagnostics */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-black/40 border border-white/[0.05] rounded-xl p-3">
+                <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest mb-2">Diagnostic DNA</p>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-gray-500">Latency</span>
+                    <span className={`font-bold ${incidentDNA!.latency > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {incidentDNA!.latency > 0 ? '+' : ''}{incidentDNA!.latency}ms
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-gray-500">Health</span>
+                    <span className={`font-bold ${incidentDNA!.health < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {incidentDNA!.health} pts
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-gray-500">Activity</span>
+                    <span className={`font-bold ${incidentDNA!.activity > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {incidentDNA!.activity > 0 ? '+' : ''}{incidentDNA!.activity} cmds
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Card icon={ShieldAlert} label="Risk Type"  value={insight!.type}      color="text-violet-400" />
+                <Card icon={AlertCircle} label="Severity"   value={insight!.riskLevel} color={sev?.text ?? 'text-red-400'} />
               </div>
             </div>
 
-            {/* Root Cause Chain — horizontal */}
+            {/* Evidence & Logic Summary */}
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-2 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                <Search className="w-12 h-12 text-white" />
+              </div>
+              <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em] mb-2">Direct Evidence Log</p>
+              <p className="text-[11px] text-gray-200 leading-relaxed italic border-l-2 border-cyan-500/40 pl-3">
+                "{insight!.evidence}"
+              </p>
+            </div>
+
+            {/* Inference Trace */}
             <div className="bg-black/30 border border-purple-900/20 rounded-xl p-3">
-              <div className="flex items-center gap-1.5 mb-3">
-                <GitMerge className="w-3.5 h-3.5 text-purple-400" />
-                <span className="text-[9px] text-purple-400 uppercase font-bold tracking-widest">Root Cause Chain</span>
+              <div className="flex items-center gap-1.5 mb-2">
+                <GitMerge className="w-3 h-3 text-purple-400" />
+                <span className="text-[9px] text-purple-400 uppercase font-bold tracking-widest">Inference Trace</span>
               </div>
               <div className="flex items-center gap-1 flex-wrap">
-                {insight.rootCauseNodes.map((node, i) => (
+                {insight!.rootCauseNodes.map((node, i) => (
                   <React.Fragment key={i}>
-                    <div className={`px-3 py-1.5 rounded-full text-[10px] font-semibold border transition-colors ${
-                      i === 0 ? 'bg-red-950/50 border-red-500/50 text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.2)]' : 'bg-white/[0.03] border-white/[0.08] text-gray-400'
-                    }`}>{node}</div>
-                    {i < insight.rootCauseNodes.length - 1 && (
-                      <span className="text-gray-700 text-xs">→</span>
+                    <div className={`px-2 py-1 rounded-full text-[9px] font-bold border ${
+                      i === 0 ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-white/[0.03] border-white/[0.06] text-gray-400'
+                    }`}>{node.split(' ').pop()}</div>
+                    {i < insight!.rootCauseNodes.length - 1 && (
+                      <span className="text-gray-700 text-[10px]">→</span>
                     )}
                   </React.Fragment>
                 ))}
               </div>
             </div>
 
-            </div>
-          )}
-        </div>
+            {/* Management SITREP Summary */}
+            {insight!.executiveAdvisory && (
+              <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
+                <p className="text-[9px] text-amber-500/60 uppercase font-bold tracking-widest mb-2 flex items-center gap-1.5">
+                  <CheckCircle className="w-2.5 h-2.5" /> Management SITREP Summary
+                </p>
+                <div className="space-y-1">
+                  {insight!.executiveAdvisory.split('\n').filter(l => l.includes(':')).map((line, i) => {
+                    const [key, val] = line.split(':').map(s => s.trim());
+                    return (
+                      <div key={i} className="flex gap-2 text-[10px]">
+                        <span className="text-gray-500 w-14 font-bold shrink-0">{key}:</span>
+                        <span className={key === 'STATUS' ? 'text-red-400 font-black' : 'text-gray-300'}>{val}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-        {/* ── RLHF Feedback ── */}
-        {insight && (
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">RLHF Feedback Loop</p>
-            {feedback === 'idle'         && <p className="text-gray-600 text-[10px]">Was this anomaly correlation accurate?</p>}
-            {feedback === 'improving'    && <p className="text-emerald-400 text-[10px] font-medium animate-pulse">Model confidence improving…</p>}
-            {feedback === 'recalibrating'&& <p className="text-amber-400 text-[10px] font-medium animate-pulse">Recalibrating inference weights…</p>}
-          </div>
-          <div className="flex gap-2">
-            {(['YES', 'NO'] as const).map(v => (
-              <button key={v}
-                onClick={async () => { 
-                  setFeedback(v === 'YES' ? 'improving' : 'recalibrating'); 
-                  
-                  // Persistent Case Logging
-                  if (recentAnomalies[0] && insight) {
-                    const tel = recentAnomalies[0].raw_telemetry;
-                    const caseData = {
-                      location: window.location.pathname.split('/').pop() || 'Unknown',
-                      latency: tel?.network_logs?.latency || 0,
-                      cpu: tel?.display_logs?.frequency || 0, // Mapping frequency to 'cpu' for schema consistency
-                      adminCount: tel?.network_logs?.admin_count || 0,
-                      inferenceContext: insight.type,
-                      humanLabel: v === 'YES' ? insight.type : 'Manual Override/Power Drift',
-                      isAccurate: v === 'YES',
-                      confidence: insight.confidence
-                    };
-
-                    try {
-                      await fetch('/api/feedback', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ caseData })
-                      });
-                    } catch (err) {
-                      console.error("Feedback Sync Failed", err);
-                    }
-                  }
-
-                  setTimeout(() => setFeedback('idle'), 3000); 
-                }}
-                disabled={feedback !== 'idle'}
-                className={`px-3 py-1 text-xs font-bold border rounded disabled:opacity-40 transition-colors ${
-                  v === 'YES'
-                    ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/40'
-                    : 'bg-red-950/30 text-red-400 border-red-900/50 hover:bg-red-900/40'
-                }`}>{v}</button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Business Impact Analysis (Inject in the Middle) ── */}
-      {insight && <BusinessImpactAnalysis trustScore={trustScore} />}
-
-      {/* ── Decision Intelligence ── */}
-      <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
-        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/[0.06]">
-          <Zap className="w-4 h-4 text-amber-400" />
-          <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest">Executive Remediation Advisory</h3>
-        </div>
-
-        {/* ── Predictive Analysis Layer (v2.3) ── */}
-        {/* Predictive sections moved to central Intelligence Brief */}
-        
-        {insight && insight.executiveAdvisory && (
-          <div className="mb-4 bg-white/[0.04] border border-white/[0.08] rounded-xl p-4 overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-2 opacity-20">
-              <CheckCircle className="w-8 h-8 text-white" />
-            </div>
-            <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-3 flex items-center gap-1.5">
-              <Zap className="w-3 h-3 text-amber-500" /> Executive Manager Briefing
-            </p>
-            <div className="space-y-2">
-              {insight.executiveAdvisory.split('\n').map((line, i) => {
-                const [key, ...rest] = line.split(':');
-                const val = rest.join(':').trim();
-                if (!key || !val) return null;
-                return (
-                  <div key={i} className="flex gap-2 items-start">
-                    <span className="text-[10px] font-black text-gray-400 w-14 shrink-0">{key}:</span>
-                    <span className={`text-[11px] font-medium ${
-                      key === 'STATUS' ? (val.includes('ACTION') ? 'text-red-400' : 'text-emerald-400') : 'text-gray-200'
-                    }`}>{val}</span>
+            {/* Remediation & Action */}
+            <div className="pt-2 space-y-3">
+              <div className="bg-cyan-900/10 border border-cyan-500/20 rounded-xl p-3">
+                <p className="text-[9px] text-cyan-500/60 uppercase font-bold tracking-widest mb-1">Autonomous Remediation Strategy</p>
+                <p className="text-cyan-400 font-bold text-[11px] leading-relaxed">{insight!.suggestedAction}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-black/30 border border-white/[0.05] rounded-xl p-3 text-center flex flex-col justify-center">
+                  <p className="text-[8px] text-gray-500 uppercase font-bold mb-1">Predicted TTF</p>
+                  <p className="text-red-400 font-black text-xl tabular-nums leading-none mb-1">
+                    {insight!.timeToFailure}<span className="text-[10px] ml-1 opacity-60">MIN</span>
+                  </p>
+                </div>
+                {decision === 'pending' ? (
+                  <button onClick={() => { setDecision('executing'); setTimeout(() => setDecision('executed'), 1800); }}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                    Execute Sequence
+                  </button>
+                ) : (
+                  <div className={`flex items-center justify-center rounded-xl border text-[10px] font-black uppercase ${
+                    decision === 'executing' ? 'bg-white/5 border-white/10 text-gray-400 animate-pulse' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  }`}>
+                    {decision === 'executing' ? 'Executing...' : 'SUCCESSFULLY DEPLOYED'}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {!insight ? (
-          <p className="text-gray-600 text-xs text-center py-3">Awaiting diagnostic resolution.</p>
-        ) : (
-          <div className="space-y-3">
-            <div className="bg-black/30 border border-cyan-900/20 rounded-xl p-3">
-              <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Recommended Action</p>
-              <p className="text-cyan-400 font-semibold text-xs leading-relaxed">{insight.suggestedAction}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-black/30 border border-white/[0.05] rounded-xl p-3">
-                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Impact If Ignored</p>
-                <p className="text-gray-300 text-xs leading-relaxed">{insight.impactIfIgnored}</p>
-              </div>
-              <div className="bg-red-950/20 border border-red-900/30 rounded-xl p-3 text-center flex flex-col justify-center">
-                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Time to Failure</p>
-                <p className="text-red-400 font-black text-2xl tabular-nums">{insight.timeToFailure}</p>
-                <p className="text-red-500/60 text-[9px] font-bold uppercase">Minutes</p>
+                )}
               </div>
             </div>
 
-            {decision === 'pending' && (
-              <button onClick={() => { setDecision('executing'); setTimeout(() => setDecision('executed'), 1800); }}
-                className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-colors">
-                Execute Remediation Action
-              </button>
-            )}
-            {decision === 'executing' && (
-              <button disabled className="w-full py-2.5 bg-white/[0.03] border border-white/[0.08] text-gray-400 text-xs font-bold uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
-                <span className="w-3.5 h-3.5 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
-                Executing Sequence…
-              </button>
-            )}
-            {decision === 'executed' && (
-              <button disabled className="w-full py-2.5 bg-emerald-900/30 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
-                <CheckCircle className="w-4 h-4" /> Action Deployed Successfully
-              </button>
-            )}
+            {/* RLHF Loop (Minimalist) */}
+            <div className="pt-2 flex items-center justify-between border-t border-white/5 mt-4 pt-4">
+              <p className="text-[8px] text-gray-600 uppercase font-bold tracking-widest">Validate Correlation</p>
+              <div className="flex gap-2">
+                {(['YES', 'NO'] as const).map(v => (
+                  <button key={v} onClick={() => setFeedback(v === 'YES' ? 'improving' : 'recalibrating')}
+                    className={`text-[8px] font-bold px-2 py-0.5 rounded border transition-colors ${
+                      v === 'YES' ? 'border-emerald-500/20 text-emerald-500/50 hover:bg-emerald-500/10' : 'border-rose-500/20 text-rose-500/50 hover:bg-rose-500/10'
+                    }`}>
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

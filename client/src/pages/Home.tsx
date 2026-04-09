@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Clock } from 'lucide-react';
 
 import { TrustScoreGauge } from '@/components/TrustScoreGauge';
 import { TelemetryCharts } from '@/components/TelemetryCharts';
@@ -468,6 +468,25 @@ export default function Home() {
                 <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p>
                 <div className="scale-90 md:scale-100"><TrustScoreGauge score={trustScore} /></div>
                 
+                {(() => {
+                  const confidence = recentAnomalies[0]?.hybrid_ml_context?.confidence ?? (trustScore < 80 ? Math.round(100 - (trustScore * 0.4)) : 98);
+                  const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
+                  return (
+                    <div className="w-full flex flex-col gap-1.5 px-2 mt-4">
+                       <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-gray-500">
+                         <span>AI Confidence</span>
+                         <span className={hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}>{confidence}%</span>
+                       </div>
+                       <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                         <div 
+                           className={`h-full transition-all duration-1000 ease-out ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} 
+                           style={{ width: `${confidence}%` }} 
+                         />
+                       </div>
+                    </div>
+                  );
+                })()}
+
                 {recentAnomalies[0]?.hybrid_ml_context?.root_cause && trustScore < 80 && (() => {
                   const rawSeverity = (recentAnomalies[0]?.hybrid_ml_context?.severity || (trustScore < 60 ? 'critical' : 'high')).toString().toLowerCase();
                   const impactText = rawSeverity === 'critical' ? 'Store operations at risk' :
@@ -498,6 +517,18 @@ export default function Home() {
                     </div>
                   );
                 })()}
+
+                {predictedTTF !== null && (
+                  <div className={`mt-5 w-full w-full p-3 rounded-xl border ${predictedTTF <= 30 ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'} flex items-center justify-between animate-in fade-in slide-in-from-bottom-2 duration-500`}>
+                    <div className="w-full text-center">
+                      <p className="text-[9px] font-bold uppercase tracking-widest mb-1 opacity-70">Predicted Failure Window</p>
+                      <div className="flex items-center justify-center gap-2 font-black">
+                        <Clock className="w-4 h-4 animate-pulse" />
+                        <span className="text-sm">Failure in {predictedTTF} minutes</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 order-2">
                 <MultiScoreDisplay scores={trustScores} />
@@ -530,21 +561,8 @@ export default function Home() {
                         </span>
                       )}
                     </div>
-                    <div className={`text-sm md:text-base font-black uppercase tracking-wide mb-4 ${hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}`}>
+                    <div className={`text-sm md:text-base font-black uppercase tracking-wide mb-2 ${hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}`}>
                       {recentAnomalies[0]?.hybrid_ml_context?.decision || "System operating normally"}
-                    </div>
-                    
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-gray-500">
-                        <span>Inference Confidence</span>
-                        <span className={hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}>{confidence}%</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all duration-1000 ease-out ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} 
-                          style={{ width: `${confidence}%` }} 
-                        />
-                      </div>
                     </div>
                   </div>
                 );

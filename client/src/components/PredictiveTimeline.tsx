@@ -49,17 +49,7 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
       currentScore < 80 ? 'shadow-[0_0_40px_rgba(245,158,11,0.2)] border-amber-500/40 animate-pulse' : 
       'border-white/[0.07]'
     }`}>
-      {ttf !== null && (
-        <div className={`mb-4 p-3 rounded-xl border ${ttfStyle(ttf).bg} ${ttfStyle(ttf).border} flex items-center justify-between`}>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Predicted Failure Window</p>
-            <div className={`flex items-center gap-2 font-black ${ttfStyle(ttf).text}`}>
-              <Clock className={`w-4 h-4 ${ttfStyle(ttf).icon} animate-pulse`} />
-              <span className="text-sm">Failure in {ttf} minutes</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* TTF logic removed */}
 
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">

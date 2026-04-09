@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, Zap, GitMerge, ShieldAlert, Search, Target, CheckCircle } from 'lucide-react';
+import { AlertCircle, Zap, GitMerge, ShieldAlert, Search, Target, CheckCircle, MessageSquare } from 'lucide-react';
+import { SecurityChat } from './SecurityChat';
 import { getRootCauseChain } from '../utils/rootCauseEngine';
 import { contextualScaleRisk } from '../utils/predictiveEngine';
 import { BusinessImpactAnalysis } from './BusinessImpactAnalysis';
@@ -137,6 +138,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
   const [decision,      setDecision]      = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
   const [loading,       setLoading]       = useState(false);
   const [feedback,      setFeedback]      = useState<'idle' | 'improving' | 'recalibrating'>('idle');
+  const [showChat,      setShowChat]      = useState(false);
   const triggered = useRef(false);
 
   useEffect(() => {
@@ -190,9 +192,27 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
               <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
                 Confidence: {insight.confidence}%
               </span>
+              <button 
+                onClick={() => setShowChat(prev => !prev)}
+                className={`p-1.5 rounded-lg border transition-all ${
+                  showChat 
+                    ? 'bg-cyan-600 border-cyan-500 text-white shadow-[0_0_10px_rgba(6,182,212,0.5)]' 
+                    : 'bg-white/[0.05] border-white/[0.1] text-cyan-400 hover:bg-white/[0.1]'
+                }`}
+                title="Open Intelligence Chat"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
         </div>
+
+        <SecurityChat 
+          isOpen={showChat} 
+          onClose={() => setShowChat(false)}
+          telemetry={recentAnomalies[0]?.hybrid_ml_context?.telemetry_vector || {}}
+          analysis={recentAnomalies[0]?.engine_analysis || {}}
+        />
 
         {loading && (
           <div className="flex items-center gap-3 py-6 justify-center">

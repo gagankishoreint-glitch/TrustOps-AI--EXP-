@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import os
 import math
+import google.generativeai as genai
 
 app = FastAPI(title="TrustOps AI Service", version="2.1.0")
 
@@ -44,6 +45,10 @@ except Exception as e:
     print(f"❌ Model load error: {e}")
     IF_MODEL = RF_CLF = RF_REG = None
 
+# ─── Gemini AI Configuration ───────────────────────────────────────────
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY", "AIzaSyDxnxn1iHSy0mvq9Eu5EYTO1BL9rDxugQU"))
+gemini = genai.GenerativeModel('gemini-1.5-flash')
+
 # ─── Schema ────────────────────────────────────────────────────────────
 
 class AnalysisInput(BaseModel):
@@ -70,6 +75,14 @@ class AnalysisResponse(BaseModel):
     risk_trajectory:     str # Improving / Stable / Degrading
     failure_window:      str # Human Friendly Window
     recommended_action:  str
+
+class ChatRequest(BaseModel):
+    message: str
+    telemetry: dict
+    analysis: dict
+
+class ChatResponse(BaseModel):
+    response: str
 
 # ─── Logic ─────────────────────────────────────────────────────────────
 
@@ -250,6 +263,36 @@ def analyze(body: AnalysisInput):
         failure_window=failure_window,
         recommended_action=recommended_action
     )
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(body: ChatRequest):
+    """
+    Grounded Chat Endpoint: Uses Gemini to explain TrustOps decisions.
+    """
+    try:
+        system_prompt = f"""
+        You are the TrustOps AI Decision Systems Expert.
+        You are looking at the actual telemetry and ML model outputs for a critical industrial segment.
+        
+        CONTEXT (JSON):
+        Telemetry: {body.telemetry}
+        ML Analysis: {body.analysis}
+        
+        RULES:
+        1. Use ONLY the provided context. Do NOT hallucinate external facts.
+        2. Speak in an operational, manager-friendly tone.
+        3. Explain "What is wrong", "What to do", and "How soon" based on 'root_cause', 'action', and 'ttf_minutes'.
+        4. If the user asks general questions, politely refocus them on the segment's health.
+        5. Keep responses concise (under 3 sentences per point).
+        """
+        
+        full_prompt = f"{system_prompt}\n\nUSER QUESTION: {body.message}"
+        response = gemini.generate_content(full_prompt)
+        
+        return ChatResponse(response=response.text)
+    except Exception as e:
+        print(f"❌ Gemini Error: {e}")
+        return ChatResponse(response="I am currently experiencing a connection issue with the intelligence core. Please refer to the 'Action' field in the dashboard.")
 
 if __name__ == "__main__":
     import uvicorn

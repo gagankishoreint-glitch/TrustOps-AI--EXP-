@@ -1,0 +1,562 @@
+[
+  {
+    "id": "NORMAL_01",
+    "category": "normal",
+    "telemetry": {
+      "latency": 950,
+      "jitter": 2.1,
+      "ploss": 0.02,
+      "cpu": 12,
+      "mem": 1150,
+      "admin": 1,
+      "pfreq": 50.0,
+      "vrip": 12.1,
+      "humid": 45.2,
+      "temp": 1.1,
+      "hours": 340
+    },
+    "expected_output": {
+      "is_anomaly": false,
+      "trust_score": 98,
+      "root_cause": "Nominal Operations",
+      "ttf_minutes": 9999,
+      "severity": "Low",
+      "decision": "STABLE",
+      "advisory": "STATUS: STABLE\nCAUSE: Nominal Operations\nRISK: None\nACTION: No action required.",
+      "failure_probability": 0.01,
+      "failure_window": "Operational (24h+)"
+    }
+  },
+  {
+    "id": "LATENCY_HIGH_01",
+    "category": "high latency",
+    "telemetry": {
+      "latency": 2400,
+      "jitter": 8.5,
+      "ploss": 0.15,
+      "cpu": 15,
+      "mem": 1200,
+      "admin": 1,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.2,
+      "hours": 341
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 55,
+      "root_cause": "IoT-23: Mirai Scanning",
+      "ttf_minutes": 120,
+      "severity": "High",
+      "decision": "PREVENTIVE ACTION",
+      "advisory": "STATUS: PREVENTIVE ACTION\nCAUSE: Unusual Network Scanning\nRISK: High Impact - System failure potential high.\nACTION: Restrict external network ports.",
+      "failure_probability": 0.45,
+      "failure_window": "Next Shift (<8h)"
+    }
+  },
+  {
+    "id": "DEVICE_DEGRAD_01",
+    "category": "device degradation",
+    "telemetry": {
+      "latency": 960,
+      "jitter": 2.2,
+      "ploss": 0.03,
+      "cpu": 85,
+      "mem": 3800,
+      "admin": 1,
+      "pfreq": 49.1,
+      "vrip": 12.5,
+      "humid": 46.0,
+      "temp": 1.5,
+      "hours": 342
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 42,
+      "root_cause": "Panasonic: Heat Sink Failure",
+      "ttf_minutes": 45,
+      "severity": "High",
+      "decision": "PREVENTIVE ACTION",
+      "advisory": "STATUS: PREVENTIVE ACTION\nCAUSE: Critical Unit Overheating\nRISK: High Impact\nACTION: Activate secondary cooling.",
+      "failure_probability": 0.72,
+      "failure_window": "Near Term (<1h)"
+    }
+  },
+  {
+    "id": "USER_SPIKE_01",
+    "category": "user spike",
+    "telemetry": {
+      "latency": 1100,
+      "jitter": 4.5,
+      "ploss": 0.05,
+      "cpu": 45,
+      "mem": 2200,
+      "admin": 25,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.1,
+      "hours": 343
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 28,
+      "root_cause": "IoT-23: Brute Force Entry",
+      "ttf_minutes": 15,
+      "severity": "Critical",
+      "decision": "IMMEDIATE ACTION REQUIRED",
+      "advisory": "STATUS: IMMEDIATE ACTION REQUIRED\nCAUSE: Security Authentication Breach\nRISK: High Impact\nACTION: Lock administrative interface.",
+      "failure_probability": 0.95,
+      "failure_window": "Immediate (<15m)"
+    }
+  },
+  {
+    "id": "NET_DROP_01",
+    "category": "network drop",
+    "telemetry": {
+      "latency": 5000,
+      "jitter": 50.0,
+      "ploss": 0.85,
+      "cpu": 10,
+      "mem": 1100,
+      "admin": 0,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.0,
+      "hours": 344
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 12,
+      "root_cause": "Critical Systemic Fault (Cascading)",
+      "ttf_minutes": 5,
+      "severity": "Critical",
+      "decision": "IMMEDIATE ACTION REQUIRED",
+      "advisory": "STATUS: IMMEDIATE ACTION REQUIRED\nCAUSE: Total Systemic Failure\nRISK: Critical Impact\nACTION: Immediate physical shutdown required.",
+      "failure_probability": 0.99,
+      "failure_window": "Immediate (<15m)"
+    }
+  },
+  {
+    "id": "SENSOR_FAIL_01",
+    "category": "sensor failure",
+    "telemetry": {
+      "latency": 950,
+      "jitter": 2.0,
+      "ploss": 0.02,
+      "cpu": 20,
+      "mem": 1150,
+      "admin": 1,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 0.0,
+      "temp": 85.0,
+      "hours": 345
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 45,
+      "root_cause": "Panasonic: Optical Calibration Drift",
+      "ttf_minutes": 180,
+      "severity": "Medium",
+      "decision": "MONITOR",
+      "advisory": "STATUS: MONITOR\nCAUSE: Display Quality Degradation\nRISK: Medium Impact\nACTION: Initiate visual recalibration.",
+      "failure_probability": 0.35,
+      "failure_window": "Next Shift (<8h)"
+    }
+  },
+  {
+    "id": "MIXED_01",
+    "category": "mixed anomaly",
+    "telemetry": {
+      "latency": 2100,
+      "jitter": 12.0,
+      "ploss": 0.10,
+      "cpu": 92,
+      "mem": 3900,
+      "admin": 18,
+      "pfreq": 48.2,
+      "vrip": 45.0,
+      "humid": 75.0,
+      "temp": 12.0,
+      "hours": 346
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 8,
+      "root_cause": "Critical Systemic Fault (Cascading)",
+      "ttf_minutes": 2,
+      "severity": "Critical",
+      "decision": "IMMEDIATE ACTION REQUIRED",
+      "advisory": "STATUS: IMMEDIATE ACTION REQUIRED\nCAUSE: Total Systemic Failure\nRISK: Critical Impact - Cascading signals detected.\nACTION: Immediate physical shutdown.",
+      "failure_probability": 0.99,
+      "failure_window": "Immediate (<15m)"
+    }
+  },
+  {
+    "id": "FALSE_POS_01",
+    "category": "false positive",
+    "telemetry": {
+      "latency": 1050,
+      "jitter": 4.0,
+      "ploss": 0.05,
+      "cpu": 35,
+      "mem": 1500,
+      "admin": 3,
+      "pfreq": 49.8,
+      "vrip": 15.0,
+      "humid": 50.0,
+      "temp": 1.5,
+      "hours": 347
+    },
+    "expected_output": {
+      "is_anomaly": false,
+      "trust_score": 85,
+      "root_cause": "Nominal Operations",
+      "ttf_minutes": 9999,
+      "severity": "Low",
+      "decision": "STABLE",
+      "advisory": "STATUS: STABLE\nCAUSE: Nominal Operations\nRISK: None\nACTION: Standard monitoring in progress.",
+      "failure_probability": 0.05,
+      "failure_window": "Operational (24h+)"
+    }
+  },
+  {
+    "id": "NORMAL_02",
+    "category": "normal",
+    "telemetry": {
+      "latency": 920,
+      "jitter": 1.5,
+      "ploss": 0.01,
+      "cpu": 8,
+      "mem": 1100,
+      "admin": 1,
+      "pfreq": 50.1,
+      "vrip": 12.0,
+      "humid": 44.0,
+      "temp": 1.0,
+      "hours": 348
+    },
+    "expected_output": {
+      "is_anomaly": false,
+      "trust_score": 99,
+      "root_cause": "Nominal Operations",
+      "ttf_minutes": 9999,
+      "severity": "Low",
+      "decision": "STABLE",
+      "advisory": "STATUS: STABLE\nCAUSE: Nominal Operations\nRISK: None\nACTION: No action required.",
+      "failure_probability": 0.01,
+      "failure_window": "Operational (24h+)"
+    }
+  },
+  {
+    "id": "LATENCY_HIGH_02",
+    "category": "high latency",
+    "telemetry": {
+      "latency": 1800,
+      "jitter": 15.0,
+      "ploss": 0.20,
+      "cpu": 25,
+      "mem": 1400,
+      "admin": 2,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.1,
+      "hours": 349
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 62,
+      "root_cause": "IoT-23: Mirai Scanning",
+      "ttf_minutes": 360,
+      "severity": "Medium",
+      "decision": "MONITOR",
+      "advisory": "STATUS: MONITOR\nCAUSE: Unusual Network Scanning\nRISK: Medium Impact\nACTION: Monitor external load.",
+      "failure_probability": 0.25,
+      "failure_window": "Next Shift (<8h)"
+    }
+  },
+  {
+    "id": "DEVICE_DEGRAD_02",
+    "category": "device degradation",
+    "telemetry": {
+      "latency": 980,
+      "jitter": 3.0,
+      "ploss": 0.04,
+      "cpu": 75,
+      "mem": 2800,
+      "admin": 1,
+      "pfreq": 48.5,
+      "vrip": 22.0,
+      "humid": 42.0,
+      "temp": 5.0,
+      "hours": 350
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 58,
+      "root_cause": "Panasonic: Phase L3 Instability",
+      "ttf_minutes": 90,
+      "severity": "High",
+      "decision": "PREVENTIVE ACTION",
+      "advisory": "STATUS: PREVENTIVE ACTION\nCAUSE: Power Supply Instability\nRISK: High Impact\nACTION: Switch to backup power.",
+      "failure_probability": 0.55,
+      "failure_window": "Near Term (<1h)"
+    }
+  },
+  {
+    "id": "USER_SPIKE_02",
+    "category": "user spike",
+    "telemetry": {
+      "latency": 1350,
+      "jitter": 8.0,
+      "ploss": 0.08,
+      "cpu": 60,
+      "mem": 2500,
+      "admin": 12,
+      "pfreq": 50.0,
+      "vrip": 14.0,
+      "humid": 45.0,
+      "temp": 1.2,
+      "hours": 351
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 48,
+      "root_cause": "IoT-23: C&C Heartbeat Hijack",
+      "ttf_minutes": 60,
+      "severity": "High",
+      "decision": "PREVENTIVE ACTION",
+      "advisory": "STATUS: PREVENTIVE ACTION\nCAUSE: Unauthorized Device Communication\nRISK: High Impact\nACTION: Isolate hardware gateway.",
+      "failure_probability": 0.65,
+      "failure_window": "Near Term (<1h)"
+    }
+  },
+  {
+    "id": "NET_DROP_02",
+    "category": "network drop",
+    "telemetry": {
+      "latency": 3200,
+      "jitter": 35.0,
+      "ploss": 0.45,
+      "cpu": 12,
+      "mem": 1100,
+      "admin": 0,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.0,
+      "hours": 352
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 35,
+      "root_cause": "IoT-23: Mirai Scanning",
+      "ttf_minutes": 30,
+      "severity": "High",
+      "decision": "PREVENTIVE ACTION",
+      "advisory": "STATUS: PREVENTIVE ACTION\nCAUSE: Network Scan Saturation\nRISK: High Impact\nACTION: Refresh encrypted credentials.",
+      "failure_probability": 0.85,
+      "failure_window": "Near Term (<1h)"
+    }
+  },
+  {
+    "id": "SENSOR_FAIL_02",
+    "category": "sensor failure",
+    "telemetry": {
+      "latency": 950,
+      "jitter": 2.0,
+      "ploss": 0.01,
+      "cpu": 15,
+      "mem": 1150,
+      "admin": 1,
+      "pfreq": 50.0,
+      "vrip": 0.0,
+      "humid": 45.0,
+      "temp": 1.1,
+      "hours": 353
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 75,
+      "root_cause": "Panasonic: Optical Calibration Drift",
+      "ttf_minutes": 500,
+      "severity": "Medium",
+      "decision": "MONITOR",
+      "advisory": "STATUS: MONITOR\nCAUSE: Power Metric Calibration Error\nRISK: Medium Impact\nACTION: Standard hardware diagnostic.",
+      "failure_probability": 0.15,
+      "failure_window": "Operational (24h+)"
+    }
+  },
+  {
+    "id": "MIXED_02",
+    "category": "mixed anomaly",
+    "telemetry": {
+      "latency": 2800,
+      "jitter": 25.0,
+      "ploss": 0.30,
+      "cpu": 98,
+      "mem": 4096,
+      "admin": 30,
+      "pfreq": 47.5,
+      "vrip": 65.0,
+      "humid": 95.0,
+      "temp": 45.0,
+      "hours": 354
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 3,
+      "root_cause": "Critical Systemic Fault (Cascading)",
+      "ttf_minutes": 1,
+      "severity": "Critical",
+      "decision": "IMMEDIATE ACTION REQUIRED",
+      "advisory": "STATUS: IMMEDIATE ACTION REQUIRED\nCAUSE: Total Systemic Failure\nRISK: Terminal Impact\nACTION: Manual physical isolation.",
+      "failure_probability": 0.99,
+      "failure_window": "Immediate (<15m)"
+    }
+  },
+  {
+    "id": "FALSE_POS_02",
+    "category": "false positive",
+    "telemetry": {
+      "latency": 1200,
+      "jitter": 6.0,
+      "ploss": 0.08,
+      "cpu": 45,
+      "mem": 2000,
+      "admin": 5,
+      "pfreq": 49.5,
+      "vrip": 18.0,
+      "humid": 55.0,
+      "temp": 2.1,
+      "hours": 355
+    },
+    "expected_output": {
+      "is_anomaly": false,
+      "trust_score": 82,
+      "root_cause": "Nominal Operations",
+      "ttf_minutes": 9999,
+      "severity": "Low",
+      "decision": "STABLE",
+      "advisory": "STATUS: STABLE\nCAUSE: Transient Load Spike\nRISK: None\nACTION: No action required.",
+      "failure_probability": 0.08,
+      "failure_window": "Operational (24h+)"
+    }
+  },
+  {
+    "id": "NORMAL_03",
+    "category": "normal",
+    "telemetry": {
+      "latency": 940,
+      "jitter": 1.8,
+      "ploss": 0.01,
+      "cpu": 10,
+      "mem": 1120,
+      "admin": 1,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 44.5,
+      "temp": 1.0,
+      "hours": 356
+    },
+    "expected_output": {
+      "is_anomaly": false,
+      "trust_score": 98,
+      "root_cause": "Nominal Operations",
+      "ttf_minutes": 9999,
+      "severity": "Low",
+      "decision": "STABLE",
+      "advisory": "STATUS: STABLE\nCAUSE: Nominal Operations\nRISK: None\nACTION: No action required.",
+      "failure_probability": 0.01,
+      "failure_window": "Operational (24h+)"
+    }
+  },
+  {
+    "id": "LATENCY_HIGH_03",
+    "category": "high latency",
+    "telemetry": {
+      "latency": 2600,
+      "jitter": 18.0,
+      "ploss": 0.25,
+      "cpu": 22,
+      "mem": 1350,
+      "admin": 3,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.1,
+      "hours": 357
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 52,
+      "root_cause": "IoT-23: Mirai Scanning",
+      "ttf_minutes": 45,
+      "severity": "High",
+      "decision": "PREVENTIVE ACTION",
+      "advisory": "STATUS: PREVENTIVE ACTION\nCAUSE: Massive Network Saturation\nRISK: High Impact\nACTION: Activate firewall throttling.",
+      "failure_probability": 0.78,
+      "failure_window": "Near Term (<1h)"
+    }
+  },
+  {
+    "id": "DEVICE_DEGRAD_03",
+    "category": "device degradation",
+    "telemetry": {
+      "latency": 955,
+      "jitter": 2.5,
+      "ploss": 0.03,
+      "cpu": 90,
+      "mem": 4000,
+      "admin": 1,
+      "pfreq": 48.0,
+      "vrip": 35.0,
+      "humid": 40.0,
+      "temp": 28.0,
+      "hours": 358
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 38,
+      "root_cause": "Panasonic: Heat Sink Failure",
+      "ttf_minutes": 15,
+      "severity": "Critical",
+      "decision": "IMMEDIATE ACTION REQUIRED",
+      "advisory": "STATUS: IMMEDIATE ACTION REQUIRED\nCAUSE: Critical Thermal Excursion\nRISK: High Impact\nACTION: Immediate peripheral throttle.",
+      "failure_probability": 0.92,
+      "failure_window": "Immediate (<15m)"
+    }
+  },
+  {
+    "id": "USER_SPIKE_03",
+    "category": "user spike",
+    "telemetry": {
+      "latency": 1150,
+      "jitter": 3.0,
+      "ploss": 0.03,
+      "cpu": 55,
+      "mem": 3000,
+      "admin": 55,
+      "pfreq": 50.0,
+      "vrip": 12.0,
+      "humid": 45.0,
+      "temp": 1.2,
+      "hours": 359
+    },
+    "expected_output": {
+      "is_anomaly": true,
+      "trust_score": 15,
+      "root_cause": "IoT-23: Brute Force Entry",
+      "ttf_minutes": 5,
+      "severity": "Critical",
+      "decision": "IMMEDIATE ACTION REQUIRED",
+      "advisory": "STATUS: IMMEDIATE ACTION REQUIRED\nCAUSE: Session Hijack Attempt\nRISK: High Impact\nACTION: Lock administrative interface.",
+      "failure_probability": 0.98,
+      "failure_window": "Immediate (<15m)"
+    }
+  }
+]

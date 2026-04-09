@@ -89,3 +89,31 @@ export async function analyzeTelemetry(data: TelemetryData): Promise<AnalysisRes
     };
   }
 }
+
+const CHAT_ENDPOINT = (import.meta.env.VITE_ML_ENDPOINT || '').includes('/analyze')
+  ? (import.meta.env.VITE_ML_ENDPOINT as string).replace('/analyze', '/chat')
+  : '/api/chat';
+
+/**
+ * Sends a message to the Gemini-powered TrustOps AI chat.
+ * Provides the current telemetry and analysis as context for grounding.
+ */
+export async function chatWithAI(message: string, context: { telemetry: any, analysis: any }): Promise<string> {
+  try {
+    const response = await fetch(CHAT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, ...context })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Chat API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result.response;
+  } catch (error) {
+    console.error('[API] Chat failed:', error);
+    return "I am currently unable to reach the intelligence core. Please refer to the remediation advisory for instructions.";
+  }
+}

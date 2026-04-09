@@ -79,7 +79,7 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
                 {/* Score Node */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className={`text-base font-black tabular-nums ${s.text}`} style={{ textShadow: `0 0 10px ${s.ring}44` }}>
-                    {score}
+                    {Math.round(score)}
                   </span>
                 </div>
               </div>

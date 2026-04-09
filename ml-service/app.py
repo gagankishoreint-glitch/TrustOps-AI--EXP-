@@ -158,6 +158,15 @@ def get_severity_and_action(root_cause: str, is_anomaly: bool):
 
 # ─── Endpoints ─────────────────────────────────────────────────────────
 
+@app.get("/")
+def root():
+    return {
+        "service": "TrustOps AI Intelligence Core",
+        "status": "online",
+        "documentation": "/docs",
+        "note": "Front-end dashboard is located at http://localhost:5173"
+    }
+
 @app.get("/health")
 def health():
     return {"status": "online", "models": IF_MODEL is not None}

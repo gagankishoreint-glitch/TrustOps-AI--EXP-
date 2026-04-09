@@ -167,11 +167,6 @@ export default function Home() {
       // Show Temporary Feedback Banner
       setEventBannerVisible(true);
       setTimeout(() => setEventBannerVisible(false), 2000);
-
-      // Auto-open Panel (only if not already open)
-      if (!showInspector) {
-        setShowInspector(true);
-      }
     }
     
     prevHasAnomaly.current = hasAnomaly;

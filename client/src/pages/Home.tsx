@@ -383,7 +383,11 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col border-b md:border-b-0 md:border-r border-white/5 p-4 gap-4 bg-[#0a0f18] order-1 md:order-2">
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 flex flex-col items-center order-1">
+              <div className={`bg-white/[0.02] border rounded-2xl p-4 md:p-6 flex flex-col items-center order-1 transition-all duration-500 ${
+                trustScore < 60 ? 'shadow-[0_0_40px_rgba(239,68,68,0.2)] border-red-500/40 animate-pulse' : 
+                trustScore < 80 ? 'shadow-[0_0_40px_rgba(245,158,11,0.2)] border-amber-500/40 animate-pulse' : 
+                'border-white/5'
+              }`}>
                 <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p>
                 <div className="scale-90 md:scale-100"><TrustScoreGauge score={trustScore} /></div>
                 
@@ -431,7 +435,9 @@ export default function Home() {
                 const confidence = recentAnomalies[0]?.hybrid_ml_context?.confidence ?? (trustScore < 80 ? Math.round(100 - (trustScore * 0.4)) : 98);
                 const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
                 return (
-                  <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-lg shadow-black/20">
+                  <div className={`bg-white/[0.02] border rounded-2xl p-4 transition-all duration-500 ${
+                    hasAnomaly ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/10' : 'border-white/5 shadow-lg shadow-black/20'
+                  }`}>
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} />
                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Decision Node</p>

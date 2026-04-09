@@ -44,7 +44,11 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
   const ttf = predictedTTF;
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
+    <div className={`bg-white/[0.02] border rounded-2xl p-4 transition-all duration-500 ${
+      currentScore < 60 ? 'shadow-[0_0_40px_rgba(239,68,68,0.2)] border-red-500/40 animate-pulse' : 
+      currentScore < 80 ? 'shadow-[0_0_40px_rgba(245,158,11,0.2)] border-amber-500/40 animate-pulse' : 
+      'border-white/[0.07]'
+    }`}>
       {ttf !== null && (
         <div className={`mb-4 p-3 rounded-xl border ${ttfStyle(ttf).bg} ${ttfStyle(ttf).border} flex items-center justify-between`}>
           <div>

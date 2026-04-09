@@ -320,9 +320,9 @@ export default function Home() {
           )}
 
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 h-full">
-            <div className={`w-2 h-2 rounded-full ${isDemoMode ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
-              {isDemoMode ? 'Demo Cycle Active' : isConnected ? 'Live Connection' : 'Syncing...'}
+            <div className={`w-2 h-2 rounded-full animate-pulse ${isDemoMode ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
+            <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${isDemoMode ? 'text-amber-400/80' : 'text-emerald-400/80'}`}>
+              {isDemoMode ? 'SIMULATED DEMO MODE' : isConnected ? 'LIVE ML PREDICTION ACTIVE' : 'Syncing...'}
             </span>
             <div className="h-4 w-[1px] bg-white/10 mx-1" />
             <button

@@ -56,7 +56,36 @@ export default function Home() {
     return params.get('demo') !== 'false';
   }, []);
 
+  const [targetTrustScore, setTargetTrustScore] = useState(95);
   const [trustScore, setTrustScore] = useState(95);
+
+  useEffect(() => {
+    if (trustScore === targetTrustScore) return;
+    
+    let startTime: number;
+    let animId: number;
+    const startScore = trustScore;
+    const duration = 500;
+
+    const tick = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      // cubic easeOut
+      const ease = 1 - Math.pow(1 - progress, 3);
+      
+      setTrustScore(startScore + (targetTrustScore - startScore) * ease);
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(tick);
+      } else {
+        setTrustScore(targetTrustScore);
+      }
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [targetTrustScore]);
+
   const [trustScores, setTrustScores] = useState<TrustScores>({
     operational: 100, security: 100, behavior: 100, performance: 100
   });
@@ -263,7 +292,7 @@ export default function Home() {
         setTrustScores({ operational: ops, security: sec, performance: perf, behavior: behav });
 
         const mlScore = ml.trust_score ?? 95;
-        setTrustScore(mlScore);
+        setTargetTrustScore(mlScore);
         setPredictedTTF(ml.is_anomaly ? (ml.ttf_minutes ?? null) : null);
 
         if (ml.is_anomaly) {
@@ -314,7 +343,7 @@ export default function Home() {
           .catch(err => {
             console.warn("ML Offline, falling back to local heuristic.", err);
             setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
-            setTrustScore(Math.round(ops * 0.4 + sec * 0.6));
+            setTargetTrustScore(Math.round(ops * 0.4 + sec * 0.6));
             setIsAnalyzing(false);
           });
       }

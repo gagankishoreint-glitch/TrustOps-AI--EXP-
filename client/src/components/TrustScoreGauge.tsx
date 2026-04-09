@@ -64,12 +64,12 @@ export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
           <motion.g
             animate={{ rotate: needleDeg }}
             transition={spring}
-            style={{ transformOrigin: `${CX}px ${CY}px` }}
+            style={{ originX: `${CX}px`, originY: `${CY}px` }}
           >
             <motion.g
               animate={{ rotate: [-0.4, 0.4] }}
               transition={{ repeat: Infinity, duration: 0.12, repeatType: 'mirror', ease: 'linear' }}
-              style={{ transformOrigin: `${CX}px ${CY}px` }}
+              style={{ originX: `${CX}px`, originY: `${CY}px` }}
             >
               {/* Main shaft pointing right */}
               <line x1={CX} y1={CY} x2={CX + R - 8} y2={CY}

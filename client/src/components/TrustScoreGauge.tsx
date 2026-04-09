@@ -60,41 +60,18 @@ export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
               />
             );
           })}
-          {/* Needle */}
-          <motion.g
-            animate={{ rotate: needleDeg }}
-            transition={spring}
-            style={{ originX: `${CX}px`, originY: `${CY}px` }}
-          >
-            <motion.g
-              animate={{ rotate: [-0.4, 0.4] }}
-              transition={{ repeat: Infinity, duration: 0.12, repeatType: 'mirror', ease: 'linear' }}
-              style={{ originX: `${CX}px`, originY: `${CY}px` }}
-            >
-              {/* Main shaft pointing right */}
-              <line x1={CX} y1={CY} x2={CX + R - 8} y2={CY}
-                stroke="#f8fafc" strokeWidth="2" strokeLinecap="round"
-              />
-              {/* Counterweight */}
-              <line x1={CX} y1={CY} x2={CX - 15} y2={CY}
-                stroke="#64748b" strokeWidth="4" strokeLinecap="round"
-              />
-            </motion.g>
-          </motion.g>
-          {/* Hub */}
-          <circle cx={CX} cy={CY} r="7" fill="#0f172a" stroke="#1e293b" strokeWidth="2" />
-          <circle cx={CX} cy={CY} r="3" fill={clr.stroke} style={{ filter: `drop-shadow(0 0 4px ${clr.glow})` }} />
+          {/* Needle and Hub removed for a cleaner look */}
         </svg>
 
-        {/* Score number — sits above the arc center, separated from needle */}
-        <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: '26%' }}>
+        {/* Score number — perfectly centered in the HUD arc */}
+        <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: '22%' }}>
           <motion.span
             key={Math.round(clamped)}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
-            className={`text-5xl font-black tabular-nums tracking-tight ${clr.text}`}
-            style={{ fontVariantNumeric: 'tabular-nums', textShadow: `0 0 20px ${clr.glow}44` }}
+            className={`text-6xl font-black tabular-nums tracking-tighter ${clr.text}`}
+            style={{ fontVariantNumeric: 'tabular-nums', textShadow: `0 0 15px ${clr.glow}22` }}
           >
             {Math.round(score)}
           </motion.span>

@@ -256,20 +256,12 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
-              <Card icon={Search} label="Likely Cause" value={insight.likelyCause} color="text-orange-400" />
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex flex-col items-center justify-center">
-                <Target className={`w-4 h-4 md:w-5 md:h-5 mb-1 ${feedback === 'improving' ? 'text-emerald-400 animate-ping' : 'text-emerald-400'}`} />
-                <p className="text-[8px] md:text-[9px] uppercase font-bold tracking-widest text-emerald-400 mb-0.5">Confidence</p>
-                <p className="text-lg md:text-2xl font-black text-emerald-400 tabular-nums">{insight.confidence}%</p>
-              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* ── RLHF Feedback ── */}
-      {insight && (
+        {/* ── RLHF Feedback ── */}
+        {insight && (
         <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between">
           <div>
             <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">RLHF Feedback Loop</p>
@@ -332,47 +324,7 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
         </div>
 
         {/* ── Predictive Analysis Layer (v2.3) ── */}
-        {insight && insight.failureProbability !== undefined && (
-          <div className="mb-4 space-y-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-3.5 h-3.5 text-purple-400" />
-              <span className="text-[10px] text-purple-400 uppercase font-black tracking-widest">Predictive Failure Forecast</span>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3">
-                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Probability of Failure</p>
-                <div className="flex items-end gap-1.5">
-                   <p className={`text-2xl font-black tabular-nums ${
-                     (insight.failureProbability ?? 0) > 0.7 ? 'text-rose-500' : 
-                     (insight.failureProbability ?? 0) > 0.3 ? 'text-amber-500' : 'text-emerald-500'
-                   }`}>
-                     {Math.round((insight.failureProbability ?? 0) * 100)}%
-                   </p>
-                </div>
-              </div>
-              
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3">
-                <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest mb-1">Risk Trajectory</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                   {insight.riskTrajectory === 'Degrading' ? (
-                     <ShieldAlert className="w-4 h-4 text-rose-500" />
-                   ) : (
-                     <CheckCircle className="w-4 h-4 text-emerald-500" />
-                   )}
-                   <p className={`text-xs font-bold uppercase ${
-                     insight.riskTrajectory === 'Degrading' ? 'text-rose-400' : 'text-emerald-400'
-                   }`}>{insight.riskTrajectory}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20 rounded-xl p-3">
-               <p className="text-[9px] text-purple-400/70 uppercase font-bold tracking-widest mb-1">Failure Window Prediction</p>
-               <p className="text-sm font-semibold text-purple-300">{insight.failureWindow}</p>
-            </div>
-          </div>
-        )}
+        {/* Predictive sections moved to central Intelligence Brief */}
         
         {insight && insight.executiveAdvisory && (
           <div className="mb-4 bg-white/[0.04] border border-white/[0.08] rounded-xl p-4 overflow-hidden relative group">

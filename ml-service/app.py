@@ -20,8 +20,9 @@ app = FastAPI(title="TrustOps AI Service", version="2.1.0")
 # Enable CORS for frontend and deployment environments
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["POST", "GET"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -228,6 +229,8 @@ def analyze(body: AnalysisInput):
     elif ttf_minutes < 60: failure_window = "Near Term (<1h)"
     elif ttf_minutes < 480: failure_window = "Next Shift (<8h)"
     elif ttf_minutes < 10000: failure_window = "Operational (24h+)"
+
+    recommended_action = action # Map classification action to predictive spec
 
     # Business Logic override for Healthy state
     if not is_anomaly:

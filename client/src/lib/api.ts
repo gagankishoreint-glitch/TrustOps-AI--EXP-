@@ -44,50 +44,27 @@ export interface AnalysisResult {
  * Sends telemetry to the external ML microservice for real-time inference.
  * Maps high-fidelity frontend telemetry to the 4-dimensional conceptual API.
  */
-export async function analyzeTelemetry(data: TelemetryData): Promise<AnalysisResult> {
-  // Mapping the 11-dimensional telemetry to the 4-input spec required by ml-service v2.1
+export async function analyzeTelemetry(data: TelemetryData) {
   const payload = {
     latency:          data.latency,
-    device_frequency: data.pfreq,         // Map Power Freq to conceptual Device Freq
-    user_behaviour:   data.admin,         // Map Admin to conceptual User Behaviour
-    device_health:    data.cpu,           // Map CPU to conceptual Device Health
-    trend:            data.trend || 0.0   // v2.3 Predictive signal
+    device_frequency: data.pfreq,         
+    user_behaviour:   data.admin,         
+    device_health:    data.cpu,           
+    trend:            data.trend || 0.0   
   };
 
-  try {
-    const response = await fetch(ML_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+  console.log("Sending telemetry", payload);
+  const res = await fetch("http://127.0.0.1:8000/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-    if (!response.ok) {
-      throw new Error(`ML API error: ${response.statusText}`);
-    }
+  if (!res.ok) throw new Error("ML failed");
 
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.error('[API] Analysis failed:', error);
-    // Return a safe fallback mapping for offline/error states
-    return {
-      is_anomaly: false,
-      anomaly_score: 0.0,
-      trust_score: 95,
-      root_cause: 'Station Offline',
-      ttf_minutes: 9999,
-      severity: 'None',
-      action: 'Check connectivity to ML service.',
-      decision: 'Stable',
-      advisory: 'Telemetry station offline. Running on local cache.',
-      risk_level: 'Low',
-      future_risk: 'System Stable',
-      failure_probability: 0.0,
-      risk_trajectory: 'Stable',
-      failure_window: 'Operational (24h+)',
-      recommended_action: 'No action required.'
-    };
-  }
+  const response = await res.json();
+  console.log("ML response", response);
+  return response;
 }
 
 const CHAT_ENDPOINT = (import.meta.env.VITE_ML_ENDPOINT || '').includes('/analyze')

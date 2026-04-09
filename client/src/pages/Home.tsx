@@ -47,6 +47,7 @@ export default function Home() {
   const [manualOverride, setManualOverride] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showInspector, setShowInspector] = useState(false);
+  const [isMlOffline, setIsMlOffline] = useState(false);
 
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
@@ -105,7 +106,9 @@ export default function Home() {
 
   const [bannerVisible, setBannerVisible] = useState(false);
   const [bannerType, setBannerType] = useState<'red' | 'amber' | 'blue'>('blue');
+  const [eventBannerVisible, setEventBannerVisible] = useState(false);
   const wasCriticalOrWarning = useRef(false);
+  const prevHasAnomaly = useRef(false);
 
   useEffect(() => {
     if (trustScore < 60) {
@@ -153,22 +156,24 @@ export default function Home() {
 
   const prevDecision = useRef<string | null>(null);
 
-  // Auto-open Model Inspector on Anomaly
+  // Auto-open Model Inspector only on False -> True transition
   useEffect(() => {
-    const mlContext = recentAnomalies[0]?.hybrid_ml_context;
-    const currentDecision = mlContext?.decision;
+    const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
     
-    if (currentDecision && trustScore < 80 && currentDecision !== prevDecision.current) {
-      setShowInspector(true);
-      const timer = setTimeout(() => setShowInspector(false), 3000);
-      prevDecision.current = currentDecision;
-      return () => clearTimeout(timer);
+    // Detect Transition
+    if (!prevHasAnomaly.current && hasAnomaly && trustScore < 80) {
+      // Show Temporary Feedback Banner
+      setEventBannerVisible(true);
+      setTimeout(() => setEventBannerVisible(false), 2000);
+
+      // Auto-open Panel (only if not already open)
+      if (!showInspector) {
+        setShowInspector(true);
+      }
     }
     
-    if (!currentDecision && trustScore >= 80) {
-      prevDecision.current = null;
-    }
-  }, [recentAnomalies, trustScore]);
+    prevHasAnomaly.current = hasAnomaly;
+  }, [recentAnomalies, trustScore, showInspector]);
 
   // --- Demo Mode Rotation Logic ---
   useEffect(() => {
@@ -336,15 +341,17 @@ export default function Home() {
           .then((res) => {
             processResult(res);
             setIsAnalyzing(false);
+            setIsMlOffline(false);
             setShowPredictionUpdate(true);
             if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
-            updateTimeoutRef.current = setTimeout(() => setShowPredictionUpdate(false), 800); // Quick fade out before next 1000ms tick
+            updateTimeoutRef.current = setTimeout(() => setShowPredictionUpdate(false), 800);
           })
           .catch(err => {
-            console.warn("ML Offline, falling back to local heuristic.", err);
-            setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
-            setTargetTrustScore(Math.round(ops * 0.4 + sec * 0.6));
+            console.error("ML OFFLINE ERROR:", err);
+            setIsMlOffline(true);
             setIsAnalyzing(false);
+            setBannerType('red');
+            setBannerVisible(true);
           });
       }
     }, 1000);
@@ -390,9 +397,9 @@ export default function Home() {
           )}
 
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 h-full">
-            <div className={`w-2 h-2 rounded-full animate-pulse ${isDemoMode ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
-            <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${isDemoMode ? 'text-amber-400/80' : 'text-emerald-400/80'}`}>
-              {isDemoMode ? 'SIMULATED DEMO MODE' : isConnected ? 'LIVE ML PREDICTION ACTIVE' : 'Syncing...'}
+            <div className={`w-2 h-2 rounded-full animate-pulse ${isMlOffline ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : isDemoMode ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
+            <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${isMlOffline ? 'text-red-400' : isDemoMode ? 'text-amber-400/80' : 'text-emerald-400/80'}`}>
+              {isMlOffline ? 'ML OFFLINE' : isDemoMode ? 'SIMULATED DEMO MODE' : isConnected ? 'ML ACTIVE' : 'Syncing...'}
             </span>
             <div className="h-4 w-[1px] bg-white/10 mx-1" />
             <button
@@ -412,6 +419,18 @@ export default function Home() {
         </div>
       </header>
 
+      {/* ML Triggered Event Banner (Fades after 2s) */}
+      {eventBannerVisible && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="bg-emerald-500/90 backdrop-blur-md border border-emerald-400/50 text-white px-6 py-2 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center gap-3">
+            <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
+              AI detected anomaly — Predictive engine engaged
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Incident Banner */}
       <div 
         className={`shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${
@@ -425,7 +444,8 @@ export default function Home() {
         }`}>
           <div className={`w-2 h-2 rounded-full animate-pulse ${bannerType === 'blue' ? 'bg-white' : 'bg-black'}`} />
           <span>
-            {bannerType === 'red' ? 'CRITICAL INCIDENT — Immediate Action Required' :
+            {isMlOffline ? 'ML CORE OFFLINE — Predictive Failure Detection Halted' :
+             bannerType === 'red' ? 'CRITICAL INCIDENT — Immediate Action Required' :
              bannerType === 'amber' ? 'Warning — Degradation Detected' :
              'System Stable'}
           </span>
@@ -468,67 +488,76 @@ export default function Home() {
                 <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p>
                 <div className="scale-90 md:scale-100"><TrustScoreGauge score={trustScore} /></div>
                 
+                {/* Integrated Intelligence Brief Card */}
                 {(() => {
-                  const confidence = recentAnomalies[0]?.hybrid_ml_context?.confidence ?? (trustScore < 80 ? Math.round(100 - (trustScore * 0.4)) : 98);
                   const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
-                  return (
-                    <div className="w-full flex flex-col gap-1.5 px-2 mt-4">
-                       <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-gray-500">
-                         <span>AI Confidence</span>
-                         <span className={hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}>{confidence}%</span>
-                       </div>
-                       <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                         <div 
-                           className={`h-full transition-all duration-1000 ease-out ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} 
-                           style={{ width: `${confidence}%` }} 
-                         />
-                       </div>
-                    </div>
-                  );
-                })()}
+                  const confidence = recentAnomalies[0]?.hybrid_ml_context?.confidence ?? (trustScore < 80 ? Math.round(100 - (trustScore * 0.4)) : 98);
+                  
+                  if (!hasAnomaly && trustScore >= 80) return null;
 
-                {recentAnomalies[0]?.hybrid_ml_context?.root_cause && trustScore < 80 && (() => {
                   const rawSeverity = (recentAnomalies[0]?.hybrid_ml_context?.severity || (trustScore < 60 ? 'critical' : 'high')).toString().toLowerCase();
                   const impactText = rawSeverity === 'critical' ? 'Store operations at risk' :
                                      rawSeverity === 'high' ? 'Service degradation likely' :
                                      rawSeverity === 'medium' ? 'Monitor performance' :
                                      'No operational risk';
-
                   
+                  // Logic Fix: Don't show "Nominal Operations" if the score is failing
+                  const rootCause = (recentAnomalies[0]?.hybrid_ml_context?.root_cause === "Nominal Operations" && trustScore < 80)
+                    ? "Subsystem failure detected"
+                    : (recentAnomalies[0]?.hybrid_ml_context?.root_cause || "Analyzing behavior...");
+
                   return (
-                    <div className="mt-5 w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <div className="flex flex-col items-center">
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">Likely Cause</p>
-                        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-                          {recentAnomalies[0].hybrid_ml_context.root_cause}
+                    <div className="mt-4 w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 shadow-xl">
+                      {/* Confidence Header */}
+                      <div className="flex flex-col gap-1.5">
+                         <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-gray-500">
+                           <span>AI Confidence</span>
+                           <span className={hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}>{confidence}%</span>
+                         </div>
+                         <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                           <div 
+                             className={`h-full transition-all duration-1000 ease-out ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} 
+                             style={{ width: `${confidence}%` }} 
+                           />
+                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col">
+                          <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-1 opacity-70">Likely Cause</p>
+                          <div className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tight border text-center ${
+                            trustScore < 60 ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                          }`}>
+                            {rootCause}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-1 opacity-70">Business Impact</p>
+                          <div className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tight border text-center ${
+                            rawSeverity === 'critical' ? 'border-red-500/50 text-red-400 bg-red-500/5' : 
+                            rawSeverity === 'high' ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 
+                            'border-blue-500/50 text-blue-400 bg-blue-500/5'
+                          }`}>
+                            {impactText}
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col items-center">
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">Business Impact</p>
-                        <div className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-center border ${
-                          rawSeverity === 'critical' ? 'border-red-500/50 text-red-400 bg-red-500/5' : 
-                          rawSeverity === 'high' ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 
-                          'border-blue-500/50 text-blue-400 bg-blue-500/5'
-                        }`}>
-                          {impactText}
+
+                      {predictedTTF !== null && (
+                        <div className={`p-2.5 rounded-xl border ${predictedTTF <= 30 ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'} flex items-center justify-between`}>
+                          <div className="w-full text-center">
+                            <p className="text-[8px] font-bold uppercase tracking-widest mb-0.5 opacity-60">Predicted Failure Window</p>
+                            <div className="flex items-center justify-center gap-2 font-black">
+                              <Clock className="w-3 h-3 animate-pulse" />
+                              <span className="text-[11px]">Failure in {predictedTTF} min</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })()}
-
-                {predictedTTF !== null && (
-                  <div className={`mt-5 w-full w-full p-3 rounded-xl border ${predictedTTF <= 30 ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'} flex items-center justify-between animate-in fade-in slide-in-from-bottom-2 duration-500`}>
-                    <div className="w-full text-center">
-                      <p className="text-[9px] font-bold uppercase tracking-widest mb-1 opacity-70">Predicted Failure Window</p>
-                      <div className="flex items-center justify-center gap-2 font-black">
-                        <Clock className="w-4 h-4 animate-pulse" />
-                        <span className="text-sm">Failure in {predictedTTF} minutes</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 order-2">
                 <MultiScoreDisplay scores={trustScores} />

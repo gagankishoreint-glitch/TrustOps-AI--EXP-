@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
+
 import { TrustScoreGauge } from '@/components/TrustScoreGauge';
 import { TelemetryCharts } from '@/components/TelemetryCharts';
 import { SecurityCopilot } from '@/components/SecurityCopilot';
@@ -66,6 +68,10 @@ export default function Home() {
   );
   const [recentAnomalies, setRecentAnomalies] = useState<StreamPayload[]>([]);
   const [predictedTTF, setPredictedTTF] = useState<number | null>(null);
+
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showPredictionUpdate, setShowPredictionUpdate] = useState(false);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [bannerVisible, setBannerVisible] = useState(false);
   const [bannerType, setBannerType] = useState<'red' | 'amber' | 'blue'>('blue');
@@ -269,12 +275,20 @@ export default function Home() {
       if (isDemoMode && finalAnalysis) {
         processResult(finalAnalysis);
       } else {
+        setIsAnalyzing(true);
         analyzeTelemetry(telemetryPayload)
-          .then(processResult)
+          .then((res) => {
+            processResult(res);
+            setIsAnalyzing(false);
+            setShowPredictionUpdate(true);
+            if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+            updateTimeoutRef.current = setTimeout(() => setShowPredictionUpdate(false), 800); // Quick fade out before next 1000ms tick
+          })
           .catch(err => {
             console.warn("ML Offline, falling back to local heuristic.", err);
             setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
             setTrustScore(Math.round(ops * 0.4 + sec * 0.6));
+            setIsAnalyzing(false);
           });
       }
     }, 1000);
@@ -440,7 +454,18 @@ export default function Home() {
                   }`}>
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} />
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Decision Node</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex-1">AI Decision Node</p>
+                      
+                      {isAnalyzing ? (
+                        <div className="flex items-center gap-1 text-cyan-400">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span className="text-[8px] font-bold uppercase tracking-widest">Analyzing</span>
+                        </div>
+                      ) : showPredictionUpdate && (
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-400 animate-in fade-in zoom-in duration-300">
+                          ML Prediction Updated
+                        </span>
+                      )}
                     </div>
                     <div className={`text-sm md:text-base font-black uppercase tracking-wide mb-4 ${hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}`}>
                       {recentAnomalies[0]?.hybrid_ml_context?.decision || "System operating normally"}

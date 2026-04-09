@@ -372,6 +372,15 @@ export default function Home() {
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 flex flex-col items-center order-1">
                 <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p>
                 <div className="scale-90 md:scale-100"><TrustScoreGauge score={trustScore} /></div>
+                
+                {recentAnomalies[0]?.hybrid_ml_context?.root_cause && trustScore < 80 && (
+                  <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">Likely Cause:</p>
+                    <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                      {recentAnomalies[0].hybrid_ml_context.root_cause}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 order-2">
                 <MultiScoreDisplay scores={trustScores} />

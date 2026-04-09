@@ -22,6 +22,12 @@ function nodeStyle(score: number) {
   return               { ring: '#ef4444', text: 'text-red-400',   label: 'Critical', bg: 'bg-red-950/40' };
 }
 
+function ttfStyle(ttf: number) {
+  if (ttf < 10) return { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', icon: 'text-red-500' };
+  if (ttf < 30) return { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: 'text-amber-500' };
+  return { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', icon: 'text-blue-500' };
+}
+
 export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(({ currentScore, predictedTTF }) => {
   const p10  = project(currentScore, 10);
   const p30  = project(currentScore, 30);
@@ -39,17 +45,23 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
 
   return (
     <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4">
+      {ttf !== null && (
+        <div className={`mb-4 p-3 rounded-xl border ${ttfStyle(ttf).bg} ${ttfStyle(ttf).border} flex items-center justify-between`}>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Predicted Failure Window</p>
+            <div className={`flex items-center gap-2 font-black ${ttfStyle(ttf).text}`}>
+              <Clock className={`w-4 h-4 ${ttfStyle(ttf).icon} animate-pulse`} />
+              <span className="text-sm">Failure in {ttf} minutes</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
           <TrendingDown className={`w-4 h-4 ${degrading ? 'text-amber-400' : 'text-cyan-400'}`} />
           <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Risk Trajectory</h3>
         </div>
-        {ttf !== null && (
-          <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/30 rounded-full px-3 py-1 animate-pulse">
-            <Clock className="w-3 h-3" />
-            Breach in ~{ttf} min
-          </div>
-        )}
       </div>
 
       {/* Timeline bar */}

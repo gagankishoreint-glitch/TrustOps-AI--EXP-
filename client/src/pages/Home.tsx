@@ -9,6 +9,7 @@ import { PredictiveTimeline } from '@/components/PredictiveTimeline';
 import { FleetView } from '@/components/FleetView';
 import { useShowroomStore } from '@/store/useShowroomStore';
 import { ModelInspector } from '@/components/ModelInspector';
+import { MLPipelineVisual } from '@/components/MLPipelineVisual';
 import { analyzeTelemetry, type TelemetryData, type AnalysisResult } from '@/lib/api';
 import testScenarios from '@/lib/testScenarios.json';
 
@@ -393,6 +394,13 @@ export default function Home() {
                   <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">System Freq</p>
                   <p className="text-lg md:text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length - 1]?.frequency.toFixed(1)} Hz</p>
                 </div>
+              </div>
+              <div className="shrink-0 p-4 border-t border-white/5 bg-[#080c14]">
+                <MLPipelineVisual 
+                  isAnalyzing={isAnalyzing} 
+                  hasAnomaly={!!recentAnomalies[0]?.hybrid_ml_context?.decision} 
+                  showPredictionUpdate={showPredictionUpdate} 
+                />
               </div>
             </div>
 

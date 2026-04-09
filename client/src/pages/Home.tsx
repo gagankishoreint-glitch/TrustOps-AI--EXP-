@@ -390,7 +390,17 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="p-4 order-3 md:order-3 md:overflow-y-auto">
+            <div className="p-4 flex flex-col gap-4 order-3 md:order-3 md:overflow-y-auto">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${recentAnomalies[0]?.hybrid_ml_context?.decision ? 'bg-amber-400' : 'bg-cyan-400'}`} />
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Decision</p>
+                </div>
+                <div className={`text-sm md:text-base font-black uppercase tracking-wide ${recentAnomalies[0]?.hybrid_ml_context?.decision ? 'text-amber-400' : 'text-cyan-400'}`}>
+                  {recentAnomalies[0]?.hybrid_ml_context?.decision || "System operating normally"}
+                </div>
+              </div>
+
               <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
             </div>
           </div>

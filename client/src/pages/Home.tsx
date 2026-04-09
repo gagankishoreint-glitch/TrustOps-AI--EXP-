@@ -550,6 +550,48 @@ export default function Home() {
                 );
               })()}
 
+              {(() => {
+                 const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
+                 if (!hasAnomaly) return null;
+                 
+                 const currentAnomalyLatency = recentAnomalies[0]?.hybrid_ml_context?.telemetry_vector?.latency || 950;
+                 const currentAnomalyAdmin = recentAnomalies[0]?.hybrid_ml_context?.telemetry_vector?.admin || 1;
+                 const currentAnomalyHealth = recentAnomalies[0]?.engine_analysis?.trust_scores?.operational || 100;
+
+                 const latencyDelta = Math.round(currentAnomalyLatency - 950);
+                 const healthDelta = Math.round(currentAnomalyHealth - 100);
+                 const adminDelta = Math.round(currentAnomalyAdmin - 1);
+
+                 return (
+                   <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-lg shadow-black/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Diagnostic Delta (vs Baseline)</p>
+                     
+                     <div className="space-y-2">
+                       <div className="flex justify-between items-center text-[11px] uppercase tracking-wide">
+                         <span className="text-gray-400 font-bold">Latency</span>
+                         <span className={`font-mono font-black ${latencyDelta > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                           {latencyDelta > 0 ? '+' : ''}{latencyDelta}ms
+                         </span>
+                       </div>
+                       
+                       <div className="flex justify-between items-center text-[11px] uppercase tracking-wide">
+                         <span className="text-gray-400 font-bold">Device Health</span>
+                         <span className={`font-mono font-black ${healthDelta < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                           {healthDelta > 0 ? '+' : ''}{healthDelta} pts
+                         </span>
+                       </div>
+                       
+                       <div className="flex justify-between items-center text-[11px] uppercase tracking-wide">
+                         <span className="text-gray-400 font-bold">User Activity</span>
+                         <span className={`font-mono font-black ${adminDelta > 0 ? 'text-amber-400' : 'text-gray-500'}`}>
+                           {adminDelta > 0 ? '+' : ''}{adminDelta} cmds
+                         </span>
+                       </div>
+                     </div>
+                   </div>
+                 );
+              })()}
+
               <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
             </div>
           </div>

@@ -139,7 +139,8 @@ export default function Home() {
   });
   const latencyRef = useRef(950);
 
-  const { updateShowroomScore } = useShowroomStore();
+  const { showrooms, updateShowroomScore } = useShowroomStore();
+  const activeShowroom = activeLocation ? showrooms[activeLocation] : null;
 
   const avgLatency = useMemo(() => {
     if (telemetryWindow.length === 0) return 0;
@@ -621,7 +622,16 @@ export default function Home() {
               })()}
 
 
-              <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
+              <SecurityCopilot 
+                trustScore={trustScore} 
+                recentAnomalies={recentAnomalies} 
+                isDemo={isDemo} 
+                fleetMetadata={activeShowroom ? {
+                  hourlyRevenue: activeShowroom.hourlyRevenue,
+                  fleetTier: activeShowroom.fleetTier,
+                  activeNodes: activeShowroom.activeNodes
+                } : undefined}
+              />
             </div>
           </div>
         )}

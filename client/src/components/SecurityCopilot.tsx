@@ -9,6 +9,11 @@ interface SecurityCopilotProps {
   trustScore: number;
   recentAnomalies: any[];
   isDemo?: boolean;
+  fleetMetadata?: {
+    hourlyRevenue: number;
+    fleetTier: string;
+    activeNodes: number;
+  };
 }
 
 interface Insight {
@@ -133,7 +138,7 @@ const SEVERITY_CFG = {
   Critical: { border: 'border-red-500/40',    bg: 'bg-red-500/10',    text: 'text-red-400',    label: 'CRITICAL' },
 };
 
-export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ trustScore, recentAnomalies }) => {
+export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ trustScore, recentAnomalies, fleetMetadata }) => {
   const [insight,       setInsight]       = useState<Insight | null>(null);
   const [decision,      setDecision]      = useState<'idle' | 'pending' | 'executing' | 'executed'>('idle');
   const [loading,       setLoading]       = useState(false);
@@ -188,7 +193,12 @@ export const SecurityCopilot: React.FC<SecurityCopilotProps> = React.memo(({ tru
   return (
     <div className="flex flex-col gap-3">
       {/* ── Business Impact Analysis (Inject in the Middle) ── */}
-      {insight && <BusinessImpactAnalysis trustScore={trustScore} />}
+      {insight && (
+        <BusinessImpactAnalysis 
+          trustScore={trustScore} 
+          hourlyRevenue={fleetMetadata?.hourlyRevenue}
+        />
+      )}
 
       {/* ── Executive Intelligence Advisory ── */}
       <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4 shadow-xl shadow-black/40">

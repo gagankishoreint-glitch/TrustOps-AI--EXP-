@@ -9,6 +9,8 @@ export interface ShowroomData {
   risk: 'Low' | 'Medium' | 'High' | 'Severe';
   activeNodes: number;
   region: string;
+  hourlyRevenue: number;
+  fleetTier: 'Platinum' | 'Gold' | 'Silver';
 }
 
 export interface HistoryEvent {
@@ -31,10 +33,10 @@ interface ShowroomStore {
 
 export const useShowroomStore = create<ShowroomStore>((set) => ({
   showrooms: {
-    'mumbai':    { id: 'mumbai',    name: 'Mumbai HQ',            city: 'Mumbai',    score: 97, status: 'Healthy', risk: 'Low',    activeNodes: 32, region: 'West India'  },
-    'delhi':     { id: 'delhi',     name: 'Delhi NCR',            city: 'Delhi',     score: 100,status: 'Healthy', risk: 'Low',    activeNodes: 28, region: 'North India' },
-    'bangalore': { id: 'bangalore', name: 'Bangalore Tech Park',  city: 'Bangalore', score: 89, status: 'Stable',  risk: 'Low',    activeNodes: 41, region: 'South India' },
-    'hyderabad': { id: 'hyderabad', name: 'Hyderabad Deccan',     city: 'Hyderabad', score: 78, status: 'Caution', risk: 'Medium', activeNodes: 19, region: 'Deccan'      },
+    'mumbai':    { id: 'mumbai',    name: 'Mumbai HQ',            city: 'Mumbai',    score: 97, status: 'Healthy', risk: 'Low',    activeNodes: 32, region: 'West India',  hourlyRevenue: 75000, fleetTier: 'Platinum' },
+    'delhi':     { id: 'delhi',     name: 'Delhi NCR',            city: 'Delhi',     score: 100,status: 'Healthy', risk: 'Low',    activeNodes: 28, region: 'North India', hourlyRevenue: 52000, fleetTier: 'Platinum' },
+    'bangalore': { id: 'bangalore', name: 'Bangalore Tech Park',  city: 'Bangalore', score: 89, status: 'Stable',  risk: 'Low',    activeNodes: 41, region: 'South India', hourlyRevenue: 48000, fleetTier: 'Gold'     },
+    'hyderabad': { id: 'hyderabad', name: 'Hyderabad Deccan',     city: 'Hyderabad', score: 78, status: 'Caution', risk: 'Medium', activeNodes: 19, region: 'Deccan',      hourlyRevenue: 31000, fleetTier: 'Silver'   },
   },
   fleetHistory: [],
 

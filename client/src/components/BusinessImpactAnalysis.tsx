@@ -4,6 +4,7 @@ import { TrendingDown, Banknote, Timer, BarChart3 } from 'lucide-react';
 
 interface BusinessImpactAnalysisProps {
   trustScore: number;
+  hourlyRevenue?: number;
   latencySpikeDuration?: number;
 }
 
@@ -14,9 +15,10 @@ function downtime(score: number): string {
   return `${Math.round((90 - score) * 2.1)} min`;
 }
 
-function revenue(score: number): string {
+function revenue(score: number, baseRevenue: number): string {
   if (score >= 90) return '₹ 0';
-  const val = (100 - score) * 12400;
+  const riskFactor = (100 - score) / 40; // 0 to 2.5 multiplier
+  const val = Math.round(baseRevenue * riskFactor);
   return `₹ ${val.toLocaleString('en-IN')}`;
 }
 
@@ -27,7 +29,7 @@ function severity(score: number) {
   return               { label: 'Severe Operational Risk', color: 'text-red-400',   border: 'border-red-500/30',   bg: 'bg-red-500/5' };
 }
 
-export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ trustScore }) => {
+export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ trustScore, hourlyRevenue = 12400 }) => {
   const sev = severity(trustScore);
   const isNominal = trustScore >= 90;
 
@@ -51,7 +53,7 @@ export const BusinessImpactAnalysis: React.FC<BusinessImpactAnalysisProps> = ({ 
         <div className="grid grid-cols-3 gap-2">
           {[
             { icon: Timer,      label: 'Est. Downtime',     value: downtime(trustScore),  color: 'text-amber-400' },
-            { icon: Banknote,   label: 'Revenue Risk',      value: revenue(trustScore),   color: 'text-red-400'   },
+            { icon: Banknote,   label: 'Revenue Risk',      value: revenue(trustScore, hourlyRevenue),   color: 'text-red-400'   },
             { icon: TrendingDown, label: 'Recovery Time',   value: `${Math.round((100 - trustScore) * 0.6)} min`, color: 'text-violet-400' },
           ].map(({ icon: Icon, label, value, color }) => (
             <div key={label} className="bg-black/30 border border-white/[0.04] rounded-xl p-2.5 text-center">

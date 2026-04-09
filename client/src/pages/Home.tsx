@@ -98,6 +98,7 @@ export default function Home() {
     }
   }, [trustScore]);
 
+  const liveTickRef = useRef(0);
   const trustHistoryRef = useRef<number[]>([]);
   const anomalyEngine = useRef<{ active: boolean; type: string; tick: number }>({
     active: false, type: '', tick: 0
@@ -161,6 +162,8 @@ export default function Home() {
 
     // Static Simulation Logic (Standalone Demo)
     const interval = setInterval(() => {
+      if (!isDemoMode) liveTickRef.current += 1;
+      
       const engine = anomalyEngine.current;
       if (engine.active) {
         engine.tick -= 1;
@@ -168,7 +171,11 @@ export default function Home() {
           engine.active = false;
           latencyRef.current = 950;
         }
-      } else if (Math.random() < 0.04) {
+      } else if (!isDemoMode && liveTickRef.current % 15 === 0) {
+        engine.active = true;
+        engine.tick = 5; // Sustain anomaly for 5s to allow UI rendering
+        engine.type = 'behavior'; // Triggers latency, cpu, and admin spikes
+      } else if (isDemoMode && Math.random() < 0.04) {
         engine.active = true;
         engine.tick = 30;
         const types = ['behavior', 'operational', 'performance'];

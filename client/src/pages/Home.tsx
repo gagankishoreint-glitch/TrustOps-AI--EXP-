@@ -391,15 +391,34 @@ export default function Home() {
             </div>
 
             <div className="p-4 flex flex-col gap-4 order-3 md:order-3 md:overflow-y-auto">
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${recentAnomalies[0]?.hybrid_ml_context?.decision ? 'bg-amber-400' : 'bg-cyan-400'}`} />
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Decision</p>
-                </div>
-                <div className={`text-sm md:text-base font-black uppercase tracking-wide ${recentAnomalies[0]?.hybrid_ml_context?.decision ? 'text-amber-400' : 'text-cyan-400'}`}>
-                  {recentAnomalies[0]?.hybrid_ml_context?.decision || "System operating normally"}
-                </div>
-              </div>
+              {(() => {
+                const confidence = recentAnomalies[0]?.hybrid_ml_context?.confidence ?? (trustScore < 80 ? Math.round(100 - (trustScore * 0.4)) : 98);
+                const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
+                return (
+                  <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-lg shadow-black/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} />
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">AI Decision Node</p>
+                    </div>
+                    <div className={`text-sm md:text-base font-black uppercase tracking-wide mb-4 ${hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}`}>
+                      {recentAnomalies[0]?.hybrid_ml_context?.decision || "System operating normally"}
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-gray-500">
+                        <span>Inference Confidence</span>
+                        <span className={hasAnomaly ? 'text-amber-400' : 'text-cyan-400'}>{confidence}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-1000 ease-out ${hasAnomaly ? 'bg-amber-400' : 'bg-cyan-400'}`} 
+                          style={{ width: `${confidence}%` }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <SecurityCopilot trustScore={trustScore} recentAnomalies={recentAnomalies} isDemo={isDemo} />
             </div>

@@ -305,6 +305,20 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4">
+          {isDemoMode && (
+            <select
+              className="hidden sm:block bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-cyan-400 outline-none hover:bg-white/5 transition-colors"
+              value={currentScenarioIndex}
+              onChange={(e) => setCurrentScenarioIndex(Number(e.target.value))}
+            >
+              <option value={0}>Normal Baseline</option>
+              <option value={1}>Network Degradation</option>
+              <option value={2}>Device Failure</option>
+              <option value={3}>Behavior Spike</option>
+              <option value={6}>Critical Fault</option>
+            </select>
+          )}
+
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 h-full">
             <div className={`w-2 h-2 rounded-full ${isDemoMode ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">

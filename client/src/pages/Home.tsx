@@ -387,14 +387,36 @@ export default function Home() {
                 <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Industrial Trust Composite</p>
                 <div className="scale-90 md:scale-100"><TrustScoreGauge score={trustScore} /></div>
                 
-                {recentAnomalies[0]?.hybrid_ml_context?.root_cause && trustScore < 80 && (
-                  <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">Likely Cause:</p>
-                    <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-                      {recentAnomalies[0].hybrid_ml_context.root_cause}
+                {recentAnomalies[0]?.hybrid_ml_context?.root_cause && trustScore < 80 && (() => {
+                  const rawSeverity = (recentAnomalies[0]?.hybrid_ml_context?.severity || (trustScore < 60 ? 'critical' : 'high')).toString().toLowerCase();
+                  const impactText = rawSeverity === 'critical' ? 'Store operations at risk' :
+                                     rawSeverity === 'high' ? 'Service degradation likely' :
+                                     rawSeverity === 'medium' ? 'Monitor performance' :
+                                     'No operational risk';
+
+                  
+                  return (
+                    <div className="mt-5 w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                      <div className="flex flex-col items-center">
+                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">Likely Cause</p>
+                        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest text-center shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                          {recentAnomalies[0].hybrid_ml_context.root_cause}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col items-center">
+                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">Business Impact</p>
+                        <div className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-center border ${
+                          rawSeverity === 'critical' ? 'border-red-500/50 text-red-400 bg-red-500/5' : 
+                          rawSeverity === 'high' ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 
+                          'border-blue-500/50 text-blue-400 bg-blue-500/5'
+                        }`}>
+                          {impactText}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 md:p-6 order-2">
                 <MultiScoreDisplay scores={trustScores} />

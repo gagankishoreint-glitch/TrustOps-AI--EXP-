@@ -122,6 +122,25 @@ export default function Home() {
     }
   }, [trustScore, activeLocation, updateShowroomScore]);
 
+  const prevDecision = useRef<string | null>(null);
+
+  // Auto-open Model Inspector on Anomaly
+  useEffect(() => {
+    const mlContext = recentAnomalies[0]?.hybrid_ml_context;
+    const currentDecision = mlContext?.decision;
+    
+    if (currentDecision && trustScore < 80 && currentDecision !== prevDecision.current) {
+      setShowInspector(true);
+      const timer = setTimeout(() => setShowInspector(false), 3000);
+      prevDecision.current = currentDecision;
+      return () => clearTimeout(timer);
+    }
+    
+    if (!currentDecision && trustScore >= 80) {
+      prevDecision.current = null;
+    }
+  }, [recentAnomalies, trustScore]);
+
   // --- Demo Mode Rotation Logic ---
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -511,11 +530,17 @@ export default function Home() {
       <ModelInspector
         isOpen={showInspector}
         onClose={() => setShowInspector(false)}
-        rawMLData={recentAnomalies[0]?.hybrid_ml_context || {
-          trust_score: trustScore,
-          context: trustScore < 80 ? 'Sensor Instability' : 'Optimal Baseline',
-          origin: 'Fleet Intelligence Core',
-          ttf: predictedTTF || 999
+        rawMLData={{
+           root_cause: recentAnomalies[0]?.hybrid_ml_context?.root_cause || 'Optimal Baseline',
+           action: recentAnomalies[0]?.hybrid_ml_context?.decision || 'No Action Required',
+           confidence: recentAnomalies[0]?.hybrid_ml_context?.confidence || 98,
+           telemetry_vector: {
+              trust_score: trustScore,
+              root_cause: recentAnomalies[0]?.hybrid_ml_context?.root_cause || 'Normal',
+              ttf: predictedTTF || 'Stable',
+              severity: recentAnomalies[0]?.hybrid_ml_context?.severity || (trustScore < 80 ? 'Warning' : 'Low'),
+              confidence: recentAnomalies[0]?.hybrid_ml_context?.confidence || 99
+           }
         }}
       />
     </div>

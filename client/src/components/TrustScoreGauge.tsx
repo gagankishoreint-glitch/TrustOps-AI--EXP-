@@ -66,10 +66,7 @@ export const TrustScoreGauge = React.memo(({ score }: { score: number }) => {
         {/* Score number — perfectly centered in the HUD arc */}
         <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: '22%' }}>
           <motion.span
-            key={Math.round(clamped)}
-            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
             className={`text-6xl font-black tabular-nums tracking-tighter ${clr.text}`}
             style={{ fontVariantNumeric: 'tabular-nums', textShadow: `0 0 15px ${clr.glow}22` }}
           >

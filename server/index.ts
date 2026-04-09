@@ -129,7 +129,7 @@ async function startServer() {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify({ model: "TrustOps-Expert", prompt, stream: false }),
-          signal:  AbortSignal.timeout(6_000),
+          signal:  AbortSignal.timeout(15_000),
         });
 
         if (ollamaRes.ok) {

@@ -107,6 +107,8 @@ export default function Home() {
   const [bannerVisible, setBannerVisible] = useState(false);
   const [bannerType, setBannerType] = useState<'red' | 'amber' | 'blue'>('blue');
   const [eventBannerVisible, setEventBannerVisible] = useState(false);
+  const [confirmedAnomaly, setConfirmedAnomaly] = useState(false);
+  const anomalyConfirmCount = useRef(0);
   const wasCriticalOrWarning = useRef(false);
   const prevHasAnomaly = useRef(false);
 
@@ -158,7 +160,7 @@ export default function Home() {
 
   // Auto-open Model Inspector only on False -> True transition
   useEffect(() => {
-    const hasAnomaly = !!recentAnomalies[0]?.hybrid_ml_context?.decision;
+    const hasAnomaly = confirmedAnomaly;
     
     // Detect Transition
     if (!prevHasAnomaly.current && hasAnomaly && trustScore < 80) {
@@ -203,9 +205,20 @@ export default function Home() {
 
           setTelemetryWindow(prev => [...prev.slice(-19), { timestamp: Date.now(), latency, frequency }]);
           setTrustScores(payload.engine_analysis.trust_scores);
-          setTrustScore(payload.engine_analysis.final_trust_score);
+          setTargetTrustScore(payload.engine_analysis.final_trust_score);
+          
+          // Hysteresis logic
           if (payload.engine_analysis.is_anomalous) {
+            anomalyConfirmCount.current = Math.min(3, anomalyConfirmCount.current + 1);
+          } else {
+            anomalyConfirmCount.current = Math.max(0, anomalyConfirmCount.current - 1);
+          }
+
+          if (anomalyConfirmCount.current >= 2) {
+            setConfirmedAnomaly(true);
             setRecentAnomalies(prev => [payload, ...prev].slice(0, 10));
+          } else if (anomalyConfirmCount.current === 0) {
+            setConfirmedAnomaly(false);
           }
         } catch { }
       };
@@ -298,9 +311,18 @@ export default function Home() {
 
         const mlScore = ml.trust_score ?? 95;
         setTargetTrustScore(mlScore);
-        setPredictedTTF(ml.is_anomaly ? (ml.ttf_minutes ?? null) : null);
-
+        
+        // --- Hysteresis Logic (Unified for Demo & ML) ---
         if (ml.is_anomaly) {
+          anomalyConfirmCount.current = Math.min(3, anomalyConfirmCount.current + 1);
+        } else {
+          anomalyConfirmCount.current = Math.max(0, anomalyConfirmCount.current - 1);
+        }
+
+        if (anomalyConfirmCount.current >= 2) {
+          setConfirmedAnomaly(true);
+          setPredictedTTF(ml.ttf_minutes ?? null);
+          
           const payload: StreamPayload = {
             raw_telemetry: {
               display_logs: { content_id: 'disp-01', play_time: 100, frequency },
@@ -330,6 +352,9 @@ export default function Home() {
             status: 'Action Required',
             severity: (ml.severity as any) ?? (mlScore < 60 ? 'High' : 'Medium')
           });
+        } else if (anomalyConfirmCount.current === 0) {
+          setConfirmedAnomaly(false);
+          setPredictedTTF(null);
         }
       };
 
@@ -466,11 +491,11 @@ export default function Home() {
               <div className="shrink-0 p-4 border-t border-white/5 grid grid-cols-2 gap-4 bg-black/40">
                 <div className="p-3 bg-white/5 rounded-xl border border-white/5">
                   <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">Avg Latency</p>
-                  <p className="text-lg md:text-xl font-black text-cyan-400">{avgLatency.toFixed(1)} ms</p>
+                  <p className="text-lg md:text-xl font-black text-cyan-400">{Math.round(avgLatency)} ms</p>
                 </div>
                 <div className="p-3 bg-white/5 rounded-xl border border-white/5">
                   <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-tighter mb-1">System Freq</p>
-                  <p className="text-lg md:text-xl font-black text-purple-400">{telemetryWindow[telemetryWindow.length - 1]?.frequency.toFixed(1)} Hz</p>
+                  <p className="text-lg md:text-xl font-black text-purple-400">{Math.round(telemetryWindow[telemetryWindow.length - 1]?.frequency || 0)} Hz</p>
                 </div>
               </div>
               <div className="shrink-0 p-4 border-t border-white/5 bg-[#080c14]">

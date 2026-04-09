@@ -61,12 +61,7 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
           const s = nodeStyle(score);
           return (
             <div key={label} className="flex flex-col items-center z-10 gap-3">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative"
-              >
+              <div className="relative">
                 {/* HUD Ring */}
                 <svg className="w-14 h-14 -rotate-90 overflow-visible">
                   <circle cx="28" cy="28" r="26" fill="transparent" stroke="white" strokeWidth="1" strokeOpacity="0.05" />
@@ -87,7 +82,7 @@ export const PredictiveTimeline: React.FC<PredictiveTimelineProps> = React.memo(
                     {score}
                   </span>
                 </div>
-              </motion.div>
+              </div>
               
               <div className="flex flex-col items-center gap-0.5">
                 <p className="text-[9px] text-gray-500 font-bold uppercase tracking-tight">{label}</p>

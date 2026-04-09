@@ -27,6 +27,7 @@ export const SecurityChat: React.FC<SecurityChatProps> = ({ telemetry, analysis,
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isLongRequest, setIsLongRequest] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,6 +43,8 @@ export const SecurityChat: React.FC<SecurityChatProps> = ({ telemetry, analysis,
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
+    setIsLongRequest(false);
+    const longTimer = setTimeout(() => setIsLongRequest(true), 2000);
 
     try {
       const response = await chatWithAI(text, { telemetry, analysis });
@@ -49,7 +52,9 @@ export const SecurityChat: React.FC<SecurityChatProps> = ({ telemetry, analysis,
     } catch (error) {
       setMessages(prev => [...prev, { role: 'ai', content: "Error communicating with intelligence core." }]);
     } finally {
+      clearTimeout(longTimer);
       setIsTyping(false);
+      setIsLongRequest(false);
     }
   };
 
@@ -82,14 +87,21 @@ export const SecurityChat: React.FC<SecurityChatProps> = ({ telemetry, analysis,
           </div>
         ))}
         {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-white/[0.04] border border-white/[0.08] px-3 py-2 rounded-2xl rounded-tl-none">
-              <div className="flex gap-1">
-                <div className="w-1 h-1 bg-cyan-400 rounded-full animate-bounce" />
-                <div className="w-1 h-1 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-                <div className="w-1 h-1 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-start">
+              <div className="bg-white/[0.04] border border-white/[0.08] px-3 py-2 rounded-2xl rounded-tl-none">
+                <div className="flex gap-1">
+                  <div className="w-1 h-1 bg-cyan-400 rounded-full animate-bounce" />
+                  <div className="w-1 h-1 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-1 h-1 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
               </div>
             </div>
+            {isLongRequest && (
+              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-cyan-400/60 animate-pulse ml-1">
+                Recalibrating Neural Weights...
+              </p>
+            )}
           </div>
         )}
       </div>
